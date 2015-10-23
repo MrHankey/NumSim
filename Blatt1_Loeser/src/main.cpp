@@ -15,18 +15,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include "typedef.hpp"
-//#include "compute.hpp"
-//#include "geometry.hpp"
-//#include "parameter.hpp"
-//#include "visu.hpp"
-//#include "vtk.hpp"
+#include "typedef.hpp"
+#include "compute.hpp"
+#include "geometry.hpp"
+#include "parameter.hpp"
+#include "visu.hpp"
+#include "vtk.hpp"
 
 #include <iostream>
 
 int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
-  /*Parameter param;
+  Parameter param;
   Geometry geom;
   // Create the fluid solver
   Compute comp(&geom, &param);
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
     comp.TimeStep(true);
-  }*/
+  }
 
     char* tmpBuf = new char[32];
     std::cin >> tmpBuf;
