@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+#include "geometry.hpp"
 //------------------------------------------------------------------------------
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
