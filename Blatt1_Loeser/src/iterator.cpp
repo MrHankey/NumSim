@@ -29,11 +29,11 @@ void Iterator::First() {
 }
 
 void Iterator::Next() {
-	multi_index_t size = _geom->Size();
+	/*multi_index_t size = _geom->Size();
 	if ( _value + 1 >= size[0]*size[1]-1)
 		_valid = false;
 	else
-		_value += 1;
+		_value += 1;*/
 }
 
 bool Iterator::Valid() const {
@@ -41,17 +41,17 @@ bool Iterator::Valid() const {
 }
 
 Iterator Iterator::Left() const {
-	if ( (_value - 1) % _geom->Size()[0] == 0)
+/*	if ( (_value - 1) % _geom->Size()[0] == 0)
 		return Iterator(_geom, _value);
 	else
-		return Iterator(_geom, _value - 1);
+		return Iterator(_geom, _value - 1);*/
 }
 
 Iterator Iterator::Right() const {
-	if ( _value % _geom->Size()[0] == 0)
+	/*if ( _value % _geom->Size()[0] == 0)
 		return Iterator(_geom, _value);
 	else
-		return Iterator(_geom, _value + 1);
+		return Iterator(_geom, _value + 1);*/
 }
 
 Iterator Iterator::Top() const {
