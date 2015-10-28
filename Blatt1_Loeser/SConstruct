@@ -17,7 +17,7 @@
 vars = Variables('custom.py')
 vars.Add(BoolVariable('visu', 'Set to 1 for enabling debug visu', 0))
 
-env = Environment(variables=vars, tools = ["mingw"])
+env = Environment(variables=vars)
 
 # do debug build?
 debug = ARGUMENTS.get('debug', 0)
@@ -28,9 +28,6 @@ debug = ARGUMENTS.get('debug', 0)
 
 # parallel
 # env.Replace(CXX='mpic++')
-
-path = ['/usr/local/bin', '/bin', '/usr/bin', 'C://MinGW//bin']
-env['ENV']['PATH'] = path
 
 # serial
 env.Replace(CXX='g++')
