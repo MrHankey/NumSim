@@ -29,6 +29,9 @@ public:
   /// Loads the parameter values from a file
   void Load(const char *file);
 
+  ///Prints Parameters
+  void PrintVariables();
+
   /// Getter functions for all parameters
   const real_t &Re() const;
   const real_t &Omega() const;

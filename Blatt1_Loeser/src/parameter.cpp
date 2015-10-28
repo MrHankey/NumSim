@@ -14,6 +14,8 @@ Parameter::Parameter() {
 	_eps = 0.001;
 	_tau = 0.5;
 	_itermax = 100;
+	cout << "Loaded default parameters"<< endl;
+	PrintVariables();
 }
 
 void Parameter::Load(const char* file) {
@@ -35,10 +37,14 @@ void Parameter::Load(const char* file) {
 		fileStream >> _tau;
 		fileStream >> _itermax;
 		cout << "Loaded parameters from " << file << ":" << endl;
-		;
-		;
+		PrintVariables();
 	}
 
+
+
+}
+
+void Parameter::PrintVariables(){
 	cout << "Re: " << _re << endl;
 	cout << "omega: " << _omega << endl;
 	cout << "alpha: " << _alpha << endl;
@@ -47,7 +53,6 @@ void Parameter::Load(const char* file) {
 	cout << "eps: " << _eps << endl;
 	cout << "tau: " << _tau << endl;
 	cout << "itermax: " << _itermax << endl << endl;
-
 }
 
 const real_t& Parameter::Re() const {

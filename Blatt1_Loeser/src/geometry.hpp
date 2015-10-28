@@ -53,6 +53,8 @@ public:
   void Update_V(Grid *v) const;
   /// Updates the pressure field p
   void Update_P(Grid *p) const;
+  ///Prints Parameters
+  void PrintVariables();
 
 private:
   multi_index_t _size;

@@ -18,6 +18,8 @@ Geometry::Geometry() {
 
 	_h[0] = _length[0]/_size[0];
 	_h[1] = _length[1]/_size[1];
+	cout << "Loaded default Variables:" << endl;
+	PrintVariables();
 }
 
 void Geometry::Load(const char* file) {
@@ -39,10 +41,13 @@ void Geometry::Load(const char* file) {
 		fileStream >> _length[1];
 		_h[0] = _length[0]/_size[0];
 		_h[1] = _length[1]/_size[1];
+		cout << "Loaded geometry from " << file << ":" << endl;
+		PrintVariables();
 	}
 
-	//Output values to console
-	cout << "Loaded geometry from " << file << ":" << endl;
+
+}
+void Geometry::PrintVariables(){
 	cout << "vel_x: " << _velocity[0] << endl;
 	cout << "vel_y: " << _velocity[1] << endl;
 	cout << "p: " << _pressure << endl;
@@ -52,6 +57,7 @@ void Geometry::Load(const char* file) {
 	cout << "length_y " << _length[1] << endl;
 	cout << "h_x: " << _h[0] << endl;
 	cout << "h_y: " << _h[1] << endl << endl;
+
 }
 
 const multi_index_t& Geometry::Size() const {
