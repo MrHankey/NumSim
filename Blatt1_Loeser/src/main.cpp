@@ -28,7 +28,9 @@ int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
   Parameter param;
   param.Load("parameters.txt");
+
   Geometry geom;
+  geom.Load("geometry.txt");
   // Create the fluid solver
   Compute comp(&geom, &param);
 
@@ -79,7 +81,5 @@ int main(int argc, char **argv) {
     comp.TimeStep(true);
   }
 
-    char* tmpBuf = new char[32];
-    std::cin >> tmpBuf;
   return 0;
 }

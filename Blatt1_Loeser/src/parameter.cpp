@@ -22,7 +22,7 @@ void Parameter::Load(const char* file) {
 
 	if ( fileStream.fail() )
 	{
-		cout << "Couldn't load " << file << ". Using default values." << endl;
+		cout << "Couldn't load parameters from " << file << endl;
 	}
 	else
 	{
@@ -37,14 +37,14 @@ void Parameter::Load(const char* file) {
 	}
 
 	cout << "Loaded parameters from " << file << ":" << endl;
-	cout << _re << endl;
-	cout << _omega << endl;
-	cout << _alpha << endl;
-	cout << _dt << endl;
-	cout << _tend << endl;
-	cout << _eps << endl;
-	cout << _tau << endl;
-	cout << _itermax << endl;
+	cout << "Re: " << _re << endl;
+	cout << "omega: " << _omega << endl;
+	cout << "alpha: " << _alpha << endl;
+	cout << "dt: " << _dt << endl;
+	cout << "Tend: " << _tend << endl;
+	cout << "eps: " << _eps << endl;
+	cout << "tau: " << _tau << endl;
+	cout << "itermax: " << _itermax << endl << endl;
 
 }
 
