@@ -16,6 +16,11 @@
  */
 
 #include "typedef.hpp"
+#include "grid.hpp"
+#include "parameter.hpp"
+#include "geometry.hpp"
+#include "solver.hpp"
+
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
