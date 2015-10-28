@@ -35,6 +35,7 @@ void Parameter::Load(const char* file) {
 		fileStream >> _tau;
 		fileStream >> _itermax;
 		cout << "Loaded parameters from " << file << ":" << endl;
+		;
 	}
 
 	cout << "Re: " << _re << endl;
