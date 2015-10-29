@@ -68,7 +68,6 @@ void Compute::TimeStep(bool printInfo) {
 	RHS(dt);
 
 	//Compute p
-
 	real_t res = 10000000;
 	index_t i = 0;
 	while(res>_param->Eps()&& i<_param->IterMax()){
@@ -76,6 +75,9 @@ void Compute::TimeStep(bool printInfo) {
 		_geom->Update_P(_p);
 		i++;
 	}
+
+	//Compute u,v
+	NewVelocities(dt);
 
 }
 
