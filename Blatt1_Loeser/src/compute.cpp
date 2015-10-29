@@ -40,10 +40,16 @@ Compute::~Compute()
 }
 
 void Compute::TimeStep(bool printInfo) {
+
+	//Compute dt
 	// beta in (0,1).
 	real_t beta = 0.9;
 	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
 
+	//Compute boudary Values
+	_geom->Update_U();
+	_geom->Update_V();
+	_geom->Update_P();
 
 }
 
