@@ -6,6 +6,12 @@ Compute::Compute(const Geometry *geom, const Parameter *param)
 	_geom = geom;
 	_param = param;
 
+	_solver = new SOR(_geom,_param->Omega());
+
+	_t = param->Dt();
+	//TODO was ist dtlimit?b
+	_dtlimit = param->Tau();
+
 	_epslimit = param->Eps();
 	multi_real_t u_offset;
 	multi_real_t v_offset;
@@ -18,6 +24,9 @@ Compute::Compute(const Geometry *geom, const Parameter *param)
 	_u = new Grid(geom, u_offset);
 	_v = new Grid(geom, v_offset);
 	_p = new Grid(geom);
+	_F = new Grid(geom);
+	_G = new Grid(geom);
+	_rhs = new Grid(geom);
 
 	_u->Initialize(0);
 	_v->Initialize(0);
@@ -37,6 +46,7 @@ Compute::~Compute()
 	delete _rhs;
 
 	delete _tmp;
+	delete _solver;
 }
 
 void Compute::TimeStep(bool printInfo) {
@@ -58,11 +68,11 @@ void Compute::TimeStep(bool printInfo) {
 	RHS(dt);
 
 	//Compute p
-	SOR sol = SOR(_geom,_param->Omega());
+
 	real_t res = 10000000;
 	index_t i = 0;
 	while(res>_param->Eps()&& i<_param->IterMax()){
-		res=sol.Cycle(_p,_rhs);
+		res=_solver->Cycle(_p,_rhs);
 		_geom->Update_P(_p);
 		i++;
 	}
