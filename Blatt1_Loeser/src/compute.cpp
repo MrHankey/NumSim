@@ -54,16 +54,18 @@ Compute::~Compute()
 
 void Compute::TimeStep(bool printInfo) {
 
-	//Compute dt
-	// beta in (0,1).
-	real_t beta = 0.9;
-	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
-	dt = std::min(dt,_param->Dt());
-	//real_t dt = _param->Dt();
 	//Compute boundary Values
+	//eigentlich erst nach dt, aber dann geht der erste Zeitschritt zu lang.
 	_geom->Update_U(_u);
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
+
+	//Compute dt
+	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
+	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
+	dt = std::min(dt2,std::min(dt,_param->Dt()));
+
 
 	//Compute F, G
 	MomentumEqu(dt);
