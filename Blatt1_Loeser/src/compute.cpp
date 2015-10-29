@@ -33,7 +33,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param)
 
 	_u->Initialize(0);
 	_v->Initialize(0);
-	_p->Initialize(0);
+	_p->Initialize(1);
 
 	_tmp = new Grid(geom);
 }
@@ -164,10 +164,6 @@ void Compute::MomentumEqu(const real_t& dt) {
 
 		it.Next();
 	}
-
-
-
-
 }
 
 void Compute::RHS(const real_t& dt) {

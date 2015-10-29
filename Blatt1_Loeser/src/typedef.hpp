@@ -22,6 +22,8 @@
 #ifndef __TYPEDEF_HPP
 #define __TYPEDEF_HPP
 
+#include <iostream>
+
 //------------------------------------------------------------------------------
 
 #define DIM 2

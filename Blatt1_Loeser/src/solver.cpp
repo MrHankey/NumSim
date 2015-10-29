@@ -63,10 +63,10 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 		C    = 1/norm*pij;
 
 		corr = A+B-C-rhs->Cell(it);
-		res  = 0;
 
 		pij  = pij + _omega * norm * corr;
-		res += localRes(it,grid,rhs);
+		real_t lRes = localRes(it,grid,rhs);
+		res += lRes*lRes;
 
 		it.Next();
 
