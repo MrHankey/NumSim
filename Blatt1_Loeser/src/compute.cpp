@@ -58,7 +58,8 @@ void Compute::TimeStep(bool printInfo) {
 	// beta in (0,1).
 	real_t beta = 0.9;
 	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
-
+	dt = std::min(dt,_param->Dt());
+	//real_t dt = _param->Dt();
 	//Compute boundary Values
 	_geom->Update_U(_u);
 	_geom->Update_V(_v);
@@ -66,6 +67,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	//Compute F, G
 	MomentumEqu(dt);
+	//std::cin.ignore();
 
 	// Compute RHS
 	RHS(dt);
@@ -162,6 +164,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 		_F->Cell(it) = u + dt*A;
 		_G->Cell(it) = v + dt*B;
 
+		//std::cout<<"A: "<<A<<"B: "<<B <<endl;
 		it.Next();
 	}
 }

@@ -58,7 +58,7 @@ Iterator Iterator::Right() const {
 }
 
 Iterator Iterator::Top() const {
-	index_t newIndex = _value - _geom->Size()[0];
+	index_t newIndex = _value + _geom->Size()[0];
 	if ( newIndex > (_geom->Size()[0]*_geom->Size()[1] - 1) )
 		return Iterator(_geom, _value);
 	else
@@ -74,21 +74,23 @@ Iterator Iterator::Down() const {
 }
 
 InteriorIterator::InteriorIterator(const Geometry* geom) : Iterator(geom) {
-
+	First();
 }
 
 void InteriorIterator::First() {
 	_value = _geom->Size()[0] + 1;
 	_valid = true;
+	//std::cout <<_value<<" ";
 }
 
 void InteriorIterator::Next() {
-	if ( (_value + 2) % _geom->Size()[0] == 0 )
+	if ( (_value + 1 ) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)) - 1 )
+			_valid = false;
+	else if ( (_value + 2) % _geom->Size()[0] == 0 )
 		_value += 3;
-	else if ( (_value + 1 ) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)) - 1 )
-		_valid = false;
 	else
 		_value++;
+	//std::cout<<_value<<" ";
 }
 
 BoundaryIterator::BoundaryIterator(const Geometry* geom) : Iterator(geom) {

@@ -81,6 +81,7 @@ real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
 		const Grid* v) const {
 	real_t A = (v->Cell(it)+v->Cell(it.Right()))/2;
 	real_t B = (_data[it]+_data[it.Top()])/2;
+	//std::cout<<"B: "<<B;
 	real_t C = (v->Cell(it.Down())+ v->Cell(it.Down().Right()))/2;
 	real_t D = (_data[it]+_data[it.Down()] )/2;
 	return ( A*B - C * D) + alpha*( abs(A)*B-abs(C)*D )  /_geom->Mesh()[1];
