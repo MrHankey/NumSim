@@ -68,7 +68,7 @@ const Grid* Compute::GetRHS() const {
 }
 
 const Grid* Compute::GetVelocity() {
-	Iterator it;
+	Iterator it = Iterator(_geom);
 
 	while ( it.Valid() )
 	{
@@ -92,8 +92,8 @@ void Compute::NewVelocities(const real_t& dt) {
 		const real_t f = _F->Cell(it);
 		const real_t g = _G->Cell(it);
 
-		_u->Cell(it) = f - dt* ( _p->) );
-		_v->Cell(it) = g - dt*B;
+		_u->Cell(it) = f - dt * ( _p->dx_l(it) );
+		_v->Cell(it) = g - dt * ( _p->dy_l(it) );
 
 		it.Next();
 	}
