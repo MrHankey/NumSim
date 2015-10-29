@@ -1,6 +1,7 @@
 #include "grid.hpp"
 
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -62,23 +63,35 @@ real_t Grid::dyy(const Iterator& it) const {
 }
 
 real_t Grid::DC_udu_x(const Iterator& it, const real_t& alpha) const {
-	return ( (_data[it]+_data[it.Right()])/2*(_data[it]+_data[it.Right()])/2 - (_data[it]+_data[it.Left()])/2*(_data[it]+_data[it.Left()])/2 )/_geom->Mesh()[0];
+
+	real_t A = (_data[it]+_data[it.Right()])/2;
+	real_t B = (_data[it]+_data[it.Left()])/2;
+	return (( A*A - B*B)  +  alpha*(  abs(A)*A-abs(B)*B    )         )/_geom->Mesh()[0];
 }
 
 real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
 		const Grid* v) const {
-	return ( (v->Cell(it)+v->Cell(it.Right()))/2*(_data[it]+_data[it.Top()])/2 - (v->Cell(it.Down())+ v->Cell(it.Down().Right()))/2 * (_data[it]+_data[it.Down()] )/2 )/_geom->Mesh()[1];
+	real_t A = (v->Cell(it)+v->Cell(it.Right()))/2;
+	real_t B = (_data[it]+_data[it.Top()])/2;
+	real_t C = (v->Cell(it.Down())+ v->Cell(it.Down().Right()))/2;
+	real_t D = (_data[it]+_data[it.Down()] )/2;
+	return ( A*B - C * D) + alpha*( abs(A)*B-abs(C)*D )  /_geom->Mesh()[1];
 }
 
 real_t Grid::DC_udv_x(const Iterator& it, const real_t& alpha,
 		const Grid* u) const {
-	return ( (u->Cell(it)+u->Cell(it.Top()))/2*(_data[it]+_data[it.Right()])/2 - (u->Cell(it.Left())+ u->Cell(it.Left().Top()))/2 * (_data[it]+_data[it.Left()] )/2 )/_geom->Mesh()[0];
+	real_t A = (u->Cell(it)+u->Cell(it.Top()))/2;
+	real_t B = (_data[it]+_data[it.Right()])/2;
+	real_t C = (u->Cell(it.Left())+ u->Cell(it.Left().Top()))/2;
+	real_t D = (_data[it]+_data[it.Left()] )/2;
+	return ( A*B - C * D) + alpha*( abs(A)*B-abs(C)*D )  /_geom->Mesh()[0];
 
 }
 
 real_t Grid::DC_vdv_y(const Iterator& it, const real_t& alpha) const {
-	return ( (_data[it]+_data[it.Top()])/2*(_data[it]+_data[it.Top()])/2 - (_data[it]+_data[it.Down()])/2*(_data[it]+_data[it.Down()])/2 )/_geom->Mesh()[1];
-
+	real_t A = (_data[it]+_data[it.Top()])/2;
+	real_t B = (_data[it]+_data[it.Down()])/2;
+	return (( A*A - B*B)  +  alpha*(  abs(A)*A-abs(B)*B    )         )/_geom->Mesh()[1];
 }
 
 real_t Grid::Max() const {
