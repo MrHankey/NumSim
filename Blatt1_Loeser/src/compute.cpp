@@ -1,5 +1,8 @@
 #include "compute.hpp"
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 Compute::Compute(const Geometry *geom, const Parameter *param)
 {
@@ -8,9 +11,9 @@ Compute::Compute(const Geometry *geom, const Parameter *param)
 
 	_solver = new SOR(_geom,_param->Omega());
 
-	_t = param->Dt();
+	_t = 0.0;
 	//TODO was ist dtlimit?b
-	_dtlimit = param->Tau();
+	_dtlimit = param->Dt();
 
 	_epslimit = param->Eps();
 	multi_real_t u_offset;
@@ -56,7 +59,7 @@ void Compute::TimeStep(bool printInfo) {
 	real_t beta = 0.9;
 	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
 
-	//Compute boudary Values
+	//Compute boundary Values
 	_geom->Update_U(_u);
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
@@ -71,10 +74,19 @@ void Compute::TimeStep(bool printInfo) {
 
 	real_t res = 10000000;
 	index_t i = 0;
-	while(res>_param->Eps()&& i<_param->IterMax()){
-		res=_solver->Cycle(_p,_rhs);
+	while(res >_param->Eps() && i < _param->IterMax() )
+	{
+		res = _solver->Cycle(_p,_rhs);
 		_geom->Update_P(_p);
 		i++;
+	}
+
+	_t += dt;
+
+	if ( printInfo )
+	{
+		cout << "_t: " << _t << endl;
+		cout << "res: " << res << endl;
 	}
 
 }
