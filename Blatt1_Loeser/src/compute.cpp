@@ -47,9 +47,25 @@ void Compute::TimeStep(bool printInfo) {
 	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
 
 	//Compute boudary Values
-	_geom->Update_U();
-	_geom->Update_V();
-	_geom->Update_P();
+	_geom->Update_U(_u);
+	_geom->Update_V(_v);
+	_geom->Update_P(_p);
+
+	//Compute F, G
+	MomentumEqu(dt);
+
+	// Compute RHS
+	RHS(dt);
+
+	//Compute p
+	SOR sol = SOR(_geom,_param->Omega());
+	real_t res = 10000000;
+	index_t i = 0;
+	while(res>_param->Eps()&& i<_param->IterMax()){
+		res=sol.Cycle(_p,_rhs);
+		_geom->Update_P(_p);
+		i++;
+	}
 
 }
 

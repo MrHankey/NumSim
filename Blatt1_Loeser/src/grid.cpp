@@ -8,6 +8,10 @@ using namespace std;
 Grid::Grid(const Geometry* geom) {
 	_data = new real_t[geom->Size()[0]*geom->Size()[1]];
 	_geom = geom;
+	multi_real_t offset;
+	offset[0] = 0;
+	offset[1] = 0;
+	_offset = offset;
 }
 
 Grid::Grid(const Geometry* geom, const multi_real_t& offset) {
