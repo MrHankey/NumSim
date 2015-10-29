@@ -1,9 +1,29 @@
 #include "compute.hpp"
+#include <cmath>
 
 Compute::Compute(const Geometry *geom, const Parameter *param)
 {
 	_geom = geom;
 	_param = param;
+
+	_epslimit = param->Eps();
+	multi_real_t u_offset;
+	multi_real_t v_offset;
+
+	u_offset[0] = geom->Mesh()[0]/2;
+	u_offset[1] = 0;
+	v_offset[1] = geom->Mesh()[1]/2;
+	v_offset[0] = 0;
+
+	_u = new Grid(geom, u_offset);
+	_v = new Grid(geom, v_offset);
+	_p = new Grid(geom);
+
+	_u->Initialize(0);
+	_v->Initialize(0);
+	_p->Initialize(0);
+
+	_tmp = new Grid(geom);
 }
   /// Deletes all grids
 Compute::~Compute()
@@ -20,24 +40,43 @@ Compute::~Compute()
 }
 
 void Compute::TimeStep(bool printInfo) {
+	// beta in (0,1).
+	real_t beta = 0.9;
+	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
+
+
 }
 
 const real_t& Compute::GetTime() const {
+	return _t;
 }
 
 const Grid* Compute::GetU() const {
+	return _u;
 }
 
 const Grid* Compute::GetV() const {
+	return _v;
 }
 
 const Grid* Compute::GetP() const {
+	return _p;
 }
 
 const Grid* Compute::GetRHS() const {
+	return _rhs;
 }
 
 const Grid* Compute::GetVelocity() {
+	Iterator it;
+
+	while ( it.Valid() )
+	{
+		_tmp->Cell(it) = sqrt(( _u->Cell(it)*_u->Cell(it) + _v->Cell(it)*_v->Cell(it)));
+		it.Next();
+	}
+
+	return _tmp;
 }
 
 const Grid* Compute::GetVorticity() {
@@ -47,6 +86,17 @@ const Grid* Compute::GetStream() {
 }
 
 void Compute::NewVelocities(const real_t& dt) {
+	InteriorIterator it = InteriorIterator(_geom);
+	while ( it.Valid() )
+	{
+		const real_t f = _F->Cell(it);
+		const real_t g = _G->Cell(it);
+
+		_u->Cell(it) = f - dt* ( _p->) );
+		_v->Cell(it) = g - dt*B;
+
+		it.Next();
+	}
 }
 
 // F = u + dt * A
@@ -69,6 +119,10 @@ void Compute::MomentumEqu(const real_t& dt) {
 
 		it.Next();
 	}
+
+
+
+
 }
 
 void Compute::RHS(const real_t& dt) {

@@ -1,4 +1,6 @@
 #include "geometry.hpp"
+#include "grid.hpp"
+#include "iterator.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -73,10 +75,85 @@ const multi_real_t& Geometry::Mesh() const {
 }
 
 void Geometry::Update_U(Grid* u) const {
+	real_t velocity = 1;
+	BoundaryIterator it = BoundaryIterator(this);
+		while ( it.Valid() )
+		{
+			u->Cell(it) = -1*u->Cell(it.Top());
+			it.Next();
+		}
+	it.SetBoundary(1);
+		while ( it.Valid() )
+		{
+			u->Cell(it) = 0;
+			u->Cell(it.Left()) = 0; // hier evtl Löschen
+			it.Next();
+		}
+	it.SetBoundary(2);
+		while ( it.Valid() )
+		{
+			u->Cell(it) = 2*velocity - u->Cell(it.Down()) ;
+			it.Next();
+		}
+	it.SetBoundary(3);
+		while ( it.Valid() )
+		{
+			u->Cell(it) = 0;
+			it.Next();
+		}
 }
 
 void Geometry::Update_V(Grid* v) const {
+	BoundaryIterator it = BoundaryIterator(this);
+		while ( it.Valid() )
+		{
+			v->Cell(it) = 0;
+			it.Next();
+		}
+	it.SetBoundary(1);
+		while ( it.Valid() )
+		{
+			v->Cell(it) = -1*v->Cell(it.Left());
+			it.Next();
+		}
+	it.SetBoundary(2);
+		while ( it.Valid() )
+		{
+			v->Cell(it.Down()) = 0; // hier evtl Löschen
+			v->Cell(it) = 0;
+			it.Next();
+		}
+	it.SetBoundary(3);
+		while ( it.Valid() )
+		{
+			v->Cell(it) = -1*v->Cell(it.Right());
+			it.Next();
+		}
 }
 
 void Geometry::Update_P(Grid* p) const {
+	BoundaryIterator it = BoundaryIterator(this);
+		while ( it.Valid() )
+		{
+			p->Cell(it) = p->Cell(it.Top());
+			it.Next();
+		}
+	it.SetBoundary(1);
+		while ( it.Valid() )
+		{
+			p->Cell(it) = p->Cell(it.Left());
+			it.Next();
+		}
+	it.SetBoundary(2);
+		while ( it.Valid() )
+		{
+			p->Cell(it) = p->Cell(it.Down());
+			it.Next();
+		}
+	it.SetBoundary(3);
+		while ( it.Valid() )
+		{
+			p->Cell(it) = p->Cell(it.Right());
+			it.Next();
+		}
 }

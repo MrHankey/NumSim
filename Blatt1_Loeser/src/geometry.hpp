@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+
 //------------------------------------------------------------------------------
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP
