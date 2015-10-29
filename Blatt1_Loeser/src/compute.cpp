@@ -71,7 +71,6 @@ void Compute::TimeStep(bool printInfo) {
 	RHS(dt);
 
 	//Compute p
-
 	real_t res = 10000000;
 	index_t i = 0;
 	while(res >_param->Eps() && i < _param->IterMax() )
@@ -81,6 +80,9 @@ void Compute::TimeStep(bool printInfo) {
 		i++;
 	}
 
+	//Compute u,v
+	NewVelocities(dt);
+
 	_t += dt;
 
 	if ( printInfo )
@@ -88,7 +90,6 @@ void Compute::TimeStep(bool printInfo) {
 		cout << "_t: " << _t << endl;
 		cout << "res: " << res << endl;
 	}
-
 }
 
 const real_t& Compute::GetTime() const {
