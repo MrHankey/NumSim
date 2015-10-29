@@ -1,4 +1,6 @@
 #include "solver.hpp"
+#include "grid.hpp"
+#include "geometry.hpp"
 
 Solver::Solver(const Geometry* geom) {
 	_geom = geom;
@@ -19,11 +21,11 @@ real_t Solver::localRes(const Iterator& it, const Grid* grid,
 	pijj  = grid->Cell(it.Top());
 	pj    = grid->Cell(it.Left());
 	piij  = grid->Cell(it.Right());
-	norm  = 0.5*(dx^2+dy^2);
+	norm  = 0.5*(dx*dx+dy*dy);
 
-	real_t pDiff = piij+pijj-4*pij+pj+pi;
+	pDiff = piij+pijj-4*pij+pj+pi;
 
-	return 1/norm * (rhs-pDiff);
+	return (1/norm * (rhs->Cell(it)-pDiff));
 }
 
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
@@ -35,7 +37,7 @@ SOR::~SOR() {
 }
 
 real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
-	Iterator it;
+	Iterator it = Iterator(_geom);
 
 	real_t n, res, dx, dy, norm;
 
@@ -43,7 +45,7 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 	res  = 0;
 	dx   = _geom->Mesh()[0];
 	dy   = _geom->Mesh()[1];
-	norm = 0.5*dx^2*dy^2/(dx^2+dy^2);
+	norm = 0.5*dx*dx*dy*dy/(dx*dx+dy*dy);
 
 	while(it.Valid()) {
 		n++;
@@ -56,11 +58,11 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 		pj   = grid->Cell(it.Left());
 		piij = grid->Cell(it.Right());
 
-		A    = (pj+pj)/dx^2;
-		B    = (pi+pijj)/dy^2;
+		A    = (pj+pj)/dx*dx;
+		B    = (pi+pijj)/dy*dy;
 		C    = 1/norm*pij;
 
-		corr = A+B-C-rhs;
+		corr = A+B-C-rhs->Cell(it);
 		res  = 0;
 
 		pij  = pij + _omega * norm * corr;
