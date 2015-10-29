@@ -118,7 +118,7 @@ void BoundaryIterator::First() {
 	}
 	else if ( _boundary == 3 )
 	{
-		_value = _geom->Size()[0]*(_geom->Size()[1] - 2);
+		_value = _geom->Size()[0]*(_geom->Size()[1] - 1);
 	}
 }
 
