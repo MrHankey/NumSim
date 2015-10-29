@@ -105,7 +105,7 @@ real_t Grid::DC_vdv_y(const Iterator& it, const real_t& alpha) const {
 
 real_t Grid::Max() const {
 	real_t max = _data[0];
-	for (int i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
+	for (index_t i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
 		if (_data[i] >= max)
 		max = _data[i];
 	}
@@ -114,7 +114,7 @@ real_t Grid::Max() const {
 
 real_t Grid::Min() const {
 	real_t min = _data[0];
-	for (int i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
+	for (index_t i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
 		if (_data[i] <= min)
 		min = _data[i];
 	}

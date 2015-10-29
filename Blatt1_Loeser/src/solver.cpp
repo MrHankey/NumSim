@@ -45,26 +45,26 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 	res  = 0;
 	dx   = _geom->Mesh()[0];
 	dy   = _geom->Mesh()[1];
-	norm = 0.5*dx*dx*dy*dy/(dx*dx+dy*dy);
+	norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );
 
 	while(it.Valid()) {
 		n++;
 
-		real_t pij, pi, pj, pijj, piij, A, B, C, corr;
+		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, C, corr;
 
 		pij  = grid->Cell(it);
-		pi   = grid->Cell(it.Down());
-		pijj = grid->Cell(it.Top());
-		pj   = grid->Cell(it.Left());
-		piij = grid->Cell(it.Right());
+		pij_d   = grid->Cell(it.Down());
+		pij_t = grid->Cell(it.Top());
+		pij_l   = grid->Cell(it.Left());
+		pij_r = grid->Cell(it.Right());
 
-		A    = (pj+pj)/dx*dx;
-		B    = (pi+pijj)/dy*dy;
+		A    = (pij_l+pij_r)/dx*dx;
+		B    = (pij_d+pij_t)/dy*dy;
 		C    = 1/norm*pij;
 
-		corr = A+B-C-rhs->Cell(it);
+		corr = norm * ( A+B-C-rhs->Cell(it) );
 
-		grid->Cell(it)  = pij + _omega * norm * corr;
+		grid->Cell(it)  = pij + _omega * corr;
 		real_t lRes = localRes(it,grid,rhs);
 		res += lRes*lRes;
 
