@@ -1,4 +1,5 @@
 #include "compute.hpp"
+#include <cmath>
 
 Compute::Compute(const Geometry *geom, const Parameter *param)
 {
@@ -39,6 +40,11 @@ Compute::~Compute()
 }
 
 void Compute::TimeStep(bool printInfo) {
+	// beta in (0,1).
+	real_t beta = 0.9;
+	real_t dt = beta*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])*std::fmax(_u->AbsMax(),_v->AbsMax());
+
+
 }
 
 const real_t& Compute::GetTime() const {
@@ -113,6 +119,10 @@ void Compute::MomentumEqu(const real_t& dt) {
 
 		it.Next();
 	}
+
+
+
+
 }
 
 void Compute::RHS(const real_t& dt) {
