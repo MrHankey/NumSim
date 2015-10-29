@@ -37,7 +37,7 @@ SOR::~SOR() {
 }
 
 real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
-	Iterator it = Iterator(_geom);
+	InteriorIterator it = InteriorIterator(_geom);
 
 	real_t n, res, dx, dy, norm;
 
