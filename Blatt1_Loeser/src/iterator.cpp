@@ -122,7 +122,6 @@ void BoundaryIterator::First() {
 	}
 }
 
-//Iterattes through the specified boundary
 void BoundaryIterator::Next() {
 	if (_boundary == 0 )
 	{

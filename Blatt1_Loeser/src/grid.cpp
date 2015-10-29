@@ -21,7 +21,7 @@ Grid::~Grid() {
 }
 
 void Grid::Initialize(const real_t& value) {
-	for (int i = 0; i< _geom->Size()[0]*_geom->Size()[1];i++){
+	for (index_t i = 0; i< _geom->Size()[0]*_geom->Size()[1];i++){
 		_data[i] = value;
 	}
 }
@@ -35,7 +35,9 @@ const real_t& Grid::Cell(const Iterator& it) const {
 }
 
 real_t Grid::Interpolate(const multi_real_t& pos) const {
-
+	//TODO do proper interpolation
+	index_t cell_x = (index_t)(pos[0]/_geom->Mesh()[0]);
+	index_t cell_y = (index_t)(pos[1]/_geom->Mesh()[1]);
 }
 
 real_t Grid::dx_l(const Iterator& it) const {
