@@ -159,4 +159,24 @@ void Geometry::Update_P(Grid* p) const {
 		p->Cell(it) = p->Cell(it.Right());
 		it.Next();
 	}
+
+	real_t sum = 0;
+	index_t n = 0;
+	Iterator it_all = Iterator(this);
+	while (it_all.Valid())
+	{
+		sum += p->Cell(it_all);
+		it_all.Next();
+		n++;
+	}
+
+	real_t mean = sum/n;
+
+	it_all.First();
+	while (it_all.Valid())
+	{
+		p->Cell(it_all) = p->Cell(it_all) - mean;
+		it_all.Next();
+	}
+
 }
