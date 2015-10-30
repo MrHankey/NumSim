@@ -2,6 +2,8 @@
 #include "grid.hpp"
 #include "geometry.hpp"
 
+#include <cmath>
+
 Solver::Solver(const Geometry* geom) {
 	_geom = geom;
 }
@@ -30,7 +32,8 @@ real_t Solver::localRes(const Iterator& it, const Grid* grid,
 
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
 	_geom  = geom;
-	_omega = omega;
+	//include both h_x and h_y in calculation
+	_omega = 2.0/(1.0 + std::sin(M_PI*geom->Mesh()[0]));//omega;
 }
 
 SOR::~SOR() {
