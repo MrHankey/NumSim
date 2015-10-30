@@ -75,7 +75,7 @@ const multi_real_t& Geometry::Mesh() const {
 }
 
 void Geometry::Update_U(Grid* u) const {
-	real_t velocity = 10;
+	real_t velocity = 1;
 	BoundaryIterator it = BoundaryIterator(this);
 		while ( it.Valid() )
 		{

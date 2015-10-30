@@ -178,11 +178,11 @@ void Compute::RHS(const real_t& dt) {
 	InteriorIterator it = InteriorIterator(_geom);
 	while ( it.Valid() )
 	{
-		real_t dFx = (_F->Cell(it.Right()) - _F->Cell(it))/_geom->Mesh()[0];
-		real_t dGy = (_G->Cell(it.Top()) - _G->Cell(it))/_geom->Mesh()[1];
+		//real_t dFx = (_F->Cell(it.Right()) - _F->Cell(it))/_geom->Mesh()[0];
+		//real_t dGy = (_G->Cell(it.Top()) - _G->Cell(it))/_geom->Mesh()[1];
 
-		//real_t dFx = (_F->Cell(it) - _F->Cell(it.Left()))/_geom->Mesh()[0];
-		//real_t dGy = (_G->Cell(it) - _G->Cell(it.Down()))/_geom->Mesh()[1];
+		real_t dFx = (_F->Cell(it) - _F->Cell(it.Left()))/_geom->Mesh()[0];
+		real_t dGy = (_G->Cell(it) - _G->Cell(it.Down()))/_geom->Mesh()[1];
 
 		_rhs->Cell(it) = (dFx + dGy)/dt;
 		//std::cout<<_rhs->Cell(it)<<" "<<endl;
