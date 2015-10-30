@@ -60,8 +60,6 @@ void Compute::TimeStep(bool printInfo) {
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
 
-	_F->Initialize(0);
-	_G->Initialize(0);
 	//Compute dt
 	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
@@ -143,8 +141,8 @@ void Compute::NewVelocities(const real_t& dt) {
 		const real_t f = _F->Cell(it);
 		const real_t g = _G->Cell(it);
 
-		_u->Cell(it) = f - dt * ( _p->dx_l(it) );
-		_v->Cell(it) = g - dt * ( _p->dy_l(it) );
+		_u->Cell(it) = f - dt * ( _p->dx_r(it) );
+		_v->Cell(it) = g - dt * ( _p->dy_r(it) );
 
 		it.Next();
 	}
@@ -170,8 +168,20 @@ void Compute::MomentumEqu(const real_t& dt) {
 
 		it.Next();
 	}
-	_geom->Update_U(_F);
-	_geom->Update_V(_G);
+
+	BoundaryIterator it_b = BoundaryIterator(_geom);
+	it_b.SetBoundary(0);
+	while (it_b.Valid())
+	{
+		_G->Cell(it_b) = 0;
+		it_b.Next();
+	}
+	it_b.SetBoundary(3);
+	while (it_b.Valid())
+	{
+		_F->Cell(it_b) = 0;
+		it_b.Next();
+	}
 }
 
 void Compute::RHS(const real_t& dt) {
