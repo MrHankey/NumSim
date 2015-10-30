@@ -33,7 +33,7 @@ void Iterator::First() {
 
 void Iterator::Next() {
 	multi_index_t size = _geom->Size();
-	if ( _value + 1 >= size[0]*size[1]-1)
+	if ( _value + 1 > size[0]*size[1]-1)
 		_valid = false;
 	else
 		_value += 1;
