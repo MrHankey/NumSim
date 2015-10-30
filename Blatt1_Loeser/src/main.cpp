@@ -76,8 +76,8 @@ int main(int argc, char **argv) {
     vtk.Finish();
 
     // Run a few steps
-    //for (uint32_t i = 0; i < 9; ++i)
-    //  comp.TimeStep(false);
+    for (uint32_t i = 0; i < 9; ++i)
+      comp.TimeStep(false);
     comp.TimeStep(true);
   }
 

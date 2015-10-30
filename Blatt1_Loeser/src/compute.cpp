@@ -60,6 +60,8 @@ void Compute::TimeStep(bool printInfo) {
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
 
+	_F->Initialize(0);
+	_G->Initialize(0);
 	//Compute dt
 	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
@@ -166,9 +168,10 @@ void Compute::MomentumEqu(const real_t& dt) {
 		_F->Cell(it) = u + dt*A;
 		_G->Cell(it) = v + dt*B;
 
-		//std::cout<<"A: "<<A<<"B: "<<B <<endl;
 		it.Next();
 	}
+	_geom->Update_U(_F);
+	_geom->Update_V(_G);
 }
 
 void Compute::RHS(const real_t& dt) {
@@ -178,7 +181,11 @@ void Compute::RHS(const real_t& dt) {
 		real_t dFx = (_F->Cell(it.Right()) - _F->Cell(it))/_geom->Mesh()[0];
 		real_t dGy = (_G->Cell(it.Top()) - _G->Cell(it))/_geom->Mesh()[1];
 
+		//real_t dFx = (_F->Cell(it) - _F->Cell(it.Left()))/_geom->Mesh()[0];
+		//real_t dGy = (_G->Cell(it) - _G->Cell(it.Down()))/_geom->Mesh()[1];
+
 		_rhs->Cell(it) = (dFx + dGy)/dt;
+		//std::cout<<_rhs->Cell(it)<<" "<<endl;
 		it.Next();
 	}
 }
