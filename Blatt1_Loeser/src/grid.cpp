@@ -40,8 +40,8 @@ const real_t& Grid::Cell(const Iterator& it) const {
 
 real_t Grid::Interpolate(const multi_real_t& pos) const {
 	//TODO do proper interpolation
-	index_t cell_x = (index_t)((pos[0] + _offset[0])/_geom->Mesh()[0]);
-	index_t cell_y = (index_t)((pos[1] + _offset[1])/_geom->Mesh()[1]);
+	index_t cell_x = (index_t)((pos[0] - _offset[0])/_geom->Mesh()[0]);
+	index_t cell_y = (index_t)((pos[1] - _offset[1])/_geom->Mesh()[1]);
 
 	return _data[cell_y*_geom->Size()[0] + cell_x];
 }
@@ -73,8 +73,10 @@ real_t Grid::dyy(const Iterator& it) const {
 real_t Grid::DC_udu_x(const Iterator& it, const real_t& alpha) const {
 
 	real_t A = (_data[it]+_data[it.Right()])/2;
-	real_t B = (_data[it]+_data[it.Left()])/2;
-	return (( A*A - B*B)  +  alpha*(  abs(A)*A-abs(B)*B    )         )/_geom->Mesh()[0];
+	real_t B = (_data[it.Left()]+_data[it])/2;
+	real_t C = (_data[it]-_data[it.Right()])/2;
+	real_t D = (_data[it.Left()]-_data[it])/2;
+	return (( A*A - B*B) + alpha*(abs(A)*C-abs(B)*D) )/_geom->Mesh()[0];
 }
 
 real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
@@ -84,7 +86,9 @@ real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
 	//std::cout<<"B: "<<B;
 	real_t C = (v->Cell(it.Down())+ v->Cell(it.Down().Right()))/2;
 	real_t D = (_data[it]+_data[it.Down()] )/2;
-	return ( A*B - C * D) + alpha*( abs(A)*B-abs(C)*D )  /_geom->Mesh()[1];
+	real_t E = (_data[it]-_data[it.Top()])/2;
+	real_t F = (_data[it.Down()]-_data[it])/2;
+	return ( A*B - C * D) + alpha*( abs(A)*E-abs(C)*F )  /_geom->Mesh()[1];
 }
 
 real_t Grid::DC_udv_x(const Iterator& it, const real_t& alpha,
@@ -93,14 +97,18 @@ real_t Grid::DC_udv_x(const Iterator& it, const real_t& alpha,
 	real_t B = (_data[it]+_data[it.Right()])/2;
 	real_t C = (u->Cell(it.Left())+ u->Cell(it.Left().Top()))/2;
 	real_t D = (_data[it]+_data[it.Left()] )/2;
-	return ( A*B - C * D) + alpha*( abs(A)*B-abs(C)*D )  /_geom->Mesh()[0];
+	real_t E = (_data[it]-_data[it.Right()])/2;
+	real_t F = (_data[it.Left()]-_data[it] )/2;
+	return ( A*B - C * D) + alpha*( abs(A)*E-abs(C)*F )  /_geom->Mesh()[0];
 
 }
 
 real_t Grid::DC_vdv_y(const Iterator& it, const real_t& alpha) const {
 	real_t A = (_data[it]+_data[it.Top()])/2;
-	real_t B = (_data[it]+_data[it.Down()])/2;
-	return (( A*A - B*B)  +  alpha*(  abs(A)*A-abs(B)*B    )         )/_geom->Mesh()[1];
+	real_t B = (_data[it.Down()]+_data[it])/2;
+	real_t C = (_data[it]-_data[it.Top()])/2;
+	real_t D = (_data[it.Down()]-_data[it])/2;
+	return ( (A*A - B*B) + alpha*( abs(A)*C-abs(B)*D) )/_geom->Mesh()[1];
 }
 
 real_t Grid::Max() const {
