@@ -84,7 +84,7 @@ void InteriorIterator::First() {
 }
 
 void InteriorIterator::Next() {
-	if ( (_value + 1 ) > (_geom->Size()[0]*(_geom->Size()[1] - 1)) - 1 )
+	if ( (_value + 1 ) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)) - 1 )
 			_valid = false;
 	else if ( (_value + 2) % _geom->Size()[0] == 0 )
 		_value += 3;
