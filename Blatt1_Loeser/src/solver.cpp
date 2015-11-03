@@ -19,10 +19,10 @@ real_t Solver::localRes(const Iterator& it, const Grid* grid,
 	dy    = _geom->Mesh()[1];
 
 	pij   = grid->Cell(it);
-	pij_d    = grid->Cell(it.Down());
-	pij_t  = grid->Cell(it.Top());
-	pij_l    = grid->Cell(it.Left());
-	pij_r  = grid->Cell(it.Right());
+	pij_d = grid->Cell(it.Down());
+	pij_t = grid->Cell(it.Top());
+	pij_l = grid->Cell(it.Left());
+	pij_r = grid->Cell(it.Right());
 	norm  = 0.5*(dx*dx+dy*dy);
 
 	pDiff = (pij_l - 2.0*pij + pij_r)/(dx*dx) + (pij_d - 2.0*pij + pij_t)/(dy*dy);
