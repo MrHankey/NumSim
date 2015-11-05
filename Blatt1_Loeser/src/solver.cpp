@@ -13,28 +13,12 @@ Solver::~Solver() {
 
 real_t Solver::localRes(const Iterator& it, const Grid* grid,
 		const Grid* rhs) const {
-	/*real_t dx, dy, pij, pij_d, pij_l, pij_t, pij_r, norm, pDiff;
-
-	dx    = _geom->Mesh()[0];
-	dy    = _geom->Mesh()[1];
-
-	pij   = grid->Cell(it);
-	pij_d = grid->Cell(it.Down());
-	pij_t = grid->Cell(it.Top());
-	pij_l = grid->Cell(it.Left());
-	pij_r = grid->Cell(it.Right());
-	norm  = 0.5*(dx*dx+dy*dy);
-
-	pDiff = (pij_l - 2.0*pij + pij_r)/(dx*dx) + (pij_d - 2.0*pij + pij_t)/(dy*dy);
-
-	return (rhs->Cell(it)-pDiff);*/
 	return fabs(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
 }
 
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
 	_geom  = geom;
-	//include both h_x and h_y in calculation
-	_omega = omega;//2.0/(1.0 + std::sin(M_PI*geom->Mesh()[0]));//omega;
+	_omega = omega;
 }
 
 SOR::~SOR() {
