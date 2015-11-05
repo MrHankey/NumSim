@@ -160,6 +160,9 @@ void Geometry::Update_P(Grid* p) const {
 		it.Next();
 	}
 
+	//index_t midPoint = Size()[0]*(Size()[1]/2.0);
+	//p->Cell(Iterator(this, midPoint));
+
 	real_t sum = 0;
 	index_t n = 0;
 	Iterator it_all = Iterator(this);

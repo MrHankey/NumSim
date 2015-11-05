@@ -94,8 +94,8 @@ void Compute::TimeStep(bool printInfo) {
 
 	if ( printInfo )
 	{
-		cout << "_t: " << _t << endl;
-		cout << "res: " << res <<  endl;
+
+		cout << "_t: " << _t << "  \tres: " << res << "\t progress: " << _t/_param->Tend()*100 << "%" << endl;
 	}
 }
 

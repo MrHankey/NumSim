@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-int main(int argc, char **argv) {
+int main() {
   // Create parameter and geometry instances with default values
   Parameter param;
   param.Load("parameters.txt");

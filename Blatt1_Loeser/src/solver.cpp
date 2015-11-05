@@ -28,7 +28,7 @@ real_t Solver::localRes(const Iterator& it, const Grid* grid,
 	pDiff = (pij_l - 2.0*pij + pij_r)/(dx*dx) + (pij_d - 2.0*pij + pij_t)/(dy*dy);
 
 	return (rhs->Cell(it)-pDiff);*/
-	return abs(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
+	return fabs(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
 }
 
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
