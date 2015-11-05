@@ -13,7 +13,7 @@ Solver::~Solver() {
 
 real_t Solver::localRes(const Iterator& it, const Grid* grid,
 		const Grid* rhs) const {
-	real_t dx, dy, pij, pij_d, pij_l, pij_t, pij_r, norm, pDiff;
+	/*real_t dx, dy, pij, pij_d, pij_l, pij_t, pij_r, norm, pDiff;
 
 	dx    = _geom->Mesh()[0];
 	dy    = _geom->Mesh()[1];
@@ -27,13 +27,14 @@ real_t Solver::localRes(const Iterator& it, const Grid* grid,
 
 	pDiff = (pij_l - 2.0*pij + pij_r)/(dx*dx) + (pij_d - 2.0*pij + pij_t)/(dy*dy);
 
-	return (rhs->Cell(it)-pDiff);
+	return (rhs->Cell(it)-pDiff);*/
+	return abs(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
 }
 
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
 	_geom  = geom;
 	//include both h_x and h_y in calculation
-	_omega = 2.0/(1.0 + std::sin(M_PI*geom->Mesh()[0]));//omega;
+	_omega = omega;//2.0/(1.0 + std::sin(M_PI*geom->Mesh()[0]));//omega;
 }
 
 SOR::~SOR() {
@@ -53,23 +54,22 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 	while(it.Valid()) {
 		n++;
 
-		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, C, corr;
+		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
 
-		pij  = grid->Cell(it);
+		pij  	= grid->Cell(it);
 		pij_d   = grid->Cell(it.Down());
-		pij_t = grid->Cell(it.Top());
+		pij_t 	= grid->Cell(it.Top());
 		pij_l   = grid->Cell(it.Left());
-		pij_r = grid->Cell(it.Right());
+		pij_r 	= grid->Cell(it.Right());
 
-		A    = (pij_l+pij_r)/(dx*dx);
-		B    = (pij_d+pij_t)/(dy*dy);
-		//C    = 1/norm*pij;
+		A    	= (pij_l+pij_r)/(dx*dx);
+		B    	= (pij_d+pij_t)/(dy*dy);
 
 		corr = A+B-rhs->Cell(it);
 
 		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		real_t lRes = localRes(it,grid,rhs);
-		res += lRes*lRes;
+		res += lRes;
 
 		it.Next();
 
