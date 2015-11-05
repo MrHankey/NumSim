@@ -43,9 +43,9 @@ real_t Grid::Interpolate(const multi_real_t& pos) const {
 	real_t q11, q12, q21, q22;
 	real_t r1, r2;
 
-	index_t numCol = (index_t)((pos[0]-_offset[0])/_geom->Mesh()[0]);
-	index_t numRow = (index_t)((pos[1]-_offset[0])/_geom->Mesh()[1]);
-	index_t cellID = (index_t)(numRow*_geom->Size()[0])+numCol;
+	index_t numCol = (index_t)((pos[0] - _offset[0])*(_geom->Size()[0] - 2) + 1);
+	index_t numRow = (index_t)((pos[1] - _offset[1])*(_geom->Size()[1] - 2) + 1);
+	index_t cellID = (index_t)((numRow)*_geom->Size()[0])+numCol;
 
 	Iterator it = Iterator(_geom,cellID);
 
@@ -55,11 +55,11 @@ real_t Grid::Interpolate(const multi_real_t& pos) const {
 	q22 = _data[it.Top().Right()];
 
 	xP = pos[0];
-	x1 = (real_t)(it.Pos()[0])/(real_t)(_geom->Size()[0]);
+	x1 = (real_t)(it.Pos()[0])/(real_t)(_geom->Size()[0] - 1);
 	x2 = x1 + _geom->Mesh()[0];
 
 	yP = pos[1];
-	y1 = (real_t)(it.Pos()[1])/(real_t)(_geom->Size()[1]);
+	y1 = (real_t)(it.Pos()[1])/(real_t)(_geom->Size()[1] - 1);
 	y2 = y1 + _geom->Mesh()[1];
 
 	r1 = (x2-xP)/(x2-x1)*q11 + (xP-x1)/(x2-x1)*q12;

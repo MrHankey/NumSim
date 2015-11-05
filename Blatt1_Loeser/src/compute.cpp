@@ -18,15 +18,18 @@ Compute::Compute(const Geometry *geom, const Parameter *param)
 	_epslimit = param->Eps();
 	multi_real_t u_offset;
 	multi_real_t v_offset;
+	multi_real_t p_offset;
 
-	u_offset[0] = geom->Mesh()[0]/2;
-	u_offset[1] = 0;
-	v_offset[1] = geom->Mesh()[1]/2;
-	v_offset[0] = 0;
+	u_offset[0] = geom->Mesh()[0];
+	u_offset[1] = geom->Mesh()[0]/2.0;
+	v_offset[0] = geom->Mesh()[0]/2.0;
+	v_offset[1] = geom->Mesh()[1];
+	p_offset[0] = geom->Mesh()[0]/2.0;
+	p_offset[1] = geom->Mesh()[1]/2.0;
 
 	_u = new Grid(geom, u_offset);
 	_v = new Grid(geom, v_offset);
-	_p = new Grid(geom);
+	_p = new Grid(geom, p_offset);
 	_F = new Grid(geom);
 	_G = new Grid(geom);
 	_rhs = new Grid(geom);
@@ -92,7 +95,7 @@ void Compute::TimeStep(bool printInfo) {
 	if ( printInfo )
 	{
 		cout << "_t: " << _t << endl;
-		cout << "res: " << res << endl;
+		cout << "res: " << res <<  endl;
 	}
 }
 
