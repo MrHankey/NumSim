@@ -172,19 +172,8 @@ void Compute::MomentumEqu(const real_t& dt) {
 		it.Next();
 	}
 
-	BoundaryIterator it_b = BoundaryIterator(_geom);
-	it_b.SetBoundary(0);
-	while (it_b.Valid())
-	{
-		_G->Cell(it_b) = 0;
-		it_b.Next();
-	}
-	it_b.SetBoundary(3);
-	while (it_b.Valid())
-	{
-		_F->Cell(it_b) = 0;
-		it_b.Next();
-	}
+	_geom->Update_U(_F);
+	_geom->Update_V(_G);
 }
 
 void Compute::RHS(const real_t& dt) {
