@@ -98,7 +98,7 @@ real_t Grid::DC_udu_x(const Iterator& it, const real_t& alpha) const {
 	real_t B = (_data[it.Left()]+_data[it])/2;
 	real_t C = (_data[it]-_data[it.Right()])/2;
 	real_t D = (_data[it.Left()]-_data[it])/2;
-	return (( A*A - B*B) + alpha*(abs(A)*C-abs(B)*D) )/_geom->Mesh()[0];
+	return (( A*A - B*B) + alpha*(fabs(A)*C-fabs(B)*D) )/_geom->Mesh()[0];
 }
 
 real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
@@ -110,7 +110,7 @@ real_t Grid::DC_vdu_y(const Iterator& it, const real_t& alpha,
 	real_t D = (_data[it]+_data[it.Down()] )/2;
 	real_t E = (_data[it]-_data[it.Top()])/2;
 	real_t F = (_data[it.Down()]-_data[it])/2;
-	return ( A*B - C * D) + alpha*( abs(A)*E-abs(C)*F )  /_geom->Mesh()[1];
+	return (( A*B - C * D) + alpha*( fabs(A)*E-fabs(C)*F ))  /_geom->Mesh()[1];
 }
 
 real_t Grid::DC_udv_x(const Iterator& it, const real_t& alpha,
@@ -121,7 +121,7 @@ real_t Grid::DC_udv_x(const Iterator& it, const real_t& alpha,
 	real_t D = (_data[it]+_data[it.Left()] )/2;
 	real_t E = (_data[it]-_data[it.Right()])/2;
 	real_t F = (_data[it.Left()]-_data[it] )/2;
-	return ( A*B - C * D) + alpha*( abs(A)*E-abs(C)*F )  /_geom->Mesh()[0];
+	return (( A*B - C * D) + alpha*( fabs(A)*E-fabs(C)*F ))  /_geom->Mesh()[0];
 
 }
 
@@ -130,7 +130,7 @@ real_t Grid::DC_vdv_y(const Iterator& it, const real_t& alpha) const {
 	real_t B = (_data[it.Down()]+_data[it])/2;
 	real_t C = (_data[it]-_data[it.Top()])/2;
 	real_t D = (_data[it.Down()]-_data[it])/2;
-	return ( (A*A - B*B) + alpha*( abs(A)*C-abs(B)*D) )/_geom->Mesh()[1];
+	return ( (A*A - B*B) + alpha*( fabs(A)*C-fabs(B)*D) )/_geom->Mesh()[1];
 }
 
 real_t Grid::Max() const {
