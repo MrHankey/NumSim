@@ -1,39 +1,58 @@
+/*
+ * Copyright (C) 2015  Raphael Leiteriz, Sebastian Reuschen, Hamzeh Kraus
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "solver.hpp"
 #include "grid.hpp"
 #include "geometry.hpp"
 
 #include <cmath>
 
-/// Class Constuctor
-// @param geom  get field geometry
+/// Constructor of the abstract Solver class
+//  @param geom  get field geometry
 Solver::Solver(const Geometry* geom) {
 	_geom = geom;
 }
 
-Solver::~Solver() {
-}
+/// Destructor of the Solver Class
+Solver::~Solver() {}
 
-/// Calculate Residual
-// @param  it        calls iterator
-// @param  grid      get grid values
-// @return localRes  return step residual
+/// Returns the residual at [it] for the pressure-Poisson equation
+//  @param  it        calls iterator
+//  @param  grid      get grid values
+//  @return localRes  return residual
 real_t Solver::localRes(const Iterator& it, const Grid* grid,
 		const Grid* rhs) const {
 	return fabs(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
 }
 
-/// SOR Constructor
-// @param geom   get geometry
-// @param omega  get scaling factor
+/* SOR solver */
+/// Concrete SOR solver
+//  @param geom   get geometry
+//  @param omega  get scaling factor
 SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
 	_geom  = geom;
 	_omega = omega;
 }
 
-SOR::~SOR() {
-}
+/// Destructor
+SOR::~SOR() {}
 
-/// Implement SOR method
+
+/// Returns the total residual and executes a solver cycle of SOR
 // @param  grid   get grid values
 // @param  rhs    get right hand side of equation
 // @return Cycle  calculate all new p_ij for one cycle
