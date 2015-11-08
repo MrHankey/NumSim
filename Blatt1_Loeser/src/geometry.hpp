@@ -21,6 +21,11 @@
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP
 //------------------------------------------------------------------------------
+
+/**
+ *  Geometry class. Loads geometry definiton from a file and is responsible for setting boundary conditions.
+ */
+
 class Geometry {
 public:
   /// Constructs a default geometry:

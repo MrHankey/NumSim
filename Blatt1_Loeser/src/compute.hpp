@@ -25,6 +25,11 @@
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
 //------------------------------------------------------------------------------
+
+/**
+ *  Compute class. Heart of the application. This is where the computation and simulation happens.
+ */
+
 class Compute {
 public:
   /// Creates a compute instance with given geometry and parameter

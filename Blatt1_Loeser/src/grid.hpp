@@ -23,6 +23,11 @@
 #ifndef __GRID_HPP
 #define __GRID_HPP
 //------------------------------------------------------------------------------
+
+/**
+ *  Grid class. Stores the actual grid data and provides a multiple of discretized derivative calculations.
+ */
+
 class Grid {
 public:
   /// Constructs a grid based on a geometry

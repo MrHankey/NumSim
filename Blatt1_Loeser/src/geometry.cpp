@@ -29,8 +29,8 @@ using namespace std;
 Geometry::Geometry() {
 	// Set starting velocities
 	_velocity[0] = 1;
-	_velocity[1] = 1;
-	_pressure    = 1;
+	_velocity[1] = 0;
+	_pressure    = 0;
 
 	// Number of cells in one line
 	_size[0] = 128;
@@ -104,7 +104,7 @@ const multi_real_t&  Geometry::Mesh()   const {return _h;}
 //  @param u  get grid of u
 void Geometry::Update_U(Grid* u) const {
 	// Initialize
-	real_t velocity = 1;
+	real_t velocity = _velocity[0];
 	BoundaryIterator it = BoundaryIterator(this);
 
 	// Bottom boundary update
