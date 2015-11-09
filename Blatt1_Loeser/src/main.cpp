@@ -34,9 +34,11 @@ int main() {
   // Create the fluid solver
   Compute comp(&geom, &param);
 
+#ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(800, 800);
+#endif
 
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());
@@ -49,6 +51,7 @@ int main() {
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
     // Render and check if window is closed
+#ifdef USE_DEBUG_VISU
     switch (visu.Render(visugrid)) {
     case -1:
       run = false;
@@ -68,6 +71,7 @@ int main() {
     default:
       break;
     };
+#endif
 
     // Create a VTK File in the folder VTK (must exist)
     vtk.Init("VTK/field");
