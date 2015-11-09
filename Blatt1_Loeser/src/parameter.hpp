@@ -21,9 +21,7 @@
 #define __PARAMETER_HPP
 //------------------------------------------------------------------------------
 
-/**
- *  Parameter class. Loads parameters from a file and provides getters to access these.
- */
+///Parameter class. Loads parameters from a file and provides getters to access these.
 
 class Parameter {
 public:

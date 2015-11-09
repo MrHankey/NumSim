@@ -21,8 +21,7 @@
 #define __SOLVER_HPP
 //------------------------------------------------------------------------------
 
-/** abstract base class for an iterative solver
-*/
+/// Abstract base class for an iterative solver
 class Solver {
 public:
   /// Constructor of the abstract Solver class
@@ -45,8 +44,7 @@ protected:
 
 //------------------------------------------------------------------------------
 
-/** concrete SOR solver
-*/
+/// Concrete SOR solver
 class SOR : public Solver {
 public:
   /// Constructs an actual SOR solver

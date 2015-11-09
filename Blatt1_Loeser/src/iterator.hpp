@@ -21,8 +21,7 @@
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
 //------------------------------------------------------------------------------
-/** Iterator base class
-*/
+/// Iterator base class for traversing the grid
 class Iterator {
 public:
   /// Constructs a new Iterator depending on a geometry
@@ -68,8 +67,7 @@ protected:
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for interior cells
-*/
+/// Iterator for interior cells
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
@@ -82,8 +80,7 @@ public:
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for domain boundary cells.
-*/
+/// Iterator for domain boundary cells.
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
