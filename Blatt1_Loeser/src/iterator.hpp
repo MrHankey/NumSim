@@ -62,9 +62,9 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Geometry *_geom;
-  index_t _value;
-  bool _valid;
+  const Geometry *_geom; 	//!< Pointer to geometry definition
+  index_t _value;			//!< current grid cell index
+  bool _valid; 				//!< valid state of iterator
 };
 
 //------------------------------------------------------------------------------

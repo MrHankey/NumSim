@@ -20,6 +20,11 @@
 #ifndef __PARAMETER_HPP
 #define __PARAMETER_HPP
 //------------------------------------------------------------------------------
+
+/**
+ *  Parameter class. Loads parameters from a file and provides getters to access these.
+ */
+
 class Parameter {
 public:
   /// Constructs a new Parameter set with default values

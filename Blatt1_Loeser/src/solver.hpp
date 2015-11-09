@@ -37,7 +37,7 @@ public:
   virtual real_t Cycle(Grid *grid, const Grid *rhs) const = 0;
 
 protected:
-  const Geometry *_geom;
+  const Geometry *_geom; //!< Pointer to geometry definition
 
   /// Returns the residual at [it] for the pressure-Poisson equation
   real_t localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const;
@@ -60,7 +60,7 @@ public:
   real_t Cycle(Grid *grid, const Grid *rhs) const;
 
 protected:
-  real_t _omega;
+  real_t _omega; //!< relaxation parameter ( > 1.0 overrelaxation; < 1.0 underrelaxation )
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP
