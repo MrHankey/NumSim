@@ -45,8 +45,7 @@ Geometry::Geometry() {
 	_h[1] = _length[1]/_size[1];
 
 	// Print vars
-	cout << "Loaded default Variables:" << endl;
-	PrintVariables();
+	cout << "Loaded default geometry definition." << endl;
 }
 
 /// Loads a geometry from a file
@@ -72,8 +71,7 @@ void Geometry::Load(const char* file) {
 		_h[1] = _length[1]/_size[1];
 
 		// Success
-		cout << "Loaded geometry from " << file << ":" << endl;
-		PrintVariables();
+		cout << "Loaded geometry definitions from " << file << "." << endl;
 	}
 }
 

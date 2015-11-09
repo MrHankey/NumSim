@@ -33,8 +33,7 @@ Parameter::Parameter() {
 	_tau     = 0.5;
 	_itermax = 100;
 
-	cout << "Loaded default parameters"<< endl;
-	PrintVariables();
+	cout << "Loaded default parameters."<< endl;
 }
 
 /// Loads the parameter values from a file
@@ -55,8 +54,7 @@ void Parameter::Load(const char* file) {
 		fileStream >> _eps;
 		fileStream >> _tau;
 		fileStream >> _itermax;
-		cout << "Loaded parameters from " << file << ":" << endl;
-		PrintVariables();
+		cout << "Loaded parameters from " << file << "." << endl;
 	}
 }
 
