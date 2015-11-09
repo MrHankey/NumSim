@@ -102,7 +102,7 @@ Iterator Iterator::Top() const {
 /// Returns an Iterator that is located below this one
 //  On bottom boundary iterator returns the same cell
 Iterator Iterator::Down() const {
-	int newIndex = _value - _geom->Size()[0];
+	index_t newIndex = _value - _geom->Size()[0];
 	if ( newIndex < 0 )
 		return Iterator(_geom, _value);
 	else
