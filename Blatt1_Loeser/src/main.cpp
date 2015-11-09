@@ -49,15 +49,15 @@ int main(int argc, char **argv) {
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(800, 800);
+
+  const Grid *visugrid;
+  visugrid = comp.GetVelocity();
 #endif
 
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.Size());
 
-  const Grid *visugrid;
   bool run = true;
-
-  visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
