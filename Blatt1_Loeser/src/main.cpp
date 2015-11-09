@@ -29,10 +29,14 @@ int main(int argc, char **argv) {
   Parameter param;
   if ( argc >= 2)
 	  param.Load(argv[1]);
+  else
+	  param.Load("parameters.txt");
 
   Geometry geom;
   if ( argc >= 3)
 	  geom.Load(argv[2]);
+  else
+	  geom.Load("geometry.txt");
 
   // Create the fluid solver
   Compute comp(&geom, &param);
