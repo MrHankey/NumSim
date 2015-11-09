@@ -32,7 +32,6 @@ Compute::Compute(const Geometry *geom, const Parameter *param) {
 
 	// Set time steps
 	_t = 0.0;
-	//TODO was ist dtlimit?b
 	_dtlimit = param->Dt();
 
 	// Define offset
@@ -149,9 +148,14 @@ const Grid* Compute::GetVelocity() {
 }
 
 /// Computes and returns the vorticity
-const Grid* Compute::GetVorticity() {}
+const Grid* Compute::GetVorticity() {
+	//return dummy grid to suppress warning; wasn't part of the lecture yet
+	return _tmp;
+}
 /// Computes and returns the stream line values
 const Grid* Compute::GetStream() {
+	//return dummy grid to suppress warning; wasn't part of the lecture yet
+	return _tmp;
 }
 
 /// Compute the new velocites u,v
