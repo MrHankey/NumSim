@@ -23,6 +23,9 @@
 #include "vtk.hpp"
 
 #include <iostream>
+#include <ctime>
+
+using namespace std;
 
 int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
@@ -60,6 +63,8 @@ int main(int argc, char **argv) {
   bool run = true;
 
   // Run the time steps until the end is reached
+  clock_t begin = clock();
+
   while (comp.GetTime() < param.Tend() && run) {
     // Render and check if window is closed
 #ifdef USE_DEBUG_VISU
@@ -96,5 +101,8 @@ int main(int argc, char **argv) {
     comp.TimeStep(true);
   }
 
+  clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+  cout << "duration: " << elapsed_secs << endl;
   return 0;
 }

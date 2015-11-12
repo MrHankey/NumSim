@@ -1,0 +1,19 @@
+# Alles hinzufügen
+git add .
+# Aktualisieren
+git commit -m "Name"
+# Tag erstellen
+git tag Tagname
+
+# Was gibts
+git branch -v
+
+# version laden
+git checkout master
+git checkout tags/Tagname
+
+# Hochladen
+git push
+
+#Runterladen
+git clone https://ipvs.informatik.uni-stuttgart.de/git/NumSimReference
