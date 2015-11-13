@@ -75,6 +75,7 @@ public:
 
   /// Returns the maximal value of the grid
   real_t Max() const;
+  real_t InteriorMax() const;
   /// Returns the minimal value of the grid
   real_t Min() const;
   /// Returns the absolute maximal value

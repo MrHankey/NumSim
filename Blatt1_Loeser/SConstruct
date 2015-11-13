@@ -47,8 +47,17 @@ env.Append(
 )
 
 # add flags for debug and release build
-if debug == 0:
-    env['CXXFLAGS'] += ["-O3"]
+if int(debug) == 0:
+    env['CXXFLAGS'] += [
+        "-pg",              
+        "-O3",
+        "-flto",
+    ]
+    env['LINKFLAGS'] += [
+         "-pg",
+         "-flto",
+         "-O3",
+    ]
 else:
     env['CXXFLAGS'] += [
         "-g3",
