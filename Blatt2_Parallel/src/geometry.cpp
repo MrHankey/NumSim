@@ -32,6 +32,8 @@ Geometry::Geometry() {
 	_velocity[1] = 0;
 	_pressure    = 0;
 
+	_comm = nullptr;
+
 	// Number of cells in one line
 	_size[0] = 128;
 	_size[1] = 128;
@@ -46,6 +48,10 @@ Geometry::Geometry() {
 
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
+}
+
+Geometry::Geometry(const Communicator* comm) : Geometry() {
+	_comm = comm;
 }
 
 /// Loads a geometry from a file
@@ -86,6 +92,14 @@ void Geometry::PrintVariables(){
 	cout << "length_y "  << _length[1]    << endl;
 	cout << "h_x: "      << _h[0]         << endl;
 	cout << "h_y: "      << _h[1] << endl << endl;
+
+}
+
+const multi_index_t& Geometry::TotalSize() const {
+
+}
+
+const multi_real_t& Geometry::TotalLength() const {
 
 }
 
@@ -217,3 +231,5 @@ void Geometry::Update_P(Grid* p) const {
 	}
 
 }
+
+

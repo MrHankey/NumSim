@@ -18,6 +18,7 @@
 #include "solver.hpp"
 #include "grid.hpp"
 #include "geometry.hpp"
+#include "iterator.hpp"
 
 #include <cmath>
 

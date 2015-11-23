@@ -39,6 +39,8 @@ public:
   const real_t &Eps() const;
   const real_t &Tau() const;
 
+  void PrintVariables();
+
 private:
   real_t _re;
   real_t _omega;

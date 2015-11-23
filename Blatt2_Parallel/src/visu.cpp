@@ -143,7 +143,7 @@ Renderer::~Renderer() {
 }
 //------------------------------------------------------------------------------
 void Renderer::Init(const index_t &width, const index_t &height,
-                    const int &idx) {
+                    const int &idx, const multi_index_t &t_idx, const multi_index_t &t_dim) {
   // SDL_WM_SetCaption("Grid Renderer","Grid Renderer");
   _width = width;
   _height = height;
@@ -153,6 +153,8 @@ void Renderer::Init(const index_t &width, const index_t &height,
   _screen = SDL_GetWindowSurface(_window); // SDL_SetVideoMode(_width,_height,
                                            // 32, SDL_HWSURFACE |
                                            // SDL_DOUBLEBUF);
+  // 70 and 30 is distance to left and top window border, here set to 70 and 30 to fit Ubuntu Unity launcher
+  SDL_SetWindowPosition(_window, 70 + _width * t_idx[0], 30 + (t_dim[1] - t_idx[1] - 1) * _height);
 }
 //------------------------------------------------------------------------------
 void Renderer::SetSlice(const index_t &xdim, const index_t &ydim,

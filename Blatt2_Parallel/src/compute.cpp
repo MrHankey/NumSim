@@ -19,15 +19,22 @@
 #include <cmath>
 #include <iostream>
 
+#include "geometry.hpp"
+#include "grid.hpp"
+#include "parameter.hpp"
+#include "iterator.hpp"
+#include "solver.hpp"
+
 using namespace std;
 
 /// Creates a compute instance with given geometry and parameter
 //  @param geom  get geometry
 //  @param param get parameter
-Compute::Compute(const Geometry *geom, const Parameter *param) {
+Compute::Compute(const Geometry *geom, const Parameter *param, const Communicator *comm) {
 	// Initialize
 	_geom   = geom;
 	_param  = param;
+	_comm = comm;
 	_solver = new SOR(_geom,_param->Omega());
 
 	// Set time steps

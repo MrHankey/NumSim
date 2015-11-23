@@ -16,6 +16,7 @@
  */
 
 #include <stdint.h>
+#include <mpich/mpi.h>
 
 //------------------------------------------------------------------------------
 
@@ -27,6 +28,7 @@
 #define DIM 2
 #define REAL_TYPE double
 #define INDEX_TYPE uint32_t
+#define MPI_REAL_TYPE MPI_DOUBLE
 
 //------------------------------------------------------------------------------
 
@@ -35,6 +37,7 @@ typedef REAL_TYPE real_t;
 
 /// Typedef for integers
 typedef INDEX_TYPE index_t;
+
 
 //------------------------------------------------------------------------------
 

@@ -17,6 +17,8 @@
 
 #include "iterator.hpp"
 
+#include "geometry.hpp"
+
 /// Constructs a new Iterator depending on a geometry
 //  @param geom  get geometry
 Iterator::Iterator(const Geometry* geom) {
