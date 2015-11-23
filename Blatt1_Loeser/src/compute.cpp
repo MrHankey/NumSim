@@ -19,6 +19,11 @@
 #include <cmath>
 #include <iostream>
 
+#include "geometry.hpp"
+#include "grid.hpp"
+#include "parameter.hpp"
+#include "iterator.hpp"
+
 using namespace std;
 
 /// Creates a compute instance with given geometry and parameter

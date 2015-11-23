@@ -99,10 +99,17 @@ int main(int argc, char **argv) {
     for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
     comp.TimeStep(true);
+
+    clock_t intermediate = clock();
+    double elapsed_secs = double(intermediate - begin) / CLOCKS_PER_SEC;
+    real_t prcntFinished = comp.GetTime() / param.Tend();
+    double estimated_time = 1.0/prcntFinished * elapsed_secs;
+    cout << "elapsed: "<< elapsed_secs << " estimated_time: " << estimated_time << endl;
   }
 
   clock_t end = clock();
   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
   cout << "duration: " << elapsed_secs << endl;
+  exit(2);
   return 0;
 }
