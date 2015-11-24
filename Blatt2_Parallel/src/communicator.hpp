@@ -99,6 +99,8 @@ public:
    */
   const int &getSize() const;
 
+  int getNeighbour(int side);
+
 private:
   multi_index_t _tidx;
   multi_index_t _tdim;
