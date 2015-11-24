@@ -85,29 +85,47 @@ void Communicator::copyBoundary(Grid* grid) const {
 }
 
 bool Communicator::isLeft() const {
+	//printf("L_curRak: %i \n", _rank);
 	if ( ThreadIdx()[1] == 0 )
+	{
+		//printf("yep \n");
 		return true;
+	}
 
 	return false;
 }
 
 bool Communicator::isRight() const {
+	//printf("R_curRak: %i \n", _rank);
 	if ( (ThreadIdx()[1] + 1) == ThreadDim()[0] )
+	{
+		//printf("yep \n");
 		return true;
+	}
 
 	return false;
 }
 
 bool Communicator::isTop() const {
+	//printf("T_curRak: %i \n", _rank);
 	if ( (ThreadIdx()[0] + 1 ) == ThreadDim()[1] )
+	{
+		//printf("yep \n");
 		return true;
+	}
+
+
 
 	return false;
 }
 
 bool Communicator::isBottom() const {
+	//printf("B_curRak: %i \n", _rank);
 	if ( ThreadIdx()[0] == 0 )
-			return true;
+	{
+		//printf("yep \n");
+		return true;
+	}
 
 	return false;
 }
@@ -124,26 +142,31 @@ int Communicator::getNeighbour(int side) const {
 	multi_index_t idx = _tidx;
 	if ( side == 0 )
 	{
-		idx[1] -= 1;
+		idx[0] -= 1;
 	}
 	else if ( side == 1 )
 	{
-		idx[0] -= 1;
+		idx[1] -= 1;
 	}
 	else if ( side == 2 )
 	{
-		idx[1] += 1;
+		idx[0] += 1;
 	}
 	else if ( side == 3 )
 	{
-		idx[0] += 1;
+		idx[1] += 1;
 	}
 
 	// rank = dim_x * idx_y + idx_x
-	return _tdim[1]*idx[0] + idx[1];
+	int rank = _tdim[1]*idx[0] + idx[1];
+	//printf("curRak: %i dir: %i, rank: %i \n", _rank, side, rank);
+	return rank;
 }
 
 bool Communicator::copyLeftBoundary(Grid* grid) const {
+	if ( isRight() && isLeft())
+		return true;
+
 	real_t boundary[grid->getGeometry()->Size()[1]];
 	real_t ghostLayer[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
@@ -154,11 +177,11 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 		it.Next();
 		i++;
 	}
-	if (isRight()){
+	if (isRight() && !isLeft()){
 		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryLeft), 0,MPI_COMM_WORLD);
 	}
-	else if(isLeft()){
+	else if(isLeft() && !isRight()){
 		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
@@ -181,6 +204,9 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 }
 
 bool Communicator::copyRightBoundary(Grid* grid) const {
+	if ( isRight() && isLeft())
+			return true;
+
 	real_t boundary[grid->getGeometry()->Size()[1]];
 	real_t ghostLayer[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
@@ -191,13 +217,14 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 		it.Next();
 		i++;
 	}
-	if (isLeft()){
+	if (isLeft() && !isRight()){
 		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,MPI_COMM_WORLD);
 	}
-	else if(isRight()){
+	else if(isRight() && !isLeft()){
+		int targetRank = getNeighbour((int)it.boundaryLeft);
 		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
-					getNeighbour((int)it.boundaryLeft), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					targetRank , 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
 		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
@@ -218,6 +245,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 }
 
 bool Communicator::copyTopBoundary(Grid* grid) const {
+	if ( isTop() && isBottom())
+			return true;
 	real_t boundary[grid->getGeometry()->Size()[1]];
 	real_t ghostLayer[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
@@ -228,11 +257,11 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 		it.Next();
 		i++;
 	}
-	if (isBottom()){
+	if (isBottom() && !isTop()){
 		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD);
 	}
-	else if(isTop()){
+	else if(isTop() && !isBottom()){
 		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
@@ -255,6 +284,9 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 }
 
 bool Communicator::copyBottomBoundary(Grid* grid) const {
+	if ( isTop() && isBottom())
+		return true;
+
 	real_t boundary[grid->getGeometry()->Size()[1]];
 	real_t ghostLayer[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
@@ -265,11 +297,11 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 		it.Next();
 		i++;
 	}
-	if (isTop()){
+	if (isTop() && !isBottom()){
 		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD);
 	}
-	else if(isBottom()){
+	else if(isBottom() && !isTop()){
 		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
