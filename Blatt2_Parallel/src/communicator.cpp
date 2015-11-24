@@ -89,7 +89,7 @@ const int& Communicator::getSize() const {
 	return _size;
 }
 
-int Communicator::getNeighbour(int side) {
+int Communicator::getNeighbour(int side) const {
 	multi_index_t idx = _tidx;
 	if ( side == 0 )
 	{

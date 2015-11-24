@@ -145,6 +145,8 @@ private:
    * \param [in] grid  values whose boundary shall be synced
    */
   bool copyBottomBoundary(Grid *grid) const;
+
+  int getNeighbour(int side) const;
 };
 //------------------------------------------------------------------------------
 #endif // __COMMUNICATOR_HPP
