@@ -178,15 +178,15 @@ void BoundaryIterator::First() {
 	}
 	// Right boundary
 	else if ( _boundary == 1 ) {
-		_value = 2*_geom->Size()[0] - 1;
+		_value = _geom->Size()[0] - 1;
 	}
 	// Top boundary
 	else if ( _boundary == 2 ) {
-		_value = _geom->Size()[0]*_geom->Size()[1] - 1;
+		_value = _geom->Size()[0]*(_geom->Size()[1]-1);
 	}
 	// Left boundary
 	else if ( _boundary == 3 ) {
-		_value = _geom->Size()[0]*(_geom->Size()[1] - 2);
+		_value = 0;
 	}
 }
 
@@ -202,21 +202,21 @@ void BoundaryIterator::Next() {
 	// Right boundary
 	else if ( _boundary == 1 ) {
 		_value += _geom->Size()[0];
-		if ( _value > _geom->Size()[0]*(_geom->Size()[1] - 1) ) {
+		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
 		}
 	}
 	// Top boundary
 	else if ( _boundary == 2 ) {
-		_value--;
-		if ( _value < _geom->Size()[0]*(_geom->Size()[1] - 1) ) {
+		_value++;
+		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
 		}
 	}
-	// Right boundary
+	// Left boundary
 	else if ( _boundary == 3 ) {
-		_value -= _geom->Size()[0];
-		if ( _value < _geom->Size()[0] ) {
+		_value += _geom->Size()[0];
+		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
 		}
 	}
