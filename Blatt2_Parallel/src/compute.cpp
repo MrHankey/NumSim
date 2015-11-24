@@ -121,25 +121,22 @@ void Compute::TimeStep(bool printInfo) {
 		bool even = _comm->EvenOdd();
 		if (even){
 			res = _solver->RedCycle(_p,_rhs);
-			res = _comm->gatherSum(res);
 			_comm->copyBoundary(_p);
 
 			res = _solver->BlackCycle(_p,_rhs);
-			res = _comm->gatherSum(res);
 			_comm->copyBoundary(_p);
 		}
 		else{
 			res = _solver->BlackCycle(_p,_rhs);
-			res = _comm->gatherSum(res);
 			_comm->copyBoundary(_p);
 
 			res = _solver->RedCycle(_p,_rhs);
-			res = _comm->gatherSum(res);
 			_comm->copyBoundary(_p);
 
 		}
 
 		_geom->Update_P(_p);
+		res = _comm->gatherSum(res);
 		i++;
 	}
 
