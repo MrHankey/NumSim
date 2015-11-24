@@ -139,9 +139,9 @@ void InteriorIterator::Next() {
 		if ( (_value) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)))
 			_valid = false;
 	}
-	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 0)
-		_value++;
 	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 1)
+		_value++;
+	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 0)
 		_value--;
 	else
 		std::cout<<_value<<" erzeugt Fehler!";
