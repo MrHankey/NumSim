@@ -3,10 +3,12 @@
 #include "grid.hpp"
 #include <mpich/mpi.h>
 #include "iterator.hpp"
+#include <cmath>
 
 Communicator::Communicator(int* argc, char*** argv) {
 
 	MPI_Init(argc,argv);
+
 	MPI_Comm_size(MPI_COMM_WORLD,&_size);
 	MPI_Comm_rank(MPI_COMM_WORLD,&_rank);
 
@@ -14,6 +16,24 @@ Communicator::Communicator(int* argc, char*** argv) {
 	printf("Numprocs is %d\n",_size);
 
 
+	index_t maxDivisor = (index_t)sqrt(_size);
+	for ( index_t i = maxDivisor; i > 0; i--)
+	{
+		if (getSize() % i == 0)
+		{
+			maxDivisor = i;
+			break;
+		}
+	}
+
+	_tdim[0] = getSize() / maxDivisor;
+	_tdim[1] = maxDivisor;
+
+	_tidx[0] = (int)(getRank() / maxDivisor);
+	_tidx[1] = getRank() % maxDivisor;
+
+	printf("Dims: %i %i \n", _tdim[0], _tdim[1]);
+	printf("Idx : %i %i \n", _tidx[0], _tidx[1]);
 
 }
 
@@ -67,6 +87,29 @@ const int& Communicator::getRank() const {
 
 const int& Communicator::getSize() const {
 	return _size;
+}
+
+int Communicator::getNeighbour(int side) {
+	multi_index_t idx = _tidx;
+	if ( side == 0 )
+	{
+		idx[1] -= 1;
+	}
+	else if ( side == 1 )
+	{
+		idx[0] -= 1;
+	}
+	else if ( side == 2 )
+	{
+		idx[1] += 1;
+	}
+	else if ( side == 3 )
+	{
+		idx[0] += 1;
+	}
+
+	// rank = dim_x * idx_y + idx_x
+	return _tdim[1]*idx[0] + idx[1];
 }
 
 bool Communicator::copyLeftBoundary(Grid* grid) const {
