@@ -18,6 +18,7 @@
 #include "geometry.hpp"
 #include "grid.hpp"
 #include "iterator.hpp"
+#include "communicator.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -120,29 +121,38 @@ void Geometry::Update_U(Grid* u) const {
 	BoundaryIterator it = BoundaryIterator(this);
 
 	// Bottom boundary update
-	it.SetBoundary(0);
-	while ( it.Valid() ) {
-		u->Cell(it) = -1*u->Cell(it.Top());
-		it.Next();
+	if(_comm->isBottom()){
+		it.SetBoundary(0);
+		while ( it.Valid() ) {
+			u->Cell(it) = -1*u->Cell(it.Top());
+			it.Next();
+		}
 	}
+
 	// Right boundary update
-	it.SetBoundary(1);
-	while ( it.Valid() ) {
-		u->Cell(it) = 0;
-		u->Cell(it.Left()) = 0; // hier evtl deleten
-		it.Next();
+	if(_comm->isRight()){
+		it.SetBoundary(1);
+		while ( it.Valid() ) {
+			u->Cell(it) = 0;
+			u->Cell(it.Left()) = 0; // hier evtl deleten
+			it.Next();
+		}
 	}
 	// Top boundary update
-	it.SetBoundary(2);
-	while ( it.Valid() ) {
-		u->Cell(it) = 2*velocity - u->Cell(it.Down()) ;
-		it.Next();
+	if(_comm->isTop()){
+		it.SetBoundary(2);
+		while ( it.Valid() ) {
+			u->Cell(it) = 2*velocity - u->Cell(it.Down()) ;
+			it.Next();
+		}
 	}
 	// Left boundary update
-	it.SetBoundary(3);
-	while ( it.Valid() ) {
-		u->Cell(it) = 0;
-		it.Next();
+	if(_comm->isLeft()){
+		it.SetBoundary(3);
+		while ( it.Valid() ) {
+			u->Cell(it) = 0;
+			it.Next();
+		}
 	}
 }
 
@@ -153,29 +163,37 @@ void Geometry::Update_V(Grid* v) const {
 	BoundaryIterator it = BoundaryIterator(this);
 
 	// Bottom boundary update
-	it.SetBoundary(0);
-	while ( it.Valid() ) {
-		v->Cell(it) = 0;
-		it.Next();
+	if(_comm->isBottom()){
+		it.SetBoundary(0);
+		while ( it.Valid() ) {
+			v->Cell(it) = 0;
+			it.Next();
+		}
 	}
 	// Right boundary update
-	it.SetBoundary(1);
-	while ( it.Valid() ) {
-		v->Cell(it) = -1*v->Cell(it.Left());
-		it.Next();
+	if(_comm->isRight()){
+		it.SetBoundary(1);
+		while ( it.Valid() ) {
+			v->Cell(it) = -1*v->Cell(it.Left());
+			it.Next();
+		}
 	}
 	// Top boundary update
-	it.SetBoundary(2);
-	while ( it.Valid() ) {
-		v->Cell(it.Down()) = 0; // hier evtl deleten
-		v->Cell(it) = 0;
-		it.Next();
+	if(_comm->isTop()){
+		it.SetBoundary(2);
+		while ( it.Valid() ) {
+			v->Cell(it.Down()) = 0; // hier evtl deleten
+			v->Cell(it) = 0;
+			it.Next();
+		}
 	}
 	// Left boundary update
-	it.SetBoundary(3);
-	while ( it.Valid() ) {
-		v->Cell(it) = -1*v->Cell(it.Right());
-		it.Next();
+	if(_comm->isLeft()){
+		it.SetBoundary(3);
+		while ( it.Valid() ) {
+			v->Cell(it) = -1*v->Cell(it.Right());
+			it.Next();
+		}
 	}
 }
 
@@ -187,29 +205,36 @@ void Geometry::Update_P(Grid* p) const {
 	it.SetBoundary(0);
 
 	// Bottom boundary update
-	while ( it.Valid() ) {
-		p->Cell(it) = p->Cell(it.Top());
-		it.Next();
+	if(_comm->isBottom()){
+		while ( it.Valid() ) {
+			p->Cell(it) = p->Cell(it.Top());
+			it.Next();
+		}
 	}
 	// Right boundary update
-	it.SetBoundary(1);
-	while ( it.Valid() ) {
-		p->Cell(it) = p->Cell(it.Left());
-		it.Next();
+	if(_comm->isRight()){
+		it.SetBoundary(1);
+		while ( it.Valid() ) {
+			p->Cell(it) = p->Cell(it.Left());
+			it.Next();
+		}
 	}
 	// Top boundary update
-	it.SetBoundary(2);
-	while ( it.Valid() ) {
-		p->Cell(it) = p->Cell(it.Down());
-		it.Next();
+	if(_comm->isTop()){
+		it.SetBoundary(2);
+		while ( it.Valid() ) {
+			p->Cell(it) = p->Cell(it.Down());
+			it.Next();
+		}
 	}
 	// Left boundary update
-	it.SetBoundary(3);
-	while ( it.Valid() ) {
-		p->Cell(it) = p->Cell(it.Right());
-		it.Next();
+	if(_comm->isLeft()){
+		it.SetBoundary(3);
+		while ( it.Valid() ) {
+			p->Cell(it) = p->Cell(it.Right());
+			it.Next();
+		}
 	}
-
 	//index_t midPoint = Size()[0]*(Size()[1]/2.0);
 	//p->Cell(Iterator(this, midPoint));
 

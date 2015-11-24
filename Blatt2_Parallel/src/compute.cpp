@@ -24,6 +24,7 @@
 #include "parameter.hpp"
 #include "iterator.hpp"
 #include "solver.hpp"
+#include "communicator.hpp"
 
 using namespace std;
 
@@ -35,7 +36,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_geom   = geom;
 	_param  = param;
 	_comm = comm;
-	_solver = new SOR(_geom,_param->Omega());
+	_solver = new RedOrBlackSOR(_geom,_param->Omega());
 
 	// Set time steps
 	_t = 0.0;
@@ -93,12 +94,17 @@ void Compute::TimeStep(bool printInfo) {
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
 
+
 	// Compute dt
 	//real_t dt = _param->Dt();
 	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
+
+
+	//biggest dt of all is chosen.
+	dt = _comm->gatherMax(dt);
 
 	// Compute F, G
 	MomentumEqu(dt);
@@ -110,14 +116,39 @@ void Compute::TimeStep(bool printInfo) {
 	// Compute p
 	real_t res = 10000000;
 	index_t i = 0;
+
 	while(res >_param->Eps() && i < _param->IterMax() ) {
-		res = _solver->Cycle(_p,_rhs);
+		bool even = _comm->EvenOdd();
+		if (even){
+			res = _solver->RedCycle(_p,_rhs);
+			res = _comm->gatherSum(res);
+			_comm->copyBoundary(_p);
+
+			res = _solver->BlackCycle(_p,_rhs);
+			res = _comm->gatherSum(res);
+			_comm->copyBoundary(_p);
+		}
+		else{
+			res = _solver->BlackCycle(_p,_rhs);
+			res = _comm->gatherSum(res);
+			_comm->copyBoundary(_p);
+
+			res = _solver->RedCycle(_p,_rhs);
+			res = _comm->gatherSum(res);
+			_comm->copyBoundary(_p);
+
+		}
+
 		_geom->Update_P(_p);
 		i++;
 	}
 
 	// Compute u,v
 	NewVelocities(dt);
+
+	// Send u,v
+	_comm->copyBoundary(_u);
+	_comm->copyBoundary(_v);
 
 	// Next timestep
 	_t += dt;

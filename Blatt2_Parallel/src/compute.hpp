@@ -16,6 +16,7 @@
 */
 
 #include "typedef.hpp"
+#include "solver.hpp"
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -79,7 +80,7 @@ private:
   // container for interpolating whichever values
   Grid *_tmp;
 
-  Solver *_solver;
+  RedOrBlackSOR *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;

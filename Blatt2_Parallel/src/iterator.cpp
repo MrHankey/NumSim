@@ -19,6 +19,7 @@
 
 #include "geometry.hpp"
 
+#include <iostream>
 /// Constructs a new Iterator depending on a geometry
 //  @param geom  get geometry
 Iterator::Iterator(const Geometry* geom) {
@@ -128,13 +129,23 @@ void InteriorIterator::First() {
 
 /// Goes to the next element of the iterator, disables it if position is end
 void InteriorIterator::Next() {
-	if ( (_value + 1 ) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)) - 1 )
+	if ( (_value + 2) % (2*_geom->Size()[0]) == 0 ){
+		_value += _geom->Size()[0];
+		if ( (_value) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)))
 			_valid = false;
-	else if ( (_value + 2) % _geom->Size()[0] == 0 )
-		_value += 3;
-	else
+	}
+	else if ( (_value - 1) % (2*_geom->Size()[0]) == 0 ){
+		_value += _geom->Size()[0];
+		if ( (_value) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)))
+			_valid = false;
+	}
+	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 0)
 		_value++;
-	//std::cout<<_value<<" ";
+	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 1)
+		_value--;
+	else
+		std::cout<<_value<<" erzeugt Fehler!";
+
 }
 
 
