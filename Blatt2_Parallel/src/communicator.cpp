@@ -13,11 +13,7 @@ Communicator::Communicator(int* argc, char*** argv) {
 	printf("Hello from %d\n",_rank);
 	printf("Numprocs is %d\n",_size);
 
-	_tidx[0] = (**argv)[0];
-	_tidx[1] = (**argv)[1];
 
-	_tdim[0] = (**argv)[2];
-	_tdim[1] = (**argv)[3];
 
 }
 
@@ -47,6 +43,10 @@ real_t Communicator::gatherMax(const real_t& val) const {
 }
 
 void Communicator::copyBoundary(Grid* grid) const {
+	copyLeftBoundary(grid);
+	copyRightBoundary(grid);
+	copyTopBoundary(grid);
+	copyBottomBoundary(grid);
 }
 
 const bool Communicator::isLeft() const {
