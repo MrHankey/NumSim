@@ -84,16 +84,32 @@ void Communicator::copyBoundary(Grid* grid) const {
 	copyBottomBoundary(grid);
 }
 
-const bool Communicator::isLeft() const {
+bool Communicator::isLeft() const {
+	if ( ThreadIdx()[1] == 0 )
+		return true;
+
+	return false;
 }
 
-const bool Communicator::isRight() const {
+bool Communicator::isRight() const {
+	if ( (ThreadIdx()[1] + 1) == ThreadDim()[0] )
+		return true;
+
+	return false;
 }
 
-const bool Communicator::isTop() const {
+bool Communicator::isTop() const {
+	if ( (ThreadIdx()[0] + 1 ) == ThreadDim()[1] )
+		return true;
+
+	return false;
 }
 
-const bool Communicator::isBottom() const {
+bool Communicator::isBottom() const {
+	if ( ThreadIdx()[0] == 0 )
+			return true;
+
+	return false;
 }
 
 const int& Communicator::getRank() const {
