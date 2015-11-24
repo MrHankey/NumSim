@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -36,16 +37,16 @@ Geometry::Geometry() {
 	_comm = nullptr;
 
 	// Number of cells in one line
-	_size[0] = 128;
-	_size[1] = 128;
+	_bsize[0] = 16;
+	_bsize[1] = 16;
 
 	// Length of driven cavity
-	_length[0] = 1;
-	_length[1] = 1;
+	_blength[0] = 1;
+	_blength[1] = 1;
 
 	// Cell Length
-	_h[0] = _length[0]/_size[0];
-	_h[1] = _length[1]/_size[1];
+	_h[0] = _blength[0]/(_bsize[0]);
+	_h[1] = _blength[1]/(_bsize[1]);
 
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
@@ -53,6 +54,22 @@ Geometry::Geometry() {
 
 Geometry::Geometry(const Communicator* comm) : Geometry() {
 	_comm = comm;
+
+	_size[0] = _bsize[0]/_comm->ThreadDim()[0] + 2;
+	_size[1] = _bsize[1]/_comm->ThreadDim()[1] + 2;
+
+	if ( _bsize[0] % _comm->ThreadDim()[0] != 0 || _bsize[1] % _comm->ThreadDim()[1] != 0 )
+	{
+		throw std::runtime_error("Number of cells not devisible by processor distribution");
+	}
+
+	_length[0] = _blength[0]/_comm->ThreadDim()[0];
+	_length[1] = _blength[1]/_comm->ThreadDim()[1];
+
+	_bsize[0] += 2;
+	_bsize[1] += 2;
+
+	printf(" local_siz: %i \n", _size[0]);
 }
 
 /// Loads a geometry from a file
@@ -97,18 +114,23 @@ void Geometry::PrintVariables(){
 }
 
 const multi_index_t& Geometry::TotalSize() const {
-
+	return _bsize;
 }
 
 const multi_real_t& Geometry::TotalLength() const {
-
+	return _blength;
 }
 
 /* Getter functions */
 /// Returns the number of cells in each dimension
-const multi_index_t& Geometry::Size()   const {return _size;}
+const multi_index_t& Geometry::Size()   const {
+	return _size;
+}
 /// Returns the length of the domain
-const multi_real_t&  Geometry::Length() const {return _length;}
+const multi_real_t&  Geometry::Length() const
+{
+	return _length;
+}
 /// Returns the meshwidth
 const multi_real_t&  Geometry::Mesh()   const {return _h;}
 
