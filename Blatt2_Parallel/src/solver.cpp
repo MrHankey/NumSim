@@ -106,7 +106,7 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 /// Concrete SOR solver
 //  @param geom   get geometry
 //  @param omega  get scaling factor
-RedOrBlackSOR::RedOrBlackSOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
+RedOrBlackSOR::RedOrBlackSOR(const Geometry* geom, const real_t& omega) : SOR(geom,omega) {
 	_geom  = geom;
 	_omega = omega;
 }
