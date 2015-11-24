@@ -113,8 +113,35 @@ int Communicator::getNeighbour(int side) {
 }
 
 bool Communicator::copyLeftBoundary(Grid* grid) const {
+	real_t leftBoundary[grid->getGeometry()->Size()[1]];
+	real_t ghostLayer[grid->getGeometry()->Size()[1]];
+
+	//leftBoundary = new real_t [grid->_geom->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryLeft);
+	int i = 0;
+	while(it.Valid()){
+		leftBoundary[i] = grid->Cell(it);
+		it.Next();
+		i++;
+	}
+
+	int b = 2;
+	MPI_Sendrecv(&leftBoundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+					getNeighbour((int)it.boundaryLeft), 0,
+	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+					getNeighbour((int)it.boundaryRight), 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	it.SetBoundary(it.boundaryRight);
+	i = 0;
+	while(it.Valid()){
+		 	grid->Cell(it.Left()) = leftBoundary[i];
+			it.Next();
+			i++;
+	}
+	int a = getNeighbour((int)it.boundaryRight);
+
 }
 
 bool Communicator::copyRightBoundary(Grid* grid) const {
