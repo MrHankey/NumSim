@@ -78,22 +78,26 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 	it.SetBoundary(it.boundaryLeft);
 	int i = 0;
 	while(it.Valid()){
-		leftBoundary[i] = it.Value();
+		leftBoundary[i] = grid->Cell(it);
 		it.Next();
-	}
-	MPI_Status status;
-	int MPI_Sendrecv(*leftBoundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
-	                Neighbour(it.boundaryLeft), 0,
-	                *ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
-					Neighbour(it.boundaryRight), 0,
-	                MPI_COMM_WORLD, *status);
-	it.SetBoundary(it.boundaryRight);
-	int i = 0;
-	while(it.Valid()){
-			it.Left().Value() = leftBoundary[i];
-			it.Next();
+		i++;
 	}
 
+	int b = 2;
+	MPI_Sendrecv(&leftBoundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+					getNeighbour((int)it.boundaryLeft), 0,
+	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+					getNeighbour((int)it.boundaryRight), 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	it.SetBoundary(it.boundaryRight);
+	i = 0;
+	while(it.Valid()){
+		 	grid->Cell(it.Left()) = leftBoundary[i];
+			it.Next();
+			i++;
+	}
+	int a = getNeighbour((int)it.boundaryRight);
 
 }
 
