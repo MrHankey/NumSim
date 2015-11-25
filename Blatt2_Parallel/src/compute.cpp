@@ -106,6 +106,8 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Compute F, G
 	MomentumEqu(dt);
+	_comm->copyBoundary(_F);
+	_comm->copyBoundary(_G);
 	//std::cin.ignore();
 
 	// Compute RHS
@@ -141,6 +143,8 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Compute u,v
 	NewVelocities(dt);
+
+	//cout << "new vels done" << endl;
 
 	// Send u,v
 	_comm->copyBoundary(_u);
