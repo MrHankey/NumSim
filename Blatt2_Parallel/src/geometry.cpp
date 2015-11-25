@@ -69,10 +69,27 @@ Geometry::Geometry(Communicator* comm) : Geometry() {
 	_bsize[0] += 2;
 	_bsize[1] += 2;
 
-	multi_index_t procPos = _comm->ThreadIdx();
-	multi_index_t startCell = {procPos[0]*(_size[0]) , procPos[1]*(_size[0])};
+	if ( (_bsize[0] % 2) == 0 && (_bsize[1] % 2) == 0)
+	{
+		_comm->SetEvenOdd(true);
+	}
+	else if (_bsize[0] % 2 != 0 && _bsize[1] % 2 != 0)
+	{
+		_comm->SetEvenOdd((_comm->ThreadIdx()[0] + _comm->ThreadIdx()[1]) % 2 == 0 );
+	}
+	else if (_bsize[0] % 2 != 0 && _bsize[1] % 2 == 0)
+	{
+		_comm->SetEvenOdd(_comm->ThreadIdx()[0] % 2 == 0);
+	}
+	else if (_bsize[0] % 2 == 0 && _bsize[1] % 2 != 0)
+	{
+		_comm->SetEvenOdd(_comm->ThreadIdx()[1] % 2 == 0);
+	}
+
+	/*multi_index_t procPos = _comm->ThreadIdx();
+	multi_index_t startCell = {procPos[0]*(_size[0]) , procPos[1]*(_size[1])};
 	bool evenodd = (startCell[0] + _bsize[0]*startCell[1]) != 0;
-	_comm->SetEvenOdd(evenodd);
+	_comm->SetEvenOdd(evenodd);*/
 
 	printf(" local_siz: %i \n", _size[0]);
 }
