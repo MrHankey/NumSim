@@ -114,29 +114,30 @@ void Compute::TimeStep(bool printInfo) {
 	RHS(dt);
 
 	// Compute p
-	real_t res = 10000000;
+	real_t total_res = 10000000;
+	real_t local_res = 0.0;
 	index_t i = 0;
 
-	while(res >_param->Eps() && i < _param->IterMax() ) {
+	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 		bool even = _comm->EvenOdd();
 		if (even){
-			res = _solver->RedCycle(_p,_rhs);
+			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 
-			res = _solver->BlackCycle(_p,_rhs);
+			local_res = _solver->BlackCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 		}
 		else{
-			res = _solver->BlackCycle(_p,_rhs);
+			local_res = _solver->BlackCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 
-			res = _solver->RedCycle(_p,_rhs);
+			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 
 		}
 
 		_geom->Update_P(_p);
-		res = _comm->gatherSum(res);
+		total_res = _comm->gatherSum(local_res);
 		i++;
 	}
 
@@ -152,7 +153,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
-		cout << "_t: " << _t << "  \tres: " << std::scientific << res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
+		cout << "_t: " << _t << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 	}
 }
 

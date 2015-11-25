@@ -52,7 +52,7 @@ Geometry::Geometry() {
 	cout << "Loaded default geometry definition." << endl;
 }
 
-Geometry::Geometry(const Communicator* comm) : Geometry() {
+Geometry::Geometry(Communicator* comm) : Geometry() {
 	_comm = comm;
 
 	_size[0] = _bsize[0]/_comm->ThreadDim()[0] + 2;
@@ -68,6 +68,11 @@ Geometry::Geometry(const Communicator* comm) : Geometry() {
 
 	_bsize[0] += 2;
 	_bsize[1] += 2;
+
+	multi_index_t procPos = _comm->ThreadIdx();
+	multi_index_t startCell = {procPos[1]*(_size[0]) , procPos[0]*(_size[0])};
+	bool evenodd = (startCell[0] + _bsize[0]*startCell[1]) != 0;
+	_comm->SetEvenOdd(evenodd);
 
 	printf(" local_siz: %i \n", _size[0]);
 }

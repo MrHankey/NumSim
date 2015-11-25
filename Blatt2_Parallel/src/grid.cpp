@@ -236,6 +236,7 @@ real_t* Grid::Data() {
 }
 
 const multi_real_t& Grid::getOffset() const {
+	return _offset;
 }
 
 const Geometry* Grid::getGeometry() const {

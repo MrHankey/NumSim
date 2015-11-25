@@ -53,6 +53,10 @@ const bool& Communicator::EvenOdd() const {
 	return _evenodd;
 }
 
+void Communicator::SetEvenOdd(bool evenodd) {
+	_evenodd = evenodd;
+}
+
 real_t Communicator::gatherSum(const real_t& val) const {
 	double valid = val, getResult;
 
@@ -201,6 +205,7 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 			it.Next();
 			i++;
 	}
+	return true;
 }
 
 bool Communicator::copyRightBoundary(Grid* grid) const {
@@ -242,6 +247,7 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 			it.Next();
 			i++;
 	}
+	return true;
 }
 
 bool Communicator::copyTopBoundary(Grid* grid) const {
@@ -281,6 +287,7 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 			it.Next();
 			i++;
 	}
+	return true;
 }
 
 bool Communicator::copyBottomBoundary(Grid* grid) const {
@@ -321,4 +328,5 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 			it.Next();
 			i++;
 	}
+	return true;
 }

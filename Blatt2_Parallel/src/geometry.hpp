@@ -36,7 +36,7 @@ public:
   //    -------------
   //       u=0, v=0
   Geometry();
-  Geometry(const Communicator *comm);
+  Geometry(Communicator *comm);
 
   /// Loads a geometry from a file
   void Load(const char *file);
@@ -62,7 +62,7 @@ public:
   void PrintVariables();
 
 private:
-  const Communicator *_comm;
+  Communicator *_comm;
 
   multi_index_t _size;
   multi_index_t _bsize;

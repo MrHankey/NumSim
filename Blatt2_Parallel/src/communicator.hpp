@@ -48,6 +48,8 @@ public:
    */
   const bool &EvenOdd() const;
 
+  void SetEvenOdd(bool evenodd);
+
   /** Gets the sum of all values and distributes the result among all
    *  processes
    *
