@@ -151,19 +151,19 @@ int Communicator::getNeighbour(int side) const {
 	multi_index_t idx = _tidx;
 	if ( side == 0 )
 	{
-		idx[0] -= 1;
+		idx[1] -= 1;
 	}
 	else if ( side == 1 )
 	{
-		idx[1] -= 1;
+		idx[0] -= 1;
 	}
 	else if ( side == 2 )
 	{
-		idx[0] += 1;
+		idx[1] += 1;
 	}
 	else if ( side == 3 )
 	{
-		idx[1] += 1;
+		idx[0] += 1;
 	}
 
 	// rank = dim_x * idx_y + idx_x
