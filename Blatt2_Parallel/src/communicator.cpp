@@ -167,7 +167,7 @@ int Communicator::getNeighbour(int side) const {
 	}
 
 	// rank = dim_x * idx_y + idx_x
-	int rank = _tdim[1]*idx[1] + idx[0];
+	int rank = _tdim[0]*idx[1] + idx[0];
 	//printf("curRak: %i dir: %i, rank: %i \n", _rank, side, rank);
 	return rank;
 }
