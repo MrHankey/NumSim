@@ -263,8 +263,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 bool Communicator::copyTopBoundary(Grid* grid) const {
 	if ( isTop() && isBottom())
 			return true;
-	real_t boundary[grid->getGeometry()->Size()[1]];
-	real_t ghostLayer[grid->getGeometry()->Size()[1]];
+	real_t boundary[grid->getGeometry()->Size()[0]];
+	real_t ghostLayer[grid->getGeometry()->Size()[0]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryTop);
 	int i = 0;
@@ -304,8 +304,8 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 	if ( isTop() && isBottom())
 		return true;
 
-	real_t boundary[grid->getGeometry()->Size()[1]];
-	real_t ghostLayer[grid->getGeometry()->Size()[1]];
+	real_t boundary[grid->getGeometry()->Size()[0]];
+	real_t ghostLayer[grid->getGeometry()->Size()[0]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryBottom);
 	int i = 0;
