@@ -37,8 +37,8 @@ Geometry::Geometry() {
 	_comm = nullptr;
 
 	// Number of cells in one line
-	_bsize[0] = 16;
-	_bsize[1] = 16;
+	_bsize[0] = 32;
+	_bsize[1] = 32;
 
 	// Length of driven cavity
 	_blength[0] = 1;

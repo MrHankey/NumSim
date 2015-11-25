@@ -35,6 +35,8 @@ Grid::Grid(const Geometry* geom) {
 	_data     = new real_t[geom->Size()[0]*geom->Size()[1]];
 	_geom     = geom;
 	_offset   = offset;
+
+	Initialize(0);
 }
 
 /// Constructs a grid based on a geometry with an offset
@@ -44,6 +46,8 @@ Grid::Grid(const Geometry* geom, const multi_real_t& offset) {
 	_data = new real_t[geom->Size()[0]*geom->Size()[1]];
 	_offset = offset;
 	_geom = geom;
+
+	Initialize(0);
 }
 
 /// Destructor: deletes the grid
@@ -202,20 +206,30 @@ real_t Grid::DC_vdv_y(const Iterator& it, const real_t& alpha) const {
 
 /// Returns the maximal value of the grid
 real_t Grid::Max() const {
-	real_t max = _data[0];
-	for (index_t i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
-		if (_data[i] >= max)
-		max = _data[i];
+	Iterator it = Iterator(_geom);
+
+	real_t max = Cell(it);
+	while (it.Valid())
+	{
+		if (Cell(it) >= max)
+			max = Cell(it);
+
+		it.Next();
 	}
 	return max;
 }
 
 /// Returns the minimal value of the grid
 real_t Grid::Min() const {
-	real_t min = _data[0];
-	for (index_t i = 1; i< _geom->Size()[0]*_geom->Size()[1];i++){
-		if (_data[i] <= min)
-		min = _data[i];
+	Iterator it = Iterator(_geom);
+
+	real_t min = Cell(it);
+	while (it.Valid())
+	{
+		if (Cell(it) <= min)
+			min = Cell(it);
+
+		it.Next();
 	}
 	return min;
 }
@@ -225,9 +239,9 @@ real_t Grid::AbsMax() const {
 	real_t max = this->Max();
 	real_t min = this->Min();
 	if ((max+min) > 0)
-		return max;
+		return fabs(max);
 	else
-		return min;
+		return fabs(min);
 }
 
 /// Returns a pointer to the raw data
