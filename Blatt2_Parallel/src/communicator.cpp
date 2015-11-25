@@ -274,17 +274,17 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isBottom() && !isTop()){
-		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD);
 	}
 	else if(isTop() && !isBottom()){
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
@@ -315,17 +315,17 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isTop() && !isBottom()){
-		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD);
 	}
 	else if(isBottom() && !isTop()){
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
