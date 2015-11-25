@@ -35,8 +35,6 @@ Grid::Grid(const Geometry* geom) {
 	_data     = new real_t[geom->Size()[0]*geom->Size()[1]];
 	_geom     = geom;
 	_offset   = offset;
-
-	Initialize(0);
 }
 
 /// Constructs a grid based on a geometry with an offset
@@ -46,8 +44,6 @@ Grid::Grid(const Geometry* geom, const multi_real_t& offset) {
 	_data = new real_t[geom->Size()[0]*geom->Size()[1]];
 	_offset = offset;
 	_geom = geom;
-
-	Initialize(0);
 }
 
 /// Destructor: deletes the grid

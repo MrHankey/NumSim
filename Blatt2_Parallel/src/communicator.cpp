@@ -29,11 +29,16 @@ Communicator::Communicator(int* argc, char*** argv) {
 	_tdim[0] = getSize() / maxDivisor;
 	_tdim[1] = maxDivisor;
 
-	_tidx[0] = (int)(getRank() / maxDivisor);
-	_tidx[1] = getRank() % maxDivisor;
+	//Sebbi
+	_tidx[1] = (int)(getRank() / _tdim[0]);
+	_tidx[0] = (int)(getRank() - _tidx[1] * _tdim[0]);
+
+	//_tidx[0] = getRank() % maxDivisor;
+	//_tidx[1] = (int)((getRank() - _tidx[0]) / maxDivisor);
+
 
 	printf("Dims: %i %i \n", _tdim[0], _tdim[1]);
-	printf("Idx : %i %i \n", _tidx[0], _tidx[1]);
+	printf("Rank: %i Idx : %i %i \n", getRank(), _tidx[0], _tidx[1]);
 
 }
 
@@ -90,7 +95,7 @@ void Communicator::copyBoundary(Grid* grid) const {
 
 bool Communicator::isLeft() const {
 	//printf("L_curRak: %i \n", _rank);
-	if ( ThreadIdx()[1] == 0 )
+	if ( ThreadIdx()[0] == 0 )
 	{
 		//printf("yep \n");
 		return true;
@@ -100,8 +105,8 @@ bool Communicator::isLeft() const {
 }
 
 bool Communicator::isRight() const {
-	//printf("R_curRak: %i \n", _rank);
-	if ( (ThreadIdx()[1] + 1) == ThreadDim()[0] )
+	//printf("R_curRak: %i %i %i \n", _rank, ThreadIdx()[0], ThreadDim()[0]);
+	if ( (ThreadIdx()[0] + 1) == ThreadDim()[0] )
 	{
 		//printf("yep \n");
 		return true;
@@ -112,7 +117,7 @@ bool Communicator::isRight() const {
 
 bool Communicator::isTop() const {
 	//printf("T_curRak: %i \n", _rank);
-	if ( (ThreadIdx()[0] + 1 ) == ThreadDim()[1] )
+	if ( (ThreadIdx()[1] + 1 ) == ThreadDim()[1] )
 	{
 		//printf("yep \n");
 		return true;
@@ -125,7 +130,7 @@ bool Communicator::isTop() const {
 
 bool Communicator::isBottom() const {
 	//printf("B_curRak: %i \n", _rank);
-	if ( ThreadIdx()[0] == 0 )
+	if ( ThreadIdx()[1] == 0 )
 	{
 		//printf("yep \n");
 		return true;
@@ -182,12 +187,17 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isRight() && !isLeft()){
+		//printf("left: send only \n");
 		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryLeft), 0,MPI_COMM_WORLD);
+
 	}
 	else if(isLeft() && !isRight()){
+		//printf("rank: %i \n", getRank());
+		//printf("left: rec only \n");
 		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
 	}
 	else{
 		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
