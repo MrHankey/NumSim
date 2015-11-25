@@ -70,7 +70,7 @@ Geometry::Geometry(Communicator* comm) : Geometry() {
 	_bsize[1] += 2;
 
 	multi_index_t procPos = _comm->ThreadIdx();
-	multi_index_t startCell = {procPos[1]*(_size[0]) , procPos[0]*(_size[0])};
+	multi_index_t startCell = {procPos[0]*(_size[0]) , procPos[1]*(_size[0])};
 	bool evenodd = (startCell[0] + _bsize[0]*startCell[1]) != 0;
 	_comm->SetEvenOdd(evenodd);
 

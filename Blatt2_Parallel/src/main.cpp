@@ -25,6 +25,7 @@
 #include "vtk.hpp"
 
 #include <iostream>
+#include <unistd.h>
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {
@@ -102,10 +103,12 @@ int main(int argc, char **argv) {
     vtk.Finish();
 
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
-      comp.TimeStep(false);
+    //for (uint32_t i = 0; i < 9; ++i)
+      //comp.TimeStep(false);
     bool printOnlyOnMaster = !comm.getRank();
     comp.TimeStep(printOnlyOnMaster);
+
+    std::cin.ignore();
   }
   return 0;
 }

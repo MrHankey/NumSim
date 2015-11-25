@@ -72,8 +72,15 @@ const real_t& Grid::Cell(const Iterator& it) const {
 /// Returns a bilinear interpolation at an arbitrary position
 //  @param  pos  Position given between 0 to 1
 real_t Grid::Interpolate(const multi_real_t& pos) const {
+
+	//TODO do proper interpolation
+	index_t cell_x = (index_t)(pos[0]/_geom->Mesh()[0]);
+	index_t cell_y = (index_t)(pos[1]/_geom->Mesh()[1]);
+
+	return _data[cell_y*_geom->Size()[0] + cell_x];
+
 	// Initialize
-	real_t xP, x1, x2, yP, y1, y2;
+	/*real_t xP, x1, x2, yP, y1, y2;
 	real_t q11, q12, q21, q22;
 	real_t r1, r2;
 
@@ -106,7 +113,7 @@ real_t Grid::Interpolate(const multi_real_t& pos) const {
 	r2 = (x2-xP)/(x2-x1)*q21 + (xP-x1)/(x2-x1)*q22;
 
 	// Interpolate in y direction with x interpolation
-	return (y2-yP)/(y2-y1)*r1 + (yP-y1)/(y2-y1)*r2;
+	return (y2-yP)/(y2-y1)*r1 + (yP-y1)/(y2-y1)*r2;*/
 }
 
 /* Calculate differences */
