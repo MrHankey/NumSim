@@ -153,7 +153,7 @@ void InteriorIterator::Next() {
 /// Constructs a new BoundaryIterator
 //  @param geom   get geometry
 BoundaryIterator::BoundaryIterator(const Geometry* geom) : Iterator(geom) {
-	_boundary = 0;
+	_boundary = boundaryBottom;
 	First();
 }
 
@@ -173,19 +173,19 @@ void BoundaryIterator::First() {
 	_valid = true;
 
 	// Bottom boundary
-	if (_boundary == 0 ) {
+	if (_boundary == boundaryBottom ) {
 		_value = 0;
 	}
 	// Right boundary
-	else if ( _boundary == 1 ) {
+	else if ( _boundary == boundaryRight ) {
 		_value = _geom->Size()[0] - 1;
 	}
 	// Top boundary
-	else if ( _boundary == 2 ) {
+	else if ( _boundary == boundaryTop ) {
 		_value = _geom->Size()[0]*(_geom->Size()[1]-1);
 	}
 	// Left boundary
-	else if ( _boundary == 3 ) {
+	else if ( _boundary == boundaryLeft ) {
 		_value = 0;
 	}
 }
@@ -193,28 +193,28 @@ void BoundaryIterator::First() {
 /// Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next() {
 	// Bottom boundary
-	if (_boundary == 0 ) {
+	if (_boundary == boundaryBottom ) {
 		_value++;
 		if ( _value >= _geom->Size()[0] ) {
 			_valid = false;
 		}
 	}
 	// Right boundary
-	else if ( _boundary == 1 ) {
+	else if ( _boundary == boundaryRight ) {
 		_value += _geom->Size()[0];
 		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
 		}
 	}
 	// Top boundary
-	else if ( _boundary == 2 ) {
+	else if ( _boundary == boundaryTop ) {
 		_value++;
 		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
 		}
 	}
 	// Left boundary
-	else if ( _boundary == 3 ) {
+	else if ( _boundary == boundaryLeft ) {
 		_value += _geom->Size()[0];
 		if ( _value >= _geom->Size()[0]*(_geom->Size()[1]) ) {
 			_valid = false;
