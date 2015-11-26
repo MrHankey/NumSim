@@ -137,7 +137,7 @@ void Compute::TimeStep(bool printInfo) {
 		}
 
 		_geom->Update_P(_p);
-		total_res = _comm->gatherSum(local_res);
+		total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
 	}
 
