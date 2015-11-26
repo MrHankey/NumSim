@@ -188,12 +188,28 @@ const Grid* Compute::GetVelocity() {
 
 /// Computes and returns the vorticity
 const Grid* Compute::GetVorticity() {
-	//return dummy grid to suppress warning; wasn't part of the lecture yet
+	// Initialize
+	Iterator it = Iterator(_geom);
+
+	// Cycle through all cells
+	while(it.Valid()) {
+		_tmp->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+		it.Next();
+	}
+
 	return _tmp;
 }
+
 /// Computes and returns the stream line values
 const Grid* Compute::GetStream() {
-	//return dummy grid to suppress warning; wasn't part of the lecture yet
+	// Initialize
+	/*Iterator it = Iterator(_geom);
+
+	// Cycle through all cells
+	while(it.Valid()) {
+		_tmp->Cell(it) = _psi->Cell(it.Left())+_u->Cell(it)*_geom->Mesh();
+	}*/
+
 	return _tmp;
 }
 
