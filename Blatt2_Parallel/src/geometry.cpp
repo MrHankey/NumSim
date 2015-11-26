@@ -37,8 +37,8 @@ Geometry::Geometry() {
 	_comm = nullptr;
 
 	// Number of cells in one line
-	_bsize[0] = 20;
-	_bsize[1] = 20;
+	_bsize[0] = 64;
+	_bsize[1] = 64;
 
 	// Length of driven cavity
 	_blength[0] = 1;
@@ -279,26 +279,6 @@ void Geometry::Update_P(Grid* p) const {
 			it.Next();
 		}
 	}
-	//index_t midPoint = Size()[0]*(Size()[1]/2.0);
-	//p->Cell(Iterator(this, midPoint));
-
-	real_t sum = 0;
-	index_t n = 0;
-	Iterator it_all = Iterator(this);
-	while (it_all.Valid()) {
-		sum += p->Cell(it_all);
-		it_all.Next();
-		n++;
-	}
-
-	real_t mean = sum/n;
-
-	it_all.First();
-	while (it_all.Valid()) {
-		p->Cell(it_all) = p->Cell(it_all) - mean;
-		it_all.Next();
-	}
-
 }
 
 
