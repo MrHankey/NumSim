@@ -47,6 +47,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	multi_real_t u_offset;
 	multi_real_t v_offset;
 	multi_real_t p_offset;
+	multi_real_t vort_offset;
+	multi_real_t stream_offset;
 
 	// Set offset
 	u_offset[0] = geom->Mesh()[0];
@@ -55,6 +57,12 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	v_offset[1] = geom->Mesh()[1];
 	p_offset[0] = geom->Mesh()[0]/2.0;
 	p_offset[1] = geom->Mesh()[1]/2.0;
+
+	vort_offset[0] = geom->Mesh()[0];
+	vort_offset[1] = geom->Mesh()[1];
+
+	stream_offset[0] = geom->Mesh()[0];
+	stream_offset[1] = geom->Mesh()[1];
 
 	// Set grid for all variables
 	_u   = new Grid(geom, u_offset);
@@ -65,10 +73,17 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
 
+	_tmp_vorticity = new Grid(geom, vort_offset);
+	_tmp_stream    = new Grid(geom, stream_offset);
+
 	// Set values
 	_u->Initialize(0);
 	_v->Initialize(0);
 	_p->Initialize(0);
+
+	_tmp_vorticity->Initialize(0);
+	_tmp_stream->Initialize(0);
+
 }
 
 /// Destructor: deletes all grids
@@ -80,6 +95,9 @@ Compute::~Compute() {
 	delete _F;
 	delete _G;
 	delete _rhs;
+
+	delete _tmp_vorticity;
+	delete _tmp_stream;
 
 	delete _tmp;
 	delete _solver;
@@ -189,15 +207,15 @@ const Grid* Compute::GetVelocity() {
 /// Computes and returns the vorticity
 const Grid* Compute::GetVorticity() {
 	// Initialize
-	Iterator it = Iterator(_geom);
+	Iterator it = InteriorIterator(_geom);
 
 	// Cycle through all cells
 	while(it.Valid()) {
-		_tmp->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+		_tmp_vorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
 		it.Next();
 	}
 
-	return _tmp;
+	return _tmp_vorticity;
 }
 
 /// Computes and returns the stream line values
@@ -207,10 +225,10 @@ const Grid* Compute::GetStream() {
 
 	// Cycle through all cells
 	while(it.Valid()) {
-		_tmp->Cell(it) = _psi->Cell(it.Left())+_u->Cell(it)*_geom->Mesh();
+		_tmp_stream->Cell(it) = _psi->Cell(it.Left())+_u->Cell(it)*_geom->Mesh();
 	}*/
 
-	return _tmp;
+	return _tmp_stream;
 }
 
 /// Compute the new velocites u,v

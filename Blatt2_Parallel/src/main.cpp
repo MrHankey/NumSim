@@ -100,6 +100,8 @@ int main(int argc, char **argv) {
     vtk.SwitchToPointData();
     vtk.AddPointField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddPointScalar("Pressure", comp.GetP());
+    vtk.AddPointScalar("Vorticity", comp.GetVorticity());
+    //vtk.AddPointScalar("Stream", comp.GetStream());
     vtk.Finish();
 
     // Run a few steps

@@ -70,10 +70,6 @@ private:
   // pressure
   Grid *_p;
 
-  // vort and stream
-  //Grid *_psi;
-  //Grid *_xi;
-
   // prel. vel
   Grid *_F;
   Grid *_G;
@@ -83,6 +79,8 @@ private:
 
   // container for interpolating whichever values
   Grid *_tmp;
+  Grid *_tmp_vorticity;
+  Grid *_tmp_stream;
 
   RedOrBlackSOR *_solver;
 
