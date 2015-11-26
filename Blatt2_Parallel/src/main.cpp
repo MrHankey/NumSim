@@ -67,6 +67,10 @@ int main(int argc, char **argv) {
   visugrid = comp.GetVelocity();
 #endif // USE_DEBUG_VISU
 
+  clock_t begin;
+  if ( comm.getRank() == 0)
+	  begin = clock();
+
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend()) {
 #ifdef USE_DEBUG_VISU
@@ -112,5 +116,13 @@ int main(int argc, char **argv) {
 
     //std::cin.ignore();
   }
+
+  if ( comm.getRank() == 0)
+  {
+	  clock_t end = clock();
+	  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	  std::cout << "duration: " << elapsed_secs << std::endl;
+  }
+
   return 0;
 }
