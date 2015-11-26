@@ -191,32 +191,33 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 	}
 	if (isRight()){
 		//printf("left: send only \n");
-		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryLeft), 0,MPI_COMM_WORLD);
 
 	}
 	else if(isLeft()){
 		//printf("rank: %i \n", getRank());
 		//printf("left: rec only \n");
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryLeft), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 
-
-	it.SetBoundary(it.boundaryRight);
-	i = 0;
-	while(it.Valid()){
-		 	grid->Cell(it) = ghostLayer[i];
-			it.Next();
-			i++;
+	if(!isRight()){
+		it.SetBoundary(it.boundaryRight);
+		i = 0;
+		while(it.Valid()){
+				grid->Cell(it) = ghostLayer[i];
+				it.Next();
+				i++;
+		}
 	}
 	return true;
 }
@@ -234,30 +235,32 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isLeft()){
-		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,MPI_COMM_WORLD);
 	}
 	else if(isRight()){
 		int targetRank = getNeighbour((int)it.boundaryLeft);
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					targetRank , 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryRight), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[1], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryLeft), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 
-
-	it.SetBoundary(it.boundaryLeft);
-	i = 0;
-	while(it.Valid()){
-		 	grid->Cell(it) = ghostLayer[i];
-			it.Next();
-			i++;
+	if(!isLeft()){
+		it.SetBoundary(it.boundaryLeft);
+		i = 0;
+		while(it.Valid()){
+				grid->Cell(it) = ghostLayer[i];
+				it.Next();
+				i++;
+		}
 	}
+
 	return true;
 }
 
@@ -274,29 +277,31 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isBottom()){
-		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD);
 	}
 	else if(isTop()){
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 
-
-	it.SetBoundary(it.boundaryBottom);
-	i = 0;
-	while(it.Valid()){
-		 	grid->Cell(it) = ghostLayer[i];
-			it.Next();
-			i++;
+	if(!isBottom()){
+		it.SetBoundary(it.boundaryBottom);
+		i = 0;
+		while(it.Valid()){
+			 	grid->Cell(it) = ghostLayer[i];
+				it.Next();
+				i++;
+		}
 	}
+
 	return true;
 }
 
@@ -313,28 +318,30 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 		i++;
 	}
 	if (isTop()){
-		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Send(&boundary,grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,MPI_COMM_WORLD);
 	}
 	else if(isBottom()){
-		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Recv(&ghostLayer, grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	else{
-		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+		MPI_Sendrecv(&boundary,grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryBottom), 0,
-	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_Datatype MPI_REAL_TYPE,
+	                &ghostLayer, grid->getGeometry()->Size()[0], MPI_REAL_TYPE,
 					getNeighbour((int)it.boundaryTop), 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 
-
-	it.SetBoundary(it.boundaryTop);
-	i = 0;
-	while(it.Valid()){
-		 	grid->Cell(it) = ghostLayer[i];
-			it.Next();
-			i++;
+	if(!isTop()){
+		it.SetBoundary(it.boundaryTop);
+		i = 0;
+		while(it.Valid()){
+			 	grid->Cell(it) = ghostLayer[i];
+				it.Next();
+				i++;
+		}
 	}
+
 	return true;
 }
