@@ -155,7 +155,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
-		cout << "_t: " << _t << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
+		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 	}
 }
 
