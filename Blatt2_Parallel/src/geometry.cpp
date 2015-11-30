@@ -44,16 +44,47 @@ Geometry::Geometry() {
 	_blength[0] = 1;
 	_blength[1] = 1;
 
-	// Cell Length
-	_h[0] = _blength[0]/(_bsize[0]);
-	_h[1] = _blength[1]/(_bsize[1]);
-
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
 }
 
 Geometry::Geometry(Communicator* comm) : Geometry() {
 	_comm = comm;
+	Initialize();
+}
+
+/// Loads a geometry from a file
+//  @param file  txt file to load data from
+void Geometry::Load(const char* file) {
+	// Initialize
+	ifstream fileStream(file);
+
+	// Cath loading error
+	if ( fileStream.fail() ) {
+		// Failed to load
+		cout << "Couldn't load geometry from " << file << endl;
+		return;
+	} else {
+		//Load values
+		fileStream >> _velocity[0];
+		fileStream >> _velocity[1];
+		fileStream >> _pressure;
+		fileStream >> _bsize[0];
+		fileStream >> _bsize[1];
+		fileStream >> _blength[0];
+		fileStream >> _blength[1];
+
+		// Success
+		cout << "Loaded geometry definitions from " << file << "." << endl;
+	}
+	Initialize();
+}
+
+void Geometry::Initialize()
+{
+	// Cell Length
+	_h[0] = _blength[0]/(_bsize[0]);
+	_h[1] = _blength[1]/(_bsize[1]);
 
 	_size[0] = _bsize[0]/_comm->ThreadDim()[0] + 2;
 	_size[1] = _bsize[1]/_comm->ThreadDim()[1] + 2;
@@ -94,42 +125,15 @@ Geometry::Geometry(Communicator* comm) : Geometry() {
 	printf(" local_siz: %i \n", _size[0]);
 }
 
-/// Loads a geometry from a file
-//  @param file  txt file to load data from
-void Geometry::Load(const char* file) {
-	// Initialize
-	ifstream fileStream(file);
-
-	// Cath loading error
-	if ( fileStream.fail() ) {
-		// Failed to load
-		cout << "Couldn't load geometry from " << file << endl;
-	} else {
-		//Load values and compute mesh width
-		fileStream >> _velocity[0];
-		fileStream >> _velocity[1];
-		fileStream >> _pressure;
-		fileStream >> _size[0];
-		fileStream >> _size[1];
-		fileStream >> _length[0];
-		fileStream >> _length[1];
-		_h[0] = _length[0]/_size[0];
-		_h[1] = _length[1]/_size[1];
-
-		// Success
-		cout << "Loaded geometry definitions from " << file << "." << endl;
-	}
-}
-
 /// Prints Parameters
 void Geometry::PrintVariables(){
 	cout << "vel_x: "    << _velocity[0]  << endl;
 	cout << "vel_y: "    << _velocity[1]  << endl;
 	cout << "p: "        << _pressure     << endl;
-	cout << "size_x: "   << _size[0]      << endl;
-	cout << "size_y: "   << _size[1]      << endl;
-	cout << "length_x: " << _length[0]    << endl;
-	cout << "length_y "  << _length[1]    << endl;
+	cout << "size_x: "   << _bsize[0]      << endl;
+	cout << "size_y: "   << _bsize[1]      << endl;
+	cout << "length_x: " << _blength[0]    << endl;
+	cout << "length_y "  << _blength[1]    << endl;
 	cout << "h_x: "      << _h[0]         << endl;
 	cout << "h_y: "      << _h[1] << endl << endl;
 
