@@ -34,10 +34,24 @@ int main(int argc, char **argv) {
   Communicator comm(&argc, &argv);
   Parameter param;
   Geometry geom(&comm);
+
+  if ( argc >= 2)
+    param.Load(argv[1]);
+  else
+    param.Load("parameter.txt");
+
+  if ( argc >= 3)
+    geom.Load(argv[2]);
+  else
+    geom.Load("geometry.txt");
+
   // Create the fluid solver
   Compute comp(&geom, &param, &comm);
 
   if (comm.getRank() == 0) {
+
+    geom.PrintVariables();
+	param.PrintVariables();
     // check if folder "VTK" exists
     struct stat info;
 

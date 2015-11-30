@@ -40,6 +40,7 @@ public:
 
   /// Loads a geometry from a file
   void Load(const char *file);
+  void Initialize();
 
   /// Returns the number of cells in each dimension
   const multi_index_t &Size() const;
