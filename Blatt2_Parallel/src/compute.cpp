@@ -224,22 +224,28 @@ const Grid* Compute::GetStream() {
 	// Initialize
 	Iterator it = InteriorIterator(_geom);
 
-	// Set first value to zero
-	it.First();
-	_tmpStream->Cell(it) = 0;
-	it.Next();
+	multi_index_t screenSize;
+	screenSize[0] = (_geom->TotalSize()[0]-2)/(_geom->Size()[0]-2);
+	screenSize[1] = (_geom->TotalSize()[1]-2)/(_geom->Size()[1]-2);
 
-	// TODO anderer iterator...
-	// Cycle through all cells
-	while (it.Valid()){
-		if (it.Pos()[1] == 0){
-			_tmpStream->Cell(it) = _tmpStream->Cell(it.Left()) - _v->Cell(it)*_geom->Mesh()[0];
-		} else {
-			_tmpStream->Cell(it) = _tmpStream->Cell(it.Down()) + _u->Cell(it)*_geom->Mesh()[1];
+	for(int i = 0;i<screenSize[0]+screenSize[1];i++){
+
+		// Set first value to zero
+		it.First();
+		_tmpStream->Cell(it.Left()) = 0;
+		_comm->copyBoundary(_tmpStream);
+		//it.Next();
+
+		// Cycle through all cells
+		while (it.Valid()){
+			if (it.Pos()[1] == 0){
+				_tmpStream->Cell(it) = _tmpStream->Cell(it.Left()) - _v->Cell(it)*_geom->Mesh()[0];
+			} else {
+				_tmpStream->Cell(it) = _tmpStream->Cell(it.Down()) + _u->Cell(it)*_geom->Mesh()[1];
+			}
+			it.Next();
 		}
-		it.Next();
 	}
-
 	// TODO communicate boundary
 
 	return _tmpStream;
