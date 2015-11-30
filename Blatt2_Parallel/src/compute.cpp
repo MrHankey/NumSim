@@ -73,16 +73,16 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
 
-	_tmp_vorticity = new Grid(geom, vort_offset);
-	_tmp_stream    = new Grid(geom, stream_offset);
+	_tmpVorticity = new Grid(geom, vort_offset);
+	_tmpStream    = new Grid(geom, stream_offset);
 
 	// Set values
 	_u->Initialize(0);
 	_v->Initialize(0);
 	_p->Initialize(0);
 
-	_tmp_vorticity->Initialize(0);
-	_tmp_stream->Initialize(0);
+	_tmpVorticity->Initialize(0);
+	_tmpStream->Initialize(0);
 
 }
 
@@ -96,8 +96,8 @@ Compute::~Compute() {
 	delete _G;
 	delete _rhs;
 
-	delete _tmp_vorticity;
-	delete _tmp_stream;
+	delete _tmpVorticity;
+	delete _tmpStream;
 
 	delete _tmp;
 	delete _solver;
@@ -136,6 +136,7 @@ void Compute::TimeStep(bool printInfo) {
 	real_t local_res = 0.0;
 	index_t i = 0;
 
+	// Update boundary
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 		bool even = _comm->EvenOdd();
 		if (even){
@@ -211,24 +212,37 @@ const Grid* Compute::GetVorticity() {
 
 	// Cycle through all cells
 	while(it.Valid()) {
-		_tmp_vorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+		_tmpVorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
 		it.Next();
 	}
 
-	return _tmp_vorticity;
+	return _tmpVorticity;
 }
 
 /// Computes and returns the stream line values
 const Grid* Compute::GetStream() {
 	// Initialize
-	/*Iterator it = Iterator(_geom);
+	Iterator it = InteriorIterator(_geom);
 
+	// Set first value to zero
+	it.First();
+	_tmpStream->Cell(it) = 0;
+	it.Next();
+
+	// TODO anderer iterator...
 	// Cycle through all cells
-	while(it.Valid()) {
-		_tmp_stream->Cell(it) = _psi->Cell(it.Left())+_u->Cell(it)*_geom->Mesh();
-	}*/
+	while (it.Valid()){
+		if (it.Pos()[1] == 0){
+			_tmpStream->Cell(it) = _tmpStream->Cell(it.Left()) - _v->Cell(it)*_geom->Mesh()[0];
+		} else {
+			_tmpStream->Cell(it) = _tmpStream->Cell(it.Down()) + _u->Cell(it)*_geom->Mesh()[1];
+		}
+		it.Next();
+	}
 
-	return _tmp_stream;
+	// TODO communicate boundary
+
+	return _tmpStream;
 }
 
 /// Compute the new velocites u,v

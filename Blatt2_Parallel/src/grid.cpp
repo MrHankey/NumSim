@@ -73,28 +73,39 @@ const real_t& Grid::Cell(const Iterator& it) const {
 //  @param  pos  Position given between 0 to 1
 real_t Grid::Interpolate(const multi_real_t& pos) const {
 
-	if ( true )
-	{
+	if (false) {
 		//TODO do proper interpolation
 		index_t cell_x = (index_t)(pos[0]/_geom->Mesh()[0]);
 		index_t cell_y = (index_t)(pos[1]/_geom->Mesh()[1]);
 
 		return _data[cell_y*_geom->Size()[0] + cell_x];
-	}
-	else
-	{
-
+	} else {
 		// Initialize
 		real_t xP, x1, x2, yP, y1, y2;
 		real_t q11, q12, q21, q22;
 		real_t r1, r2;
 
-		// Get cell where position is at - row, column and cell id
-		index_t numCol = (index_t)((pos[0] - _offset[0])*(_geom->Size()[0] - 2) + 1);
-		index_t numRow = (index_t)((pos[1] - _offset[1])*(_geom->Size()[1] - 2) + 1);
-		index_t cellID = (index_t)((numRow)*_geom->Size()[0])+numCol;
+		// Calculate Size
+		multi_index_t screenNumber;
+		screenNumber[0] = (_geom->TotalSize()[0]-2)/(_geom->Size()[0]-2);
+		screenNumber[1] = (_geom->TotalSize()[1]-2)/(_geom->Size()[1]-2);
 
-		// Initialize iteraytor at starting position of the cell id
+		multi_real_t posNew;
+		posNew[0] = pos[0]*screenNumber[0];
+		posNew[1] = pos[1]*screenNumber[1];
+
+		multi_real_t meshNew;
+		meshNew[0] = _geom->TotalLength()[0]/(_geom->TotalSize()[0]-2);
+		meshNew[1] = _geom->TotalLength()[1]/(_geom->TotalSize()[1]-2);
+
+		// Get cell where position is at - row, column and cell id
+		index_t numCol = (index_t)((posNew[0] - _offset[0]*screenNumber[0])*(_geom->Size()[0] - 2) + 1);
+		index_t numRow = (index_t)((posNew[1] - _offset[1]*screenNumber[1])*(_geom->Size()[1] - 2) + 1);
+		index_t cellID = numRow*(_geom->Size()[0])+numCol;
+
+		//cout << numRow <<", "<< numCol << ", " << numRow*(_geom->Size()[0]-2) << ", " << cellID <<endl;
+
+		// Initialize iterator at starting position of the cell id
 		Iterator it = Iterator(_geom,cellID);
 
 		// Get the four surrounding cell values
@@ -104,14 +115,16 @@ real_t Grid::Interpolate(const multi_real_t& pos) const {
 		q22 = _data[it.Top().Right()];
 
 		// Get x positions of the surrounding cells
-		xP = pos[0];
-		x1 = (real_t)(it.Pos()[0])/(real_t)(_geom->Size()[0] - 1);
-		x2 = x1 + _geom->Mesh()[0];
+		xP = posNew[0];
+		x1 = (real_t)(it.Pos()[0])/(real_t)(_geom->Size()[0]-1);
+		x2 = x1 + meshNew[0];
+
+		//cout << it.Pos()[0] <<", " <<xP<<", "<<x2<<endl;
 
 		// Get y positions of the surrounding cells
-		yP = pos[1];
-		y1 = (real_t)(it.Pos()[1])/(real_t)(_geom->Size()[1] - 1);
-		y2 = y1 + _geom->Mesh()[1];
+		yP = posNew[1];
+		y1 = (real_t)(it.Pos()[1])/(real_t)(_geom->Size()[1]-1);
+		y2 = y1 + meshNew[1];
 
 		// Interpolate in x direction for each two cells
 		r1 = (x2-xP)/(x2-x1)*q11 + (xP-x1)/(x2-x1)*q12;
