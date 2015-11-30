@@ -128,6 +128,7 @@ void InteriorIterator::First() {
 }
 
 /// Goes to the next element of the iterator, disables it if position is end
+// Rewritten for Black and red solving (right until end then one top the left until end)
 void InteriorIterator::Next() {
 	if ( (_value + 2) % (2*_geom->Size()[0]) == 0 ){
 		_value += _geom->Size()[0];

@@ -79,8 +79,8 @@ private:
 
   // container for interpolating whichever values
   Grid *_tmp;
-  Grid *_tmp_vorticity;
-  Grid *_tmp_stream;
+  Grid *_tmpVorticity;
+  Grid *_tmpStream;
 
   RedOrBlackSOR *_solver;
 

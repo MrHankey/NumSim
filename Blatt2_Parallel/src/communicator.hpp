@@ -148,6 +148,11 @@ private:
    */
   bool copyBottomBoundary(Grid *grid) const;
 
+  /**
+   * Function to search for the neighbour ranks
+   *
+   * \param [in] side  get neighbor rank of rank side
+   */
   int getNeighbour(int side) const;
 };
 //------------------------------------------------------------------------------
