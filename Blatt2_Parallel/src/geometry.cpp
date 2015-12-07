@@ -44,6 +44,9 @@ Geometry::Geometry() {
 	_blength[0] = 1;
 	_blength[1] = 1;
 
+	//read CSV file
+	this->readCsvGrid("yolo.swag");
+
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
 }
@@ -164,14 +167,14 @@ const multi_real_t&  Geometry::Mesh()   const {return _h;}
 /// Read Csv and set in boundary grid
 // @param fileName  name of file to read
 void Geometry::readCsvGrid(string fileName) const {
-	ifstream file(fileName+".csv");
+	ifstream file(fileName);
 	string value;
 	Iterator it = Iterator(this);
 	while(file.good()) {
 		// read a string until next comma
 		getline(file, value, ',');
 	    // Save in grid
-		_b->Cell(it) = stoi(value);
+		_b->Cell(it) = atoi(value.c_str());
 	    //cout << value;
 		it.Next();
 	}
