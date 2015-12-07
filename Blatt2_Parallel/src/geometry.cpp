@@ -23,6 +23,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 
 using namespace std;
 
@@ -171,14 +172,26 @@ void Geometry::readCsvGrid(string fileName) const {
 	ifstream file(fileName);
 	string value;
 	Iterator it = Iterator(this);
-	while(file.good()) {
-		// read a string until next comma
-		while ( getline(file, value, ',') )
-		{
+	string line;
+	while(getline(file, line)) {
 
-			while ( value.find ("\r\n") != string::npos )
+		while ( line.find ("\r\n") != string::npos )
+		{
+			line.erase ( line.find ("\r\n"), 2 );
+		}
+
+		while ( value.find ("\n") != string::npos )
+		{
+			value.erase ( value.find ("\n"), 2 );
+		}
+
+		std::stringstream lineStream(line);
+
+		while ( getline(lineStream, value, ',') )
+		{
+			while ( line.find ("\r\n") != string::npos )
 			{
-				value.erase ( value.find ("\r\n"), 2 );
+				line.erase ( line.find ("\r\n"), 2 );
 			}
 
 			while ( value.find ("\n") != string::npos )
@@ -189,7 +202,7 @@ void Geometry::readCsvGrid(string fileName) const {
 			// Save in grid
 			_b->Cell(it) = atoi(value.c_str());
 
-			cout << value;
+			cout << atoi(value.c_str());
 			it.Next();
 		}
 	}
