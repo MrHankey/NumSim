@@ -62,17 +62,25 @@ public:
 
   void PrintVariables();
 
-private:
-  Communicator *_comm;
+  // Read Csv values and set grid b
+   void readCsvGrid();
+   // Update boundary with Csv values
+   void Update_All(Grid *p, Grid *u, Grid *v);
 
-  multi_index_t _size;
-  multi_index_t _bsize;
-  multi_real_t _length;
-  multi_real_t _blength;
-  multi_real_t _h;
+  private:
+   Communicator *_comm;
 
-  multi_real_t _velocity;
-  real_t _pressure;
+   multi_index_t _size;
+   multi_index_t _bsize;
+   multi_real_t _length;
+   multi_real_t _blength;
+   multi_real_t _h;
+
+   multi_real_t _velocity;
+   real_t _pressure;
+
+   // Csv conditions
+   Grid *_b;
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP
