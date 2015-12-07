@@ -45,6 +45,7 @@ Geometry::Geometry() {
 	_blength[1] = 1;
 
 	//read CSV file
+	_b  = new Grid(this);
 	this->readCsvGrid("yolo.swag");
 
 	// Print vars
