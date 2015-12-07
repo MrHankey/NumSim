@@ -65,7 +65,7 @@ public:
   // Read Csv values and set grid b
    void readCsvGrid();
    // Update boundary with Csv values
-   void Update_All(Grid *p, Grid *u, Grid *v);
+   void Update_All(Grid *p, Grid *u, Grid *v,real_t *pL,real_t *pR) const;
 
   private:
    Communicator *_comm;

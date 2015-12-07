@@ -285,4 +285,187 @@ void Geometry::Update_P(Grid* p) const {
 	}
 }
 
+void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t* pL,real_t* pR) const {
+	Iterator it = new Iterator(this);
+	it.First();
+	while (it.Valid()){
+		if(_b->Cell(it)==0){
+			//Mach nichts da keine Randpunkt
+		}
+		else if(_b->Cell(it)==1){//no Slip Bedingung
+			if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//nichts tun da alle Ränder auch Rand sind.
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts ist Wasser
+				p->Cell(it)=p->Cell(it.Right());
+				u->Cell(it)=0;
+				v->Cell(it)=-1*(v->Cell(it.Right()));
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Oben ist Wasser
+				p->Cell(it)=p->Cell(it.Top());
+				u->Cell(it)=-1*(u->Cell(it.Top()));
+				v->Cell(it)=0;
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links ist Wasser
+				p->Cell(it)=p->Cell(it.Left());
+				u->Cell(it)=0;
+				u->Cell(it.Left())=0;
+				v->Cell(it)=-1*(v->Cell(it.Left()));
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten ist Wasser
+				p->Cell(it)=p->Cell(it.Down());
+				u->Cell(it)=-1*(u->Cell(it.Down()));
+				v->Cell(it)=0;
+				v->Cell(it.Down())=0;
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts und Oben ist Wasser
+				p->Cell(it)=( p->Cell(it.Right())+p->Cell(it.Top()) )/2; // Mittelwert des Druckes
+				u->Cell(it)=0;
+				v->Cell(it)=0;
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Oben und Links ist Wasser
+				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Top()) )/2; // Mittelwert des Druckes
+				u->Cell(it)=0;
+				u->Cell(it.Left());
+				v->Cell(it)=0;
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
+				//Links und Unten ist Wasser
+				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Down()) )/2; // Mittelwert des Druckes
+				u->Cell(it)=0;
+				u->Cell(it.Left());
+				v->Cell(it)=0;
+				v->Cell(it.Down())=0;
 
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten und Rechts ist Wasser
+				p->Cell(it)=( p->Cell(it.Down())+p->Cell(it.Right()) )/2; // Mittelwert des Druckes
+				u->Cell(it)=0;
+				v->Cell(it)=0;
+				v->Cell(it.Down())=0;
+			}
+			else{
+				cout<<"Error in CSV File"<<endl;
+			}
+
+		}
+		else if(_b->Cell(it)==2){//Slip Bedingung
+			cout<<"2 not implemented!"<<endl;
+			if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//nichts tun da alle Ränder auch Rand sind.
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts und Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Oben und Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
+				//Links und Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten und Rechts ist Wasser
+			}
+			else{
+				cout<<"Error in CSV File"<<endl;
+			}
+
+
+		}
+		else if(_b->Cell(it)==3){//linker Rand OUTFLOW Bedingung
+			if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//nichts tun da alle Ränder auch Rand sind.
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts ist Wasser
+				p->Cell(it)= pL;
+				u->Cell(it)=u->Cell(it.Right());
+				v->Cell(it)=v->Cell(it.Right());
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts und Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Oben und Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
+				//Links und Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten und Rechts ist Wasser
+			}
+			else{
+				cout<<"Error in CSV File"<<endl;
+			}
+
+
+		}
+		else if(_b->Cell(it)==4){//rechter Rand OUTFLOW Bedingung
+			if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//nichts tun da alle Ränder auch Rand sind.
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links ist Wasser
+				p->Cell(it)= pR;
+				u->Cell(it)=u->Cell(it.Left());
+				v->Cell(it)=v->Cell(it.Left());
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts und Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Oben und Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
+				//Links und Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten und Rechts ist Wasser
+			}
+			else{
+				cout<<"Error in CSV File"<<endl;
+			}
+
+
+		}
+
+		it.Next();
+	}
+}
