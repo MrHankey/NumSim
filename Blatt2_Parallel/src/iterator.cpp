@@ -18,6 +18,7 @@
 #include "iterator.hpp"
 
 #include "geometry.hpp"
+#include "grid.hpp"
 
 #include <iostream>
 /// Constructs a new Iterator depending on a geometry
