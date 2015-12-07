@@ -64,9 +64,9 @@ public:
   void PrintVariables();
 
   // Read Csv values and set grid b
-   void readCsvGrid();
-   // Update boundary with Csv values
-   void Update_All(Grid *p, Grid *u, Grid *v,real_t *pL,real_t *pR) const;
+  void readCsvGrid(std::string fileName) const;
+  // Update boundary with Csv values
+  void Update_All(Grid *p, Grid *u, Grid *v,real_t *pL,real_t *pR) const;
 
    // Csv conditions
    Grid *_b;

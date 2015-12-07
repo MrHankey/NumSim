@@ -161,6 +161,23 @@ const multi_real_t&  Geometry::Length() const
 const multi_real_t&  Geometry::Mesh()   const {return _h;}
 
 
+/// Read Csv and set in boundary grid
+// @param fileName  name of file to read
+void Geometry::readCsvGrid(string fileName) const {
+	ifstream file(fileName+".csv");
+	string value;
+	Iterator it = Iterator(this);
+	while(file.good()) {
+		// read a string until next comma
+		getline(file, value, ',');
+	    // Save in grid
+		_b->Cell(it) = stoi(value);
+	    //cout << value;
+		it.Next();
+	}
+}
+
+
 /// Updates the boundary velocity field u
 //  @param u  get grid of u
 void Geometry::Update_U(Grid* u) const {
@@ -286,7 +303,7 @@ void Geometry::Update_P(Grid* p) const {
 }
 
 void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t* pL,real_t* pR) const {
-	Iterator it = new Iterator(this);
+	Iterator it = Iterator(this);
 	it.First();
 	while (it.Valid()){
 		if(_b->Cell(it)==0){
