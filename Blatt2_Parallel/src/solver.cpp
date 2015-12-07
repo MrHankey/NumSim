@@ -21,6 +21,7 @@
 #include "iterator.hpp"
 
 #include <cmath>
+#include <iostream>
 
 /// Constructor of the abstract Solver class
 //  @param geom  get field geometry
@@ -183,6 +184,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid* grid, const Grid* rhs) const {
 		// Initialize
 		n++;
 		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
+
 
 		// define variables
 		pij  	= grid->Cell(it);

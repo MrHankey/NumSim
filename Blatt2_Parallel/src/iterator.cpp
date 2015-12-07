@@ -138,7 +138,7 @@ void InteriorIterator::First() {
 	if((_geom->_b->Cell(*this))!=0){
 		this->Next(); /// Wenn es kein Wasser ist dann gleich noch eins weiter springen!
 	}
-	//std::cout <<_value<<" ";
+	//std::cout <<_value<<" "<<_geom->_b->Cell(*this) <<std::endl;
 }
 
 

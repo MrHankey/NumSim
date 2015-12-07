@@ -70,6 +70,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_p   = new Grid(geom, p_offset);
 	_F   = new Grid(geom);
 	_G   = new Grid(geom);
+	_temp1 = new Grid(geom);
+	_temp2 = new Grid(geom);
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
 
@@ -112,6 +114,7 @@ void Compute::TimeStep(bool printInfo) {
 	//_geom->Update_V(_v);
 	//_geom->Update_P(_p);
 
+
 	_geom->Update_All(_p,_u,_v,2,1); // Druck Links und Rechts schöner machen!
 
 
@@ -144,7 +147,6 @@ void Compute::TimeStep(bool printInfo) {
 		if (even){
 			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
-
 			local_res = _solver->BlackCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 		}
@@ -158,9 +160,11 @@ void Compute::TimeStep(bool printInfo) {
 		}
 
 		//_geom->Update_P(_p);
-		_geom->Update_All(_p,_u,_v,2,1); // Druck Links und Rechts schöner machen!
+		_geom->Update_All(_p,_temp1,_temp2,2,1); // Druck Links und Rechts schöner machen!
 		total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
+
+
 	}
 
 	// Compute u,v
@@ -179,6 +183,8 @@ void Compute::TimeStep(bool printInfo) {
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 	}
+
+	//_u->Cell(it) = -10000;
 }
 
 /* Getter functions */
@@ -301,11 +307,14 @@ void Compute::MomentumEqu(const real_t& dt) {
 		// Update new temporary velocities
 		_F->Cell(it) = u + dt*A;
 		_G->Cell(it) = v + dt*B;
+		//cout<<_F->Cell(it)<<" das war bei it = "<<it.Value()<<endl;
 
 		// Next cell
 		it.Next();
 	}
-	_geom->Update_All(_p,_F,_G,2,1);
+	_geom->Update_All(_temp1,_F,_G,2,1);
+	it.First();
+	//cout<<_F->Cell(it)<<" das war bei it after: = "<<it<<endl;
 	//_geom->Update_U(_F);
 	//_geom->Update_V(_G);
 }

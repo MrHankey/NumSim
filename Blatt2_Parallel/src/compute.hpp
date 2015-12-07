@@ -70,6 +70,10 @@ private:
   // pressure
   Grid *_p;
 
+  // temporäre Grids zum debuggen inhalt wird nie benutzt!
+  Grid *_temp1;
+  Grid *_temp2;
+
   // prel. vel
   Grid *_F;
   Grid *_G;

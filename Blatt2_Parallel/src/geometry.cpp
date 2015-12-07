@@ -172,7 +172,7 @@ void Geometry::readCsvGrid(string fileName) const {
 	ifstream file(fileName);
 	string value;
 	Iterator it = Iterator(this);
-	it.End();
+	//it.End();
 	string line;
 	while(getline(file, line)) {
 
@@ -204,7 +204,7 @@ void Geometry::readCsvGrid(string fileName) const {
 			_b->Cell(it) = atoi(value.c_str());
 
 			cout << atoi(value.c_str());
-			it.Last();
+			it.Next();
 		}
 	}
 }

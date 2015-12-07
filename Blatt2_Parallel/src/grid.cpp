@@ -75,8 +75,8 @@ real_t Grid::Interpolate(const multi_real_t& pos) const {
 
 	if (false) {
 		//TODO do proper interpolation
-		index_t cell_x = (index_t)(pos[0]/_geom->Mesh()[0]);
-		index_t cell_y = (index_t)(pos[1]/_geom->Mesh()[1]);
+		index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
+		index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));
 
 		return _data[cell_y*_geom->Size()[0] + cell_x];
 	} else {
