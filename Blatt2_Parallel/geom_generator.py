@@ -20,7 +20,7 @@ if __name__ == "__main__":
         exit()
     
     rows = []
-    
+    #generate normal tunnel
     for y in range(0, res_y):
         row = []
         for col in range(0, res_x):
@@ -32,12 +32,10 @@ if __name__ == "__main__":
             elif col == res_x - 1:
                 val = 4
             
-            row.append(val)
-              
-            
-        
+            row.append(val)        
         rows.append(row)
     
+    #generate obstacle
     if ( type == 1):
         for y in range(0, res_y):
             if y >= res_y/2:
@@ -46,7 +44,7 @@ if __name__ == "__main__":
                         rows[y][col] = 1
                         
     
-                        
+    #generate karman
     if ( type == 2):
         for y in range(0, res_y):
             if y <= res_y/2:

@@ -44,10 +44,6 @@ Geometry::Geometry() {
 	_blength[0] = 1;
 	_blength[1] = 1;
 
-	//read CSV file
-	_b  = new Grid(this);
-	this->readCsvGrid("yolo.swag");
-
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
 }
@@ -125,6 +121,10 @@ void Geometry::Initialize()
 	multi_index_t startCell = {procPos[0]*(_size[0]) , procPos[1]*(_size[1])};
 	bool evenodd = (startCell[0] + _bsize[0]*startCell[1]) != 0;
 	_comm->SetEvenOdd(evenodd);*/
+
+	//read CSV file
+	_b  = new Grid(this);
+	this->readCsvGrid("yolo.swag");
 
 	printf(" local_siz: %i \n", _size[0]);
 }
