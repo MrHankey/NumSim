@@ -175,9 +175,21 @@ void Geometry::readCsvGrid(string fileName) const {
 		// read a string until next comma
 		while ( getline(file, value, ',') )
 		{
+
+			while ( value.find ("\r\n") != string::npos )
+			{
+				value.erase ( value.find ("\r\n"), 2 );
+			}
+
+			while ( value.find ("\n") != string::npos )
+			{
+				value.erase ( value.find ("\n"), 2 );
+			}
+
 			// Save in grid
 			_b->Cell(it) = atoi(value.c_str());
-			//cout << value;
+
+			cout << value;
 			it.Next();
 		}
 	}
