@@ -302,7 +302,7 @@ void Geometry::Update_P(Grid* p) const {
 	}
 }
 
-void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t* pL,real_t* pR) const {
+void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 	Iterator it = Iterator(this);
 	it.First();
 	while (it.Valid()){
