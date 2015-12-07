@@ -41,6 +41,11 @@ public:
   /// Goes to the next element of the iterator, disables it if position is end
   virtual void Next();
 
+  /// Sets the iterator to the last element
+  virtual void End();
+  /// Goes to the last element of the iterator
+  virtual void Last();
+
   /// Checks if the iterator still has a valid value
   virtual bool Valid() const;
 

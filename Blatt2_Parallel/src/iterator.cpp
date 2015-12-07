@@ -61,6 +61,15 @@ void Iterator::First() {
 	_valid = true;
 }
 
+void Iterator::End() {
+	_value = _geom->Size()[0]*_geom->Size()[1]-1;
+	_valid = false;
+}
+
+void Iterator::Last() {
+	_value -= 1;
+}
+
 /// Goes to the next element of the iterator, disables it if position is end
 void Iterator::Next() {
 	multi_index_t size = _geom->Size();
@@ -131,6 +140,7 @@ void InteriorIterator::First() {
 	}
 	//std::cout <<_value<<" ";
 }
+
 
 /// Goes to the next element of the iterator, disables it if position is end
 // Rewritten for Black and red solving (right until end then one top the left until end)
