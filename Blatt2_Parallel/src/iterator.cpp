@@ -124,6 +124,10 @@ InteriorIterator::InteriorIterator(const Geometry* geom) : Iterator(geom) {
 void InteriorIterator::First() {
 	_value = _geom->Size()[0] + 1;
 	_valid = true;
+
+	if((_geom->_b->Cell(*this))!=0){
+		this->Next(); /// Wenn es kein Wasser ist dann gleich noch eins weiter springen!
+	}
 	//std::cout <<_value<<" ";
 }
 
