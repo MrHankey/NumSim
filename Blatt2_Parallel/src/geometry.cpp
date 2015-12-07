@@ -375,7 +375,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				v->Cell(it.Down())=0;
 			}
 			else{
-				cout<<"Error in CSV File"<<endl;
+				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
 			}
 
 		}
@@ -409,7 +409,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				//Unten und Rechts ist Wasser
 			}
 			else{
-				cout<<"Error in CSV File"<<endl;
+				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
 			}
 
 
@@ -446,7 +446,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				//Unten und Rechts ist Wasser
 			}
 			else{
-				cout<<"Error in CSV File"<<endl;
+				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
 			}
 
 
@@ -483,7 +483,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				//Unten und Rechts ist Wasser
 			}
 			else{
-				cout<<"Error in CSV File"<<endl;
+				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
 			}
 
 
