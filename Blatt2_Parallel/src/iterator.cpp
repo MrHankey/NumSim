@@ -147,6 +147,9 @@ void InteriorIterator::Next() {
 	else
 		std::cout<<_value<<" erzeugt Fehler!";
 
+	if((_geom->_b->Cell(*this))!=0){
+		this->Next(); /// Wenn es kein Wasser ist dann gleich noch eins weiter springen!
+	}
 }
 
 
