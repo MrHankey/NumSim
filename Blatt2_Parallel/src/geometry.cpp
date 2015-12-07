@@ -337,7 +337,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 	Iterator it = Iterator(this);
 	it.First();
 	while (it.Valid()){
-		cout<<it.Value()<<"b:"<< _b->Cell(it)<<endl;
+		//cout<<it.Value()<<"b:"<< _b->Cell(it)<<endl;
 		if(_b->Cell(it)==0){
 			//Mach nichts da keine Randpunkt
 		}
