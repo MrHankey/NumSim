@@ -173,11 +173,13 @@ void Geometry::readCsvGrid(string fileName) const {
 	Iterator it = Iterator(this);
 	while(file.good()) {
 		// read a string until next comma
-		getline(file, value, ',');
-	    // Save in grid
-		_b->Cell(it) = atoi(value.c_str());
-	    //cout << value;
-		it.Next();
+		while ( getline(file, value, ',') )
+		{
+			// Save in grid
+			_b->Cell(it) = atoi(value.c_str());
+			//cout << value;
+			it.Next();
+		}
 	}
 }
 
