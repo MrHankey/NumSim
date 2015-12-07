@@ -53,6 +53,7 @@ public:
   /// Returns the meshwidth
   const multi_real_t &Mesh() const;
 
+
   /// Updates the velocity field u
   void Update_U(Grid *u) const;
   /// Updates the velocity field v
@@ -67,6 +68,9 @@ public:
    // Update boundary with Csv values
    void Update_All(Grid *p, Grid *u, Grid *v,real_t *pL,real_t *pR) const;
 
+   // Csv conditions
+   Grid *_b;
+
   private:
    Communicator *_comm;
 
@@ -79,8 +83,7 @@ public:
    multi_real_t _velocity;
    real_t _pressure;
 
-   // Csv conditions
-   Grid *_b;
+
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP
