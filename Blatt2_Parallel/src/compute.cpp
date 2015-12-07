@@ -108,9 +108,11 @@ Compute::~Compute() {
 void Compute::TimeStep(bool printInfo) {
 	// Compute boundary Values
 	// eigentlich erst nach dt, aber dann geht der erste Zeitschritt zu lang.
-	_geom->Update_U(_u);
-	_geom->Update_V(_v);
-	_geom->Update_P(_p);
+	//_geom->Update_U(_u);
+	//_geom->Update_V(_v);
+	//_geom->Update_P(_p);
+
+	_geom->Update_All(_p,_u,_v,2,1); // Druck Links und Rechts schöner machen!
 
 
 	// Compute dt
@@ -155,7 +157,8 @@ void Compute::TimeStep(bool printInfo) {
 
 		}
 
-		_geom->Update_P(_p);
+		//_geom->Update_P(_p);
+		_geom->Update_All(_p,_u,_v,2,1); // Druck Links und Rechts schöner machen!
 		total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
 	}
