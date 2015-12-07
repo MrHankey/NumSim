@@ -305,9 +305,9 @@ void Compute::MomentumEqu(const real_t& dt) {
 		// Next cell
 		it.Next();
 	}
-
-	_geom->Update_U(_F);
-	_geom->Update_V(_G);
+	_geom->Update_All(_p,_F,_G,2,1);
+	//_geom->Update_U(_F);
+	//_geom->Update_V(_G);
 }
 
 /// Compute the RHS of the poisson equation
