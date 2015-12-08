@@ -164,7 +164,7 @@ void Compute::TimeStep(bool printInfo) {
 
 		//_geom->Update_P(_p);
 		_geom->Update_All(_p,_temp1,_temp2,_pL,_pR);
-		total_res = _comm->gatherSum(local_res)/_comm->getSize();
+		total_res = _comm->gatherMax(local_res)/_comm->getSize();//Max statt Sum da jetzt max gemacht wird
 		i++;
 
 
@@ -185,6 +185,7 @@ void Compute::TimeStep(bool printInfo) {
 	// Print info
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
+		//cout<<"i: "<<i<<" res :"<< total_res<<endl;
 	}
 
 	//_u->Cell(it) = -10000;

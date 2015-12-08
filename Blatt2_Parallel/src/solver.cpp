@@ -152,7 +152,10 @@ real_t RedOrBlackSOR::RedCycle(Grid* grid, const Grid* rhs) const {
 		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		// Calculate and summ residual
 		real_t lRes = localRes(it,grid,rhs);
-		res += lRes;
+		if(res<=lRes){
+			res=lRes;//max statt bisher mean
+		}
+		//res += lRes;
 
 		// Next cell
 		it.Next();
@@ -160,7 +163,8 @@ real_t RedOrBlackSOR::RedCycle(Grid* grid, const Grid* rhs) const {
 	}
 
 	// Norm residual
-	return res/n;
+	//return res/n;
+	return res;
 }
 
 
@@ -202,7 +206,11 @@ real_t RedOrBlackSOR::BlackCycle(Grid* grid, const Grid* rhs) const {
 		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		// Calculate and summ residual
 		real_t lRes = localRes(it,grid,rhs);
-		res += lRes;
+
+		if(res<lRes){
+			res=lRes;//max statt bisher mean
+		}
+		//res += lRes;
 
 		// Next cell
 		it.Next();
@@ -210,7 +218,8 @@ real_t RedOrBlackSOR::BlackCycle(Grid* grid, const Grid* rhs) const {
 	}
 
 	// Norm residual
-	return res/n;
+	//return res/n; //max statt bisher mean
+	return res;
 }
 
 
