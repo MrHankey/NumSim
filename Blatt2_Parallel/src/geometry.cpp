@@ -172,7 +172,6 @@ void Geometry::readCsvGrid(string fileName) const {
 	ifstream file(fileName);
 	string value;
 	Iterator it = Iterator(this);
-	//it.End();
 	string line;
 	while(getline(file, line)) {
 
@@ -200,12 +199,38 @@ void Geometry::readCsvGrid(string fileName) const {
 				value.erase ( value.find ("\n"), 2 );
 			}
 
-			// Save in grid
-			_b->Cell(it) = atoi(value.c_str());
 
-			cout << atoi(value.c_str());
+			_b->Cell(it) = atoi(value.c_str());
+			cout << _b->Cell(it);
+			//cout << atoi(value.c_str());
 			it.Next();
 		}
+	}
+
+	cout<<endl;
+	Grid *_bTmp;
+	_bTmp = new Grid(this);
+	Iterator ita = Iterator(this);
+	while(ita.Valid()) {
+		_bTmp->Cell(ita) = _b->Cell(ita);
+		ita.Next();
+	}
+
+	Iterator its = Iterator(this);
+	while(its.Valid()) {
+		index_t numCol  = its.Value()%this->_bsize[0];
+		index_t numRow  = (its.Value())/this->_bsize[0];
+		index_t flipRow = (index_t)abs((int)numRow-(int)this->_bsize[1])-1;
+		index_t newCell = flipRow*this->_bsize[0]+numCol;
+		Iterator newPos = Iterator(this,newCell);
+
+		//cout << newPos.Value() <<", " << newCell <<"; ";
+
+		cout << _bTmp->Cell(its);
+
+		_b->Cell(newPos)=_bTmp->Cell(its);
+		//cout << _b->Cell(newPos);
+		its.Next();
 	}
 }
 
