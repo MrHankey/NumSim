@@ -515,7 +515,45 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 
 
 		}
+		else if(_b->Cell(it)==5){//oben INFLOW Bedingung (driven Cavity)
+			if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//nichts tun da alle Ränder auch Rand sind.
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten ist Wasser
+				p->Cell(it)=p->Cell(it.Down());
+				u->Cell(it)=2-(u->Cell(it.Down()));
+				v->Cell(it)=0;
+				v->Cell(it.Down())=0;
 
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
+				//Rechts und Oben ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Oben und Links ist Wasser
+			}
+			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
+				//Links und Unten ist Wasser
+			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
+				//Unten und Rechts ist Wasser
+			}
+			else{
+				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
+			}
+
+
+		}
 		it.Next();
 	}
 }

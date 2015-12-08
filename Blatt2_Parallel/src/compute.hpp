@@ -74,6 +74,10 @@ private:
   Grid *_temp1;
   Grid *_temp2;
 
+  //Pressure on Right Side and Left Side
+  real_t _pL;
+  real_t _pR;
+
   // prel. vel
   Grid *_F;
   Grid *_G;

@@ -75,6 +75,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
 
+
 	_tmpVorticity = new Grid(geom, vort_offset);
 	_tmpStream    = new Grid(geom, stream_offset);
 
@@ -82,6 +83,9 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_u->Initialize(0);
 	_v->Initialize(0);
 	_p->Initialize(0);
+
+	_pL = 2; /// kann man auch noch aus Datei einlesen!
+	_pR = 1;
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -114,8 +118,7 @@ void Compute::TimeStep(bool printInfo) {
 	//_geom->Update_V(_v);
 	//_geom->Update_P(_p);
 
-
-	_geom->Update_All(_p,_u,_v,2,1); // Druck Links und Rechts schöner machen!
+	_geom->Update_All(_p,_u,_v,_pL,_pR);
 
 
 	// Compute dt
@@ -160,7 +163,7 @@ void Compute::TimeStep(bool printInfo) {
 		}
 
 		//_geom->Update_P(_p);
-		_geom->Update_All(_p,_temp1,_temp2,2,1); // Druck Links und Rechts schöner machen!
+		_geom->Update_All(_p,_temp1,_temp2,_pL,_pR);
 		total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
 
@@ -312,7 +315,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 		// Next cell
 		it.Next();
 	}
-	_geom->Update_All(_temp1,_F,_G,2,1);
+	_geom->Update_All(_temp1,_F,_G,_pL,_pR);
 	it.First();
 	//cout<<_F->Cell(it)<<" das war bei it after: = "<<it<<endl;
 	//_geom->Update_U(_F);
