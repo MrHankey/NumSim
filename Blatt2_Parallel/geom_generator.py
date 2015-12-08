@@ -4,16 +4,32 @@ import csv
 #read params
 if __name__ == "__main__":
     filename = sys.argv[1]
-    length = float(sys.argv[2])
-    height = float(sys.argv[3])
-    res_x = int(sys.argv[4])
-    res_y = int(sys.argv[5])
-    type = int(sys.argv[6])
+    inputfilename = sys.argv[2]
+    #length = float(sys.argv[2])
+    #height = float(sys.argv[3])
+    #res_x = int(sys.argv[4])
+    #res_y = int(sys.argv[5])
+    type = int(sys.argv[3])
+
+
+    fobj = open(inputfilename)
+    i = 1
+    for line in fobj:
+	if (i==4):
+            res_x = int(line.rstrip()) +2
+	if (i==5):
+            res_y = int(line.rstrip()) +2
+ 	if (i==6):
+            length = int(line.rstrip())
+	if (i==7):
+            height = int(line.rstrip())
+        i = i+1
+    fobj.close()
     
     alpha = 0
     
     if ( type == 2 ):
-        alpha = sys.argv[7]
+        alpha = sys.argv[4]
         
     if ( type > 2 or type < 0):
         print "Error: invalid type specified"
