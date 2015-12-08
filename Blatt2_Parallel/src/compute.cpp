@@ -84,8 +84,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_v->Initialize(0);
 	_p->Initialize(0);
 
-	_pL = 2; /// kann man auch noch aus Datei einlesen!
-	_pR = 1;
+	_pL = 1; /// kann man auch noch aus Datei einlesen!
+	_pR = 0;
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -317,7 +317,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 		it.Next();
 	}
 	_geom->Update_All(_temp1,_F,_G,_pL,_pR);
-	it.First();
+	//it.First();
 	//cout<<_F->Cell(it)<<" das war bei it after: = "<<it<<endl;
 	//_geom->Update_U(_F);
 	//_geom->Update_V(_G);

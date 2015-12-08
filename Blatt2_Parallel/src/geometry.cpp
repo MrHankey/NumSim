@@ -399,20 +399,20 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			}
 			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
 				//Rechts und Oben ist Wasser
-				p->Cell(it)=( p->Cell(it.Right())+p->Cell(it.Top()) )/2; // Mittelwert des Druckes
+				p->Cell(it)=( p->Cell(it.Right())+p->Cell(it.Top()) )/2.0; // Mittelwert des Druckes
 				u->Cell(it)=0;
 				v->Cell(it)=0;
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
 				//Oben und Links ist Wasser
-				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Top()) )/2; // Mittelwert des Druckes
+				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Top()) )/2.0; // Mittelwert des Druckes
 				u->Cell(it)=0;
 				u->Cell(it.Left());
 				v->Cell(it)=0;
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())==0){
 				//Links und Unten ist Wasser
-				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Down()) )/2; // Mittelwert des Druckes
+				p->Cell(it)=( p->Cell(it.Left())+p->Cell(it.Down()) )/2.0; // Mittelwert des Druckes
 				u->Cell(it)=0;
 				u->Cell(it.Left());
 				v->Cell(it)=0;
@@ -421,7 +421,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			}
 			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
 				//Unten und Rechts ist Wasser
-				p->Cell(it)=( p->Cell(it.Down())+p->Cell(it.Right()) )/2; // Mittelwert des Druckes
+				p->Cell(it)=( p->Cell(it.Down())+p->Cell(it.Right()) )/2.0; // Mittelwert des Druckes
 				u->Cell(it)=0;
 				v->Cell(it)=0;
 				v->Cell(it.Down())=0;
