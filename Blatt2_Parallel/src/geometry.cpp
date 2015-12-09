@@ -51,7 +51,7 @@ Geometry::Geometry() {
 
 Geometry::Geometry(Communicator* comm) : Geometry() {
 	_comm = comm;
-	Initialize();
+	//Initialize();
 }
 
 /// Loads a geometry from a file
@@ -201,7 +201,7 @@ void Geometry::readCsvGrid(string fileName) const {
 
 
 			_b->Cell(it) = atoi(value.c_str());
-			cout << _b->Cell(it);
+			//cout << _b->Cell(it);
 			//cout << atoi(value.c_str());
 			it.Next();
 		}
@@ -226,10 +226,12 @@ void Geometry::readCsvGrid(string fileName) const {
 
 		//cout << newPos.Value() <<", " << newCell <<"; ";
 
-		cout << _bTmp->Cell(its);
+		//cout << _bTmp->Cell(its);
+		if(_comm->getRank()==0){
+			_b->Cell(newPos)=_bTmp->Cell(its);
+		}
 
-		_b->Cell(newPos)=_bTmp->Cell(its);
-		//cout << _b->Cell(newPos);
+		cout << _b->Cell(newPos);
 		its.Next();
 	}
 }
@@ -516,7 +518,8 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
 				//Links ist Wasser
 				p->Cell(it)= pR;
-				u->Cell(it)=u->Cell(it.Left());
+				u->Cell(it)=u->Cell(it.Left().Left());
+				u->Cell(it.Left())=u->Cell(it.Left().Left());
 				v->Cell(it)=v->Cell(it.Left());
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
