@@ -59,6 +59,8 @@ public:
   // @param rhs right hand side
   real_t Cycle(Grid *grid, const Grid *rhs) const;
 
+  void PoissonStep(Grid* grid, const Grid* rhs, Iterator it) const;
+
 protected:
   real_t _omega;
 };

@@ -53,6 +53,17 @@ SOR::SOR(const Geometry* geom, const real_t& omega) : Solver(geom) {
 /// Destructor
 SOR::~SOR() {}
 
+void SOR::PoissonStep(Grid* grid, const Grid* rhs, Iterator it) const
+{
+	real_t dx   = _geom->Mesh()[0]*_geom->Mesh()[0];
+	real_t dy   = _geom->Mesh()[1]*_geom->Mesh()[1];
+
+	real_t norm = 0.5*(dx*dy)/(dx + dy);
+	real_t corr = norm*(grid->dxx(it) + grid->dyy(it) - rhs->Cell(it));
+
+	grid->Cell(it) += _omega * corr;
+}
+
 
 /// Returns the total residual and executes a solver cycle of SOR
 // @param  grid   get grid values
@@ -61,34 +72,18 @@ SOR::~SOR() {}
 real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 	// Initialize
 	InteriorIterator it = InteriorIterator(_geom);
-	real_t n, res, dx, dy, norm;
+	real_t n, res;
 
-	n    = 0;
-	res  = 0;
-	dx   = _geom->Mesh()[0];
-	dy   = _geom->Mesh()[1];
-	norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );
+	n    = 0.0;
+	res  = 0.0;
 
 	// Cycle through all cells
 	while(it.Valid()) {
 		// Initialize
 		n++;
-		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
 
-		// define variables
-		pij  	= grid->Cell(it);
-		pij_d   = grid->Cell(it.Down());
-		pij_t 	= grid->Cell(it.Top());
-		pij_l   = grid->Cell(it.Left());
-		pij_r 	= grid->Cell(it.Right());
+		PoissonStep(grid, rhs, (Iterator)it);
 
-		A    	= (pij_l+pij_r)/(dx*dx);
-		B    	= (pij_d+pij_t)/(dy*dy);
-
-		corr = A+B-rhs->Cell(it);
-
-		// Save new p_ij
-		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		// Calculate and summ residual
 		real_t lRes = localRes(it,grid,rhs);
 		res += lRes;
@@ -122,34 +117,18 @@ RedOrBlackSOR::~RedOrBlackSOR() {}
 real_t RedOrBlackSOR::RedCycle(Grid* grid, const Grid* rhs) const {
 	// Initialize
 	InteriorIterator it = InteriorIterator(_geom);
-	real_t n, res, dx, dy, norm;
+	real_t n, res;
 
-	n    = 0;
-	res  = 0;
-	dx   = _geom->Mesh()[0];
-	dy   = _geom->Mesh()[1];
-	norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );
+	n    = 0.0;
+	res  = 0.0;
 
 	// Cycle through all cells
 	while(it.Valid()) {
 		// Initialize
 		n++;
-		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
 
-		// define variables
-		pij  	= grid->Cell(it);
-		pij_d   = grid->Cell(it.Down());
-		pij_t 	= grid->Cell(it.Top());
-		pij_l   = grid->Cell(it.Left());
-		pij_r 	= grid->Cell(it.Right());
+		PoissonStep(grid, rhs, (Iterator)it);
 
-		A    	= (pij_l+pij_r)/(dx*dx);
-		B    	= (pij_d+pij_t)/(dy*dy);
-
-		corr = A+B-rhs->Cell(it);
-
-		// Save new p_ij
-		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		// Calculate and summ residual
 		real_t lRes = localRes(it,grid,rhs);
 		if(res<=lRes){
@@ -175,35 +154,18 @@ real_t RedOrBlackSOR::RedCycle(Grid* grid, const Grid* rhs) const {
 real_t RedOrBlackSOR::BlackCycle(Grid* grid, const Grid* rhs) const {
 	// Initialize
 	InteriorIterator it = InteriorIterator(_geom);
-	real_t n, res, dx, dy, norm;
+	real_t n, res;
 	it.Next();
 	n    = 0;
 	res  = 0;
-	dx   = _geom->Mesh()[0];
-	dy   = _geom->Mesh()[1];
-	norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );
 
 	// Cycle through all cells
 	while(it.Valid()) {
 		// Initialize
 		n++;
-		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
 
+		PoissonStep(grid, rhs, (Iterator)it);
 
-		// define variables
-		pij  	= grid->Cell(it);
-		pij_d   = grid->Cell(it.Down());
-		pij_t 	= grid->Cell(it.Top());
-		pij_l   = grid->Cell(it.Left());
-		pij_r 	= grid->Cell(it.Right());
-
-		A    	= (pij_l+pij_r)/(dx*dx);
-		B    	= (pij_d+pij_t)/(dy*dy);
-
-		corr = A+B-rhs->Cell(it);
-
-		// Save new p_ij
-		grid->Cell(it)  = (1-_omega)*pij + _omega * norm * corr;
 		// Calculate and summ residual
 		real_t lRes = localRes(it,grid,rhs);
 
