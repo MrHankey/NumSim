@@ -66,50 +66,61 @@ real_t& Grid::Cell(const Iterator& it) {
 /// Read access to the grid cell at position [it]
 //  @param it  iterator position
 const real_t& Grid::Cell(const Iterator& it) const {
-	return _data[it];
+    return _data[it];
 }
 
 /// Returns a bilinear interpolation at an arbitrary position
 //  @param  pos  Position given between 0 to 1
 real_t Grid::Interpolate(const multi_real_t& pos) const {
 
-	if (false) {
-		//TODO do proper interpolation
-		index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
-		index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));
+  if (false) {
+	  //TODO do proper interpolation
+	  index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
+	  index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));
 
-		return _data[cell_y*_geom->Size()[0] + cell_x];
-	} else {
-	      //subtracts offsets
-	      multi_real_t p_off;
-	      p_off[0] = pos[0] - _offset[0];
-	      p_off[1] = pos[1] - _offset[1];
+	  return _data[cell_y*_geom->Size()[0] + cell_x];
+  } else {
+	//subtracts offsets
+	multi_real_t p_off;
+	p_off[0] = pos[0] - _offset[0];
+	p_off[1] = pos[1] - _offset[1];
 
-	      //relative position of x and y in physical grid
-	      real_t relx = p_off[0]/_geom->Length()[0];
-	      real_t rely = p_off[1]/_geom->Length()[1];
+	//relative position of x and y in physical grid
+	real_t relx = p_off[0]/_geom->Length()[0];
+	real_t rely = p_off[1]/_geom->Length()[1];
 
-	      //calculates x and y coordinate of cell
-	      index_t cell1 = floor(relx*(_geom->Size()[0] - 2.0)+1);
-	      index_t cell2 = floor(rely*(_geom->Size()[1] - 2.0)+1);
+	//calculates x and y coordinate of cell
+	index_t cell1 = floor(relx*(_geom->Size()[0] - 2.0)+1);
+	index_t cell2 = floor(rely*(_geom->Size()[1] - 2.0)+1);
 
-	      //transfers x and y coordinates of cell to iterator
-	      index_t value = cell2 * _geom->Size()[0] + cell1;
-	      Iterator it(_geom, value);
+	//transfers x and y coordinates of cell to iterator
+	index_t value = cell2 * _geom->Size()[0] + cell1;
+	Iterator it(_geom, value);
 
-	      //x and y values for interpolation
-	      real_t x1 = ((real_t)it.Pos()[0] -1)* _geom->Mesh()[0] + _offset[0];
-	      real_t x2 = x1 + _geom->Mesh()[0];
-	      real_t y1 = ((real_t)it.Pos()[1]-1)* _geom->Mesh()[1] + _offset[1];
-	      real_t y2 = y1 + _geom->Mesh()[0];
+	//x and y values for interpolation
+	real_t x1 = ((real_t)it.Pos()[0] -1)* _geom->Mesh()[0] + _offset[0];
+	real_t x2 = x1 + _geom->Mesh()[0];
+	real_t y1 = ((real_t)it.Pos()[1]-1)* _geom->Mesh()[1] + _offset[1];
+	real_t y2 = y1 + _geom->Mesh()[0];
 
-	      //interpolate in x direction
-	      real_t r1 = _data[it]       * ((x2 - pos[0])/_geom->Mesh()[0]) + _data[it.Right()]       * ((pos[0] - x1)/_geom->Mesh()[0]);
-	      real_t r2 = _data[it.Top()] * ((x2 - pos[0])/_geom->Mesh()[0]) + _data[it.Right().Top()] * ((pos[0] - x1)/_geom->Mesh()[0]);
+	real_t data = _data[it];
+	real_t data_t = _data[it.Top()];
+	real_t data_r = _data[it.Right()];
+	real_t data_rt = _data[it.Right().Top()];
 
-	      //interpolate in y direction
-	      return r1 * ((y2 - p_off[1])/_geom->Mesh()[1]) + r2 * ((p_off[1] - y1)/_geom->Mesh()[1]);
-	}
+	if ( _geom->_b->Cell(it) == 1 ) data = 0;
+	if ( _geom->_b->Cell(it.Top()) == 1 ) data_t = 0;
+	if ( _geom->_b->Cell(it.Right()) == 1 ) data_r = 0;
+	if ( _geom->_b->Cell(it.Right().Top()) == 1 ) data_rt = 0;
+
+
+	//interpolate in x direction
+	real_t r1 = data       * ((x2 - pos[0])/_geom->Mesh()[0]) + data_r * ((pos[0] - x1)/_geom->Mesh()[0]);
+	real_t r2 = data_t * ((x2 - pos[0])/_geom->Mesh()[0]) + data_rt * ((pos[0] - x1)/_geom->Mesh()[0]);
+
+	//interpolate in y direction
+	return r1 * ((y2 - p_off[1])/_geom->Mesh()[1]) + r2 * ((p_off[1] - y1)/_geom->Mesh()[1]);
+  }
 }
 
 /* Calculate differences */
