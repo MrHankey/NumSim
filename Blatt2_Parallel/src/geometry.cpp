@@ -477,7 +477,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				p->Cell(it)= 2.0*pL - p->Cell(it.Right());
 				//u->Cell(it.Right()) = u->Cell(it.Right().Right());
 				u->Cell(it)=u->Cell(it.Right());
-				v->Cell(it)=v->Cell(it.Right());
+				v->Cell(it)= v->Cell(it.Right());
 				//u->Cell(it) = 1.0;
 				//v->Cell(it) = 0.0;//2.0*0.0 - v->Cell(it.Right());
 				//p->Cell(it) = p->Cell(it.Right());
@@ -556,6 +556,9 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			}
 			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
 				//Rechts ist Wasser
+				p->Cell(it)= p->Cell(it.Right());
+				u->Cell(it)=1.0;//u->Cell(it.Right());
+				v->Cell(it)= 0;//v->
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
 				//Oben ist Wasser

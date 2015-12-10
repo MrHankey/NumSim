@@ -88,7 +88,10 @@ if __name__ == "__main__":
             if ( y == 0 or y == res_y - 1 ):
                 val = 1
             elif col == 0:
-                val = 3
+                if type == 2:
+                    val = 5
+                else:
+                    val = 3
             elif col == res_x - 1:
                 val = 4
             

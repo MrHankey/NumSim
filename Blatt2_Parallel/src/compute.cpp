@@ -85,8 +85,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_v->Initialize(0);
 	_p->Initialize(0);
 
-	_pL = 2; /// kann man auch noch aus Datei einlesen!
-	_pR = 1;
+	_pL = 0.1; /// kann man auch noch aus Datei einlesen!
+	_pR = 0.0;
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -228,7 +228,7 @@ const Grid* Compute::GetVorticity() {
 
 	// Cycle through all cells
 	while(it.Valid()) {
-		_tmpVorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+		_tmpVorticity->Cell(it) = fabs(_u->dy_r(it) - _v->dx_r(it));
 		it.Next();
 	}
 
@@ -298,6 +298,9 @@ void Compute::MomentumEqu(const real_t& dt) {
 	Iterator it = Iterator(_geom);
 	it.First();
 
+	//updaten oder nicht updaten?
+	//_geom->Update_All(_temp1,_F,_G,_pL,_pR);
+
 	// Cycle through all interior cells
 	while ( it.Valid() ) {
 		const real_t u = _u->Cell(it);
@@ -324,9 +327,11 @@ void Compute::MomentumEqu(const real_t& dt) {
 		}
 		else if (_geom->_b->Cell(it) == 1 )
 		{
-			//cout << "blubb: " << it.Value() << "  " << _geom->_b->Cell(it) << endl;
-			_F->Cell(it) = u;
 			_G->Cell(it) = v;
+		}
+		else //if ( _geom->_b->Cell(it) != 0 )
+		{
+			_F->Cell(it) = u;
 		}
 		//cout<<_F->Cell(it)<<" das war bei it = "<<it.Value()<<endl;
 
