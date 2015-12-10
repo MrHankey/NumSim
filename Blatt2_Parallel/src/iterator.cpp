@@ -132,7 +132,7 @@ InteriorIterator::InteriorIterator(const Geometry* geom) : Iterator(geom) {
 
 /// Sets the iterator to the first element
 void InteriorIterator::First() {
-	_value = 0;
+	_value = _geom->Size()[0] + 1;
 	_valid = true;
 
 	if((_geom->_b->Cell(*this))!=0){
@@ -146,10 +146,10 @@ void InteriorIterator::First() {
 // Rewritten for Black and red solving (right until end then one top the left until end)
 void InteriorIterator::Next() {
 	multi_index_t size = _geom->Size();
-	if ( _value + 1 > size[0]*size[1]-1)
-		_valid = false;
-	else
-		_value += 1;
+		if ( _value + 1 > size[0]*size[1]-1)
+			_valid = false;
+		else
+			_value += 1;
 
 	if((_geom->_b->Cell(*this))!=0 && _valid){
 		this->Next(); /// Wenn es kein Wasser ist dann gleich noch eins weiter springen!
