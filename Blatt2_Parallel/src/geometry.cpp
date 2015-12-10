@@ -474,9 +474,13 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			}
 			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
 				//Rechts ist Wasser
-				p->Cell(it)= pL;
+				p->Cell(it)= 2.0*pL - p->Cell(it.Right());
+				//u->Cell(it.Right()) = u->Cell(it.Right().Right());
 				u->Cell(it)=u->Cell(it.Right());
 				v->Cell(it)=v->Cell(it.Right());
+				//u->Cell(it) = 1.0;
+				//v->Cell(it) = 0.0;//2.0*0.0 - v->Cell(it.Right());
+				//p->Cell(it) = p->Cell(it.Right());
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())==0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())!=0){
 				//Oben ist Wasser
@@ -517,9 +521,12 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
 				//Links ist Wasser
-				p->Cell(it)= pR;
-				u->Cell(it)=u->Cell(it.Left().Left());
-				u->Cell(it.Left())=u->Cell(it.Left().Left());
+				//real_t tmp = 1.0; //p->Cell(it.Left());//2.0*1.0 - p->Cell(it.Left());
+				//cout << p->Cell(it.Left()) << endl;
+				p->Cell(it)= 2.0*pR - p->Cell(it.Left());
+
+				//u->Cell(it.Left())=u->Cell(it.Left().Left());
+				u->Cell(it)=u->Cell(it.Left());
 				v->Cell(it)=v->Cell(it.Left());
 			}
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
@@ -559,7 +566,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 			else if(_b->Cell(it.Right())!=0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())!=0 && _b->Cell(it.Down())==0){
 				//Unten ist Wasser
 				p->Cell(it)=p->Cell(it.Down());
-				u->Cell(it)=2-(u->Cell(it.Down()));
+				u->Cell(it)=2.0-(u->Cell(it.Down()));
 				v->Cell(it)=0;
 				v->Cell(it.Down())=0;
 

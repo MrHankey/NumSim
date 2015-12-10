@@ -132,7 +132,7 @@ InteriorIterator::InteriorIterator(const Geometry* geom) : Iterator(geom) {
 
 /// Sets the iterator to the first element
 void InteriorIterator::First() {
-	_value = _geom->Size()[0] + 1;
+	_value = 0;
 	_valid = true;
 
 	if((_geom->_b->Cell(*this))!=0){
@@ -145,24 +145,13 @@ void InteriorIterator::First() {
 /// Goes to the next element of the iterator, disables it if position is end
 // Rewritten for Black and red solving (right until end then one top the left until end)
 void InteriorIterator::Next() {
-	if ( (_value + 2) % (2*_geom->Size()[0]) == 0 ){
-		_value += _geom->Size()[0];
-		if ( (_value) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)))
-			_valid = false;
-	}
-	else if ( (_value - 1) % (2*_geom->Size()[0]) == 0 ){
-		_value += _geom->Size()[0];
-		if ( (_value) >= (_geom->Size()[0]*(_geom->Size()[1] - 1)))
-			_valid = false;
-	}
-	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 1)
-		_value++;
-	else if (((index_t)(_value/_geom->Size()[0])) % 2 == 0)
-		_value--;
+	multi_index_t size = _geom->Size();
+	if ( _value + 1 > size[0]*size[1]-1)
+		_valid = false;
 	else
-		std::cout<<_value<<" erzeugt Fehler!";
+		_value += 1;
 
-	if((_geom->_b->Cell(*this))!=0){
+	if((_geom->_b->Cell(*this))!=0 && _valid){
 		this->Next(); /// Wenn es kein Wasser ist dann gleich noch eins weiter springen!
 	}
 }

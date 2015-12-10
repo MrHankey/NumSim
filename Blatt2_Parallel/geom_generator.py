@@ -1,6 +1,7 @@
 import sys
 import csv
 import math
+from math import sqrt
 
 length = 0
 height = 0
@@ -35,12 +36,12 @@ def draw_simple_karman():
     br = 4
     #rows[x][y] = 1
     
-    for offset in range (0, int(math.floor(x/2)) + 1):
+    for offset in range (0, int(math.floor((x/2)/sqrt(2))) + 1):
         for off_x in range (-1, 3):
             rows[y+offset][x-offset + off_x] = 1
             rows[y-offset][x+offset + off_x] = 1
             
-    offset = int(math.floor(x/2))
+    offset = int(math.floor((x/2)/sqrt(2)))
     for off_x in range (-1, 2):
         rows[y+offset+1][x-offset + off_x] = 1
         rows[y-offset-1][x+offset + 1 + off_x] = 1
