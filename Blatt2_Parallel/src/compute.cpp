@@ -325,7 +325,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 			_F->Cell(it) = u + dt*A;
 			_G->Cell(it) = v + dt*B;
 		}
-		else if (_geom->_b->Cell(it) == 1 )
+		else //if (_geom->_b->Cell(it) == 1 )
 		{
 			_G->Cell(it) = v;
 		}
