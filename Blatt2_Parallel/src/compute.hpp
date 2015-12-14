@@ -17,6 +17,8 @@
 
 #include "typedef.hpp"
 #include "solver.hpp"
+
+#include "list"
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -52,6 +54,12 @@ public:
   const Grid *GetVorticity();
   /// Computes and returns the stream line values
   const Grid *GetStream();
+
+  std::list<multi_real_t> particelTracing;
+  std::list<multi_real_t> StreakLines;
+
+  Grid *particelTracingGrid;
+  Grid *StreakLinesGrid;
 
 private:
   // current timestep

@@ -75,6 +75,12 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_temp2 = new Grid(geom);
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
+	particelTracingGrid = new Grid(geom);
+	StreakLinesGrid = new Grid(geom);
+
+	//Start Position
+	particelTracing.push_back({0,0.7});
+	StreakLines.push_back({0,0.7});
 
 
 	_tmpVorticity = new Grid(geom, vort_offset);
@@ -85,7 +91,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_v->Initialize(0);
 	_p->Initialize(0);
 
-	_pL = 0.1; /// kann man auch noch aus Datei einlesen!
+	_pL = 1.0; /// kann man auch noch aus Datei einlesen!
 	_pR = 0.0;
 
 	_tmpVorticity->Initialize(0);
@@ -127,6 +133,42 @@ void Compute::TimeStep(bool printInfo) {
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
+
+	multi_real_t partTrace = particelTracing.back();
+	if(partTrace[0]<=_geom->Length()[0]){
+		partTrace[0] = partTrace[0]+dt*_u->Interpolate(partTrace);
+		partTrace[1] = partTrace[1]+dt*_v->Interpolate(partTrace);
+		particelTracing.push_back(partTrace);
+		//cout<<"x: "<<partTrace[0]<<" y: "<<partTrace[1]<<endl;
+
+		particelTracingGrid->Initialize(0);
+		index_t cell_x = (index_t)ceil((partTrace[0]/_geom->Mesh()[0]));
+		index_t cell_y = (index_t)ceil((partTrace[1]/_geom->Mesh()[1]));
+		Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+		particelTracingGrid->Cell(it) = 1;
+	}
+
+	multi_real_t startPosition =  StreakLines.back();
+	StreakLinesGrid->Initialize(0);
+	for (multi_real_t &pos : StreakLines)
+	{
+		if(pos[0]<=_geom->Length()[0]){
+
+			pos[0] = pos[0]+dt*_u->Interpolate(pos);
+			pos[1] = pos[1]+dt*_v->Interpolate(pos);
+			index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
+			index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));
+			Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+			StreakLinesGrid->Cell(it) = 1;
+			//cout<<"x: "<<pos[0]<<" y: "<<pos[1]<<endl;
+		}
+	}
+	StreakLines.push_back(startPosition);
+	index_t cell_x = (index_t)ceil((startPosition[0]/_geom->Mesh()[0]));
+	index_t cell_y = (index_t)ceil((startPosition[1]/_geom->Mesh()[1]));
+	Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+	StreakLinesGrid->Cell(it) = 1;
+
 
 	//biggest dt of all is chosen.
 	//dt = _comm->gatherMin(dt);
@@ -187,8 +229,8 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
-		cout << "t: " << _t << " dt: " << dt << " iter: " << i << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
-		//cout<<"i: "<<i<<" res :"<< total_res<<endl;
+		cout << "t: " << _t << " dt: " << dt << " iter: " << i << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" <<" Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[1]/8.0<<" Unser maximum: "<<_u->AbsMax()<< endl;
+		//cout<<"Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[0]/8.0<<" Unser maximum: "<<_u->AbsMax()<<endl;
 	}
 
 	//_u->Cell(it) = -10000;
@@ -228,7 +270,7 @@ const Grid* Compute::GetVorticity() {
 
 	// Cycle through all cells
 	while(it.Valid()) {
-		_tmpVorticity->Cell(it) = fabs(_u->dy_r(it) - _v->dx_r(it));
+		_tmpVorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
 		it.Next();
 	}
 
@@ -325,11 +367,11 @@ void Compute::MomentumEqu(const real_t& dt) {
 			_F->Cell(it) = u + dt*A;
 			_G->Cell(it) = v + dt*B;
 		}
-		else //if (_geom->_b->Cell(it) == 1 )
+		else if (_geom->_b->Cell(it) == 1 )
 		{
 			_G->Cell(it) = v;
 		}
-		else //if ( _geom->_b->Cell(it) != 0 )
+		else //( _geom->_b->Cell(it) != 0 )
 		{
 			_F->Cell(it) = u;
 		}
