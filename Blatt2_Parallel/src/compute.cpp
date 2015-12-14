@@ -270,7 +270,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
-		cout << "t: " << _t << " dt: " << dt << " iter: " << i << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" <<" Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[1]/8.0<<" Unser maximum: "<<_u->AbsMax()<< endl;
+		cout << "t: " << _t << " dt: " << dt << " iter: " << i << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 		//cout<<"Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[0]/8.0<<" Unser maximum: "<<_u->AbsMax()<<endl;
 	}
 

@@ -207,7 +207,6 @@ void Geometry::readCsvGrid(string fileName) const {
 		}
 	}
 
-	cout<<endl;
 	Grid *_bTmp;
 	_bTmp = new Grid(this);
 	Iterator ita = Iterator(this);
@@ -231,7 +230,6 @@ void Geometry::readCsvGrid(string fileName) const {
 			_b->Cell(newPos)=_bTmp->Cell(its);
 		}
 
-		cout << _b->Cell(newPos);
 		its.Next();
 	}
 }
