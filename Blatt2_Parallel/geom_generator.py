@@ -67,7 +67,7 @@ def generateParamFile(fileInG, fileInP, fileOut):
     
     writeString  = ""
     writeString += "Geometrie:      " + "iMax=" + dataG[3] + ", jMax="  + dataG[4] + ", xLength="  + dataG[5] + ", yLength=" + dataG[6] + "\n" ##
-    writeString += "Zeitsteuerung:  " + "tEnd=" + dataP[4] + ", tau="   + dataP[6]                                                      + "\n"
+    writeString += "Zeitsteuerung:  " + "tEnd=" + dataP[4] + ", tau="   + dataP[6] + ", deltaT="   + dataP[3]                           + "\n" ##
     writeString += "Solver:         " + "eps="  + dataP[5] + ", omega=" + dataP[1] + ", alpha="    + dataP[2] + ", iterMax=" + dataP[7] + "\n" ##
     writeString += "Kraefte und RE: " + "GX="   + str(0)   + ", GY="    + str(0)   + ", RE="       + dataP[0]                           + "\n" ##
     writeString += "Anfangswerte:   " + "UI="   + dataG[0] + ", VI="    + dataG[1] + ", PI="       + dataG[2]                           + "\n" ##
