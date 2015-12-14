@@ -60,10 +60,13 @@ int main(int argc, char **argv) {
     }
   }
 
+  int horizontalRes = 800;
+  int vertRes = 800/geom.Length()[0];
+
 // Create and initialize the visualization
 #ifdef USE_DEBUG_VISU
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(1000 / comm.ThreadDim()[0], 200 / comm.ThreadDim()[1],
+  visu.Init(horizontalRes / comm.ThreadDim()[0], vertRes / comm.ThreadDim()[1],
               comm.getRank() + 1, comm.ThreadIdx(), comm.ThreadDim());
 #endif // USE_DEBUG_VISU
 
@@ -132,8 +135,8 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Pressure", comp.GetP());
     vtk.AddPointScalar("Vorticity", comp.GetVorticity());
     vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.AddPointScalar("Tracing", comp.particelTracingGrid);
-    vtk.AddPointScalar("StreakLines", comp.StreakLinesGrid);
+    vtk.AddCellScalar("Tracing", comp.particelTracingGrid);
+    vtk.AddCellScalar("StreakLines", comp.StreakLinesGrid);
     vtk.Finish();
 
     // Run a few steps

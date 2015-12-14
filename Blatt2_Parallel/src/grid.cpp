@@ -73,7 +73,7 @@ const real_t& Grid::Cell(const Iterator& it) const {
 //  @param  pos  Position given between 0 to 1
 real_t Grid::Interpolate(const multi_real_t& pos) const {
 
-  if (true) {
+  if (false) {
 	  //TODO do proper interpolation
 	  index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
 	  index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));

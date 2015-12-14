@@ -18,7 +18,8 @@
 #include "typedef.hpp"
 #include "solver.hpp"
 
-#include "list"
+#include <list>
+#include <vector>
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -57,6 +58,8 @@ public:
 
   std::list<multi_real_t> particelTracing;
   std::list<multi_real_t> StreakLines;
+  std::vector<multi_real_t> particelTracing_bot;
+  std::vector<multi_real_t> StreakLines_bot;
 
   Grid *particelTracingGrid;
   Grid *StreakLinesGrid;

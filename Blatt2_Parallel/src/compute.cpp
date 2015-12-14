@@ -77,10 +77,14 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_tmp = new Grid(geom);
 	particelTracingGrid = new Grid(geom);
 	StreakLinesGrid = new Grid(geom);
+	particelTracingGrid->Initialize(0);
 
 	//Start Position
-	particelTracing.push_back({0,0.7});
+	particelTracing.push_back({0,0.6});
 	StreakLines.push_back({0,0.7});
+
+	particelTracing_bot.push_back({0,0.2});
+	StreakLines_bot.push_back({0,0.2});
 
 
 	_tmpVorticity = new Grid(geom, vort_offset);
@@ -134,18 +138,35 @@ void Compute::TimeStep(bool printInfo) {
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
 
-	multi_real_t partTrace = particelTracing.back();
-	if(partTrace[0]<=_geom->Length()[0]){
-		partTrace[0] = partTrace[0]+dt*_u->Interpolate(partTrace);
-		partTrace[1] = partTrace[1]+dt*_v->Interpolate(partTrace);
-		particelTracing.push_back(partTrace);
-		//cout<<"x: "<<partTrace[0]<<" y: "<<partTrace[1]<<endl;
+	if(_t>0.8){
+		multi_real_t partTrace = particelTracing.back();
+		if(partTrace[0]<=_geom->Length()[0]){
+			partTrace[0] = partTrace[0]+dt*_u->Interpolate(partTrace);
+			partTrace[1] = partTrace[1]+dt*_v->Interpolate(partTrace);
+			particelTracing.push_back(partTrace);
+			//cout<<"x: "<<partTrace[0]<<" y: "<<partTrace[1]<<endl;
 
-		particelTracingGrid->Initialize(0);
-		index_t cell_x = (index_t)ceil((partTrace[0]/_geom->Mesh()[0]));
-		index_t cell_y = (index_t)ceil((partTrace[1]/_geom->Mesh()[1]));
-		Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
-		particelTracingGrid->Cell(it) = 1;
+			//particelTracingGrid->Initialize(0);
+			index_t cell_x = (index_t)ceil((partTrace[0]/_geom->Mesh()[0]));
+			index_t cell_y = (index_t)ceil((partTrace[1]/_geom->Mesh()[1]));
+			Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+			particelTracingGrid->Cell(it) = 1;
+		}
+
+		partTrace = particelTracing_bot.back();
+		if(partTrace[0]<=_geom->Length()[0]){
+			partTrace[0] = partTrace[0]+dt*_u->Interpolate(partTrace);
+			partTrace[1] = partTrace[1]+dt*_v->Interpolate(partTrace);
+			particelTracing_bot.push_back(partTrace);
+			//cout<<"x: "<<partTrace[0]<<" y: "<<partTrace[1]<<endl;
+
+			//particelTracingGrid->Initialize(0);
+			index_t cell_x = (index_t)ceil((partTrace[0]/_geom->Mesh()[0]));
+			index_t cell_y = (index_t)ceil((partTrace[1]/_geom->Mesh()[1]));
+			Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+			particelTracingGrid->Cell(it) = 2;
+		}
+
 	}
 
 	multi_real_t startPosition =  StreakLines.back();
@@ -168,6 +189,26 @@ void Compute::TimeStep(bool printInfo) {
 	index_t cell_y = (index_t)ceil((startPosition[1]/_geom->Mesh()[1]));
 	Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
 	StreakLinesGrid->Cell(it) = 1;
+
+	startPosition =  StreakLines_bot.back();
+	for (multi_real_t &pos : StreakLines_bot)
+	{
+		if(pos[0]<=_geom->Length()[0]){
+
+			pos[0] = pos[0]+dt*_u->Interpolate(pos);
+			pos[1] = pos[1]+dt*_v->Interpolate(pos);
+			index_t cell_x = (index_t)ceil((pos[0]/_geom->Mesh()[0]));
+			index_t cell_y = (index_t)ceil((pos[1]/_geom->Mesh()[1]));
+			Iterator it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+			StreakLinesGrid->Cell(it) = 2;
+			//cout<<"x: "<<pos[0]<<" y: "<<pos[1]<<endl;
+		}
+	}
+	StreakLines_bot.push_back(startPosition);
+	cell_x = (index_t)ceil((startPosition[0]/_geom->Mesh()[0]));
+	cell_y = (index_t)ceil((startPosition[1]/_geom->Mesh()[1]));
+	it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
+	StreakLinesGrid->Cell(it) = 2;
 
 
 	//biggest dt of all is chosen.

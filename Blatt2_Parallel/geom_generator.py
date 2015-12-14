@@ -69,7 +69,7 @@ def generateParamFile(fileInG, fileInP, fileOut):
     writeString += "Geometrie:      " + "iMax=" + dataG[3] + ", jMax="  + dataG[4] + ", xLength="  + dataG[5] + ", yLength=" + dataG[6] + "\n" ##
     writeString += "Zeitsteuerung:  " + "tEnd=" + dataP[4] + ", tau="   + dataP[6] + ", deltaT="   + dataP[3]                           + "\n" ##
     writeString += "Solver:         " + "eps="  + dataP[5] + ", omega=" + dataP[1] + ", alpha="    + dataP[2] + ", iterMax=" + dataP[7] + "\n" ##
-    writeString += "Kraefte und RE: " + "GX="   + str(0)   + ", GY="    + str(0)   + ", RE="       + dataP[0]                           + "\n" ##
+    writeString += "Kraefte und RE: " + "GX="   + str(0)   + ", GY="    + str(0)   + ", RE="       + '10000' + ', REstufe=100' +        + "\n" ##
     writeString += "Anfangswerte:   " + "UI="   + dataG[0] + ", VI="    + dataG[1] + ", PI="       + dataG[2]                           + "\n" ##
     
     
@@ -81,15 +81,40 @@ def generateParamFile(fileInG, fileInP, fileOut):
 #read params
 if __name__ == "__main__":
     filename = sys.argv[1]
-    inputfilename = sys.argv[2]
+    in_geom = sys.argv[2]
+    in_param = sys.argv[3]
 
-    type = int(sys.argv[3])
+    type = int(sys.argv[4])
 
 	#generate parameter file
-    generateParamFile(inputfilename,"parameter.txt","param.swag")
+    #generateParamFile(inputfilename,"parameter.txt","param.swag")
+    
+    f = open(in_param, 'r+')
+    data = []
+    for line in f:
+        data.append(line.rstrip())
+        
+     
+    #text = f.read()
+    f.seek(0)
+    if type == 2:
+        data[0] = '10000'
+    elif type == 3 :
+        data[0] = '1000'
+    else:
+        data[0] = '100'
+        
+    writeString = ''
+    for line in data:
+        writeString += line + '\n'
+        
+    f.write(writeString)
+    
+    f.truncate()
+    f.close()
 	
 
-    fobj = open(inputfilename)
+    fobj = open(in_geom)
     i = 1
     for line in fobj:
 	if (i==4):
@@ -104,31 +129,42 @@ if __name__ == "__main__":
     fobj.close()
     
     alpha = 0
-    
-    if ( type == 2 ):
-        alpha = sys.argv[4]
-        
-    if ( type > 2 or type < 0):
+            
+    if ( type > 3 or type < 0):
         print "Error: invalid type specified"
         exit()
     
-    #generate normal tunnel
-    for y in range(0, res_y):
-        row = []
-        for col in range(0, res_x):
-            val = 0;
-            if ( y == 0 or y == res_y - 1 ):
-                val = 1
-            elif col == 0:
-                if type == 2:
+    #generate driven cavity
+    if ( type == 3):
+        for y in range(0, res_y):
+            row = []
+            for col in range(0, res_x):
+                val = 0;
+                if ( y == 0 ):
                     val = 5
-                else:
-                    val = 3
-            elif col == res_x - 1:
-                val = 4
-            
-            row.append(val)        
-        rows.append(row)
+                elif col == 0 or col == res_x - 1 or y == res_y - 1:
+                    val = 1
+                
+                row.append(val)
+            rows.append(row)
+    else:
+        #generate normal tunnel
+        for y in range(0, res_y):
+            row = []
+            for col in range(0, res_x):
+                val = 0;
+                if ( y == 0 or y == res_y - 1 ):
+                    val = 1
+                elif col == 0:
+                    if type == 2:
+                        val = 5
+                    else:
+                        val = 3
+                elif col == res_x - 1:
+                    val = 4
+                
+                row.append(val)        
+            rows.append(row)
     
     #generate obstacle
     if ( type == 1):
@@ -142,7 +178,7 @@ if __name__ == "__main__":
     #generate karman
     if ( type == 2):
         rows = draw_simple_karman()
-                
+            
         
     
     f = open(filename, 'wb')
