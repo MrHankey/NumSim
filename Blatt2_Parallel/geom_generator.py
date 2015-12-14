@@ -49,6 +49,35 @@ def draw_simple_karman():
     return rows
 
 
+#generate parameter file
+def generateParamFile(fileInG, fileInP, fileOut):
+    # Initialize
+    dataG = []
+    dataP = []
+    fInG = open(fileInG, 'r')
+    for line in fInG:
+        dataG.append(line.rstrip())
+    fInG.close()
+    
+    fInP = open(fileInP, 'r')
+    for line in fInP:
+        dataP.append(line.rstrip())
+    fInP.close()
+    
+    
+    writeString  = ""
+    writeString += "Geometrie:      " + "iMax=" + dataG[3] + ", jMax="  + dataG[4] + ", xLength="  + dataG[5] + ", yLength=" + dataG[6] + "\n" ##
+    writeString += "Zeitsteuerung:  " + "tEnd=" + dataP[4] + ", tau="   + dataP[6]                                                      + "\n"
+    writeString += "Solver:         " + "eps="  + dataP[5] + ", omega=" + dataP[1] + ", alpha="    + dataP[2] + ", iterMax=" + dataP[7] + "\n" ##
+    writeString += "Kraefte und RE: " + "GX="   + str(0)   + ", GY="    + str(0)   + ", RE="       + dataP[0]                           + "\n" ##
+    writeString += "Anfangswerte:   " + "UI="   + dataG[0] + ", VI="    + dataG[1] + ", PI="       + dataG[2]                           + "\n" ##
+    
+    
+    fOut = open(fileOut,'w') 
+    fOut.write(writeString)
+    fOut.close()
+
+
 #read params
 if __name__ == "__main__":
     filename = sys.argv[1]
@@ -56,6 +85,9 @@ if __name__ == "__main__":
 
     type = int(sys.argv[3])
 
+	#generate parameter file
+    generateParamFile(inputfilename,"parameter.txt","param.swag")
+	
 
     fobj = open(inputfilename)
     i = 1
