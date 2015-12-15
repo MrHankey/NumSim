@@ -27,7 +27,7 @@ debug = ARGUMENTS.get('debug', 0)
 env.Replace(CXX='mpic++')
 
 #serial
-# env.Replace(CXX='g++')
+#env.Replace(CXX='g++')
 
 # define some general compiler flags
 env.Append(
@@ -47,6 +47,9 @@ env.Append(
 if debug == 0:
     env['CXXFLAGS'] += ["-O3",
                         "-flto"]
+    
+    env['LINKFLAGS'] += ['-flto', '-O3']
+    
 else:
     env['CXXFLAGS'] += [
                         "-g3",
