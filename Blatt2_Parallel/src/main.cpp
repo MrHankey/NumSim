@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
   }
 
   int horizontalRes = 800;
-  int vertRes = 800/geom.Length()[0];
+  int vertRes = horizontalRes/geom.Length()[0];
 
 // Create and initialize the visualization
 #ifdef USE_DEBUG_VISU
@@ -135,8 +135,8 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Pressure", comp.GetP());
     vtk.AddPointScalar("Vorticity", comp.GetVorticity());
     vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.AddCellScalar("Tracing", comp.particelTracingGrid);
-    vtk.AddCellScalar("StreakLines", comp.StreakLinesGrid);
+    vtk.AddPointScalar("Tracing", comp.particelTracingGrid);
+    vtk.AddPointScalar("StreakLines", comp.StreakLinesGrid);
     vtk.Finish();
 
     // Run a few steps
