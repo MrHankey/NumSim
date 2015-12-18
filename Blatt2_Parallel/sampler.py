@@ -9,7 +9,7 @@ print "Starting " + str(numSamples) + " samples on " + str(numProcs) + " cores."
 
 procs = []
 
-args="./build/NumSim"
+args="./numsim"
 
 for p in range (0, numProcs):
     process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
