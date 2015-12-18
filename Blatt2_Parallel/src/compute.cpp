@@ -18,6 +18,9 @@
 #include "compute.hpp"
 #include <cmath>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -182,6 +185,29 @@ void Compute::TimeStep(bool printInfo) {
 	// Print info
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
+
+		index_t small = 5;
+		index_t med = 32;
+		index_t big = 60;
+
+		index_t linPos1 = _geom->Size()[0]*small + big;
+		index_t linPos2 = _geom->Size()[0]*med + med;
+		index_t linPos3 = _geom->Size()[0]*big + small;
+
+		Iterator it = Iterator(_geom, linPos1);
+		real_t u1 = _u->Cell(it);
+		Iterator it2 = Iterator(_geom, linPos2);
+		real_t u2 = _u->Cell(it2);
+		Iterator it3 = Iterator(_geom, linPos3);
+		real_t u3 = _u->Cell(it3);
+
+		std::ofstream outfile;
+		std::ostringstream name;
+		name <<  std::fixed << std::setprecision(8) << "samples/" << _param->Re() << ".txt";
+		outfile.open( name.str() , std::ios_base::app);
+		outfile << std::fixed << std::setprecision(8) << u1 << ", " << u2 << ", " << u3 << ";" << std::endl;;
+		outfile.close();
+
 	}
 }
 

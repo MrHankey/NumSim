@@ -27,19 +27,42 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <random>
+#include <chrono>
 
 int main(int argc, char **argv) {
 
+
+
   // Create parameter and geometry instances with default values
   Communicator comm(&argc, &argv);
+  if (comm.getRank() == 0) {
+		struct stat info;
+
+		if (stat("VTK", &info) != 0) {
+			system("mkdir VTK");
+		}
+		if (stat("samples", &info) != 0) {
+			system("mkdir samples");
+		}
+	}
+
   Parameter param;
   Geometry geom(&comm);
 
   param.Load("parameter.txt");
   geom.Load("geometry.txt");
 
-  if ( argc >= 2)
-      param.SetRe( (real_t)atoi(argv[1]) );
+  // set re
+  /*if ( argc >= 2)
+      param.SetRe( atof(argv[1]) );*/
+
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator (seed);
+  std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
+
+  real_t sample_re = distribution(generator);
+  param.SetRe(sample_re);
 
   //set fixed timestep
   real_t dt = 1.0/geom.Size()[0];
@@ -53,12 +76,6 @@ int main(int argc, char **argv) {
 
     geom.PrintVariables();
 	param.PrintVariables();
-    // check if folder "VTK" exists
-    struct stat info;
-
-    if (stat("VTK", &info) != 0) {
-      system("mkdir VTK");
-    }
   }
 
 // Create and initialize the visualization
@@ -119,7 +136,7 @@ int main(int argc, char **argv) {
     // Create VTK Files in the folder VTK
     // Note that when using VTK module as it is you first have to write cell
     // information, then call SwitchToPointData(), and then write point data.
-    vtk.Init("VTK/field");
+    /*vtk.Init("VTK/field");
     vtk.AddRank();
     vtk.AddCellField("Cell Velocity", comp.GetU(), comp.GetV());
     vtk.SwitchToPointData();
@@ -127,7 +144,7 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Pressure", comp.GetP());
     vtk.AddPointScalar("Vorticity", comp.GetVorticity());
     vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.Finish();
+    vtk.Finish();*/
 
     // Run a few steps
     for (uint32_t i = 0; i < 26; ++i)
