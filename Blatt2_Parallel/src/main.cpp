@@ -35,15 +35,16 @@ int main(int argc, char **argv) {
   Parameter param;
   Geometry geom(&comm);
 
-  if ( argc >= 2)
-    param.Load(argv[1]);
-  else
-    param.Load("parameter.txt");
+  param.Load("parameter.txt");
+  geom.Load("geometry.txt");
 
-  if ( argc >= 3)
-    geom.Load(argv[2]);
-  else
-    geom.Load("geometry.txt");
+  if ( argc >= 2)
+      param.SetRe( (real_t)atoi(argv[1]) );
+
+  //set fixed timestep
+  real_t dt = 1.0/geom.Size()[0];
+  param.SetDt(dt);
+
 
   // Create the fluid solver
   Compute comp(&geom, &param, &comm);
@@ -129,7 +130,7 @@ int main(int argc, char **argv) {
     vtk.Finish();
 
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
+    for (uint32_t i = 0; i < 26; ++i)
       comp.TimeStep(false);
     bool printOnlyOnMaster = !comm.getRank();
     comp.TimeStep(printOnlyOnMaster);

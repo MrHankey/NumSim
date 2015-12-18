@@ -70,6 +70,13 @@ void Parameter::PrintVariables(){
 	cout << "itermax: " << _itermax << endl << endl;
 }
 
+void Parameter::SetRe( real_t newRe) {
+	_re = newRe;
+}
+
+void Parameter::SetDt( real_t newDt) {
+	_dt = newDt;
+}
 
 /* Getter functions for all parameters */
 const real_t&  Parameter::Re()      const {return _re;}

@@ -118,13 +118,16 @@ void Compute::TimeStep(bool printInfo) {
 
 
 	// Compute dt
-	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	/*real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
 
 	//biggest dt of all is chosen.
-	dt = _comm->gatherMin(dt);
+	dt = _comm->gatherMin(dt);*/
+
+	//USE FIXED TIMESTEP
+	real_t dt = _param->Tau()*_param->Dt();
 
 	// Compute F, G
 	MomentumEqu(dt);

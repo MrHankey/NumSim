@@ -29,6 +29,10 @@ public:
   /// Loads the parameter values from a file
   void Load(const char *file);
 
+  void SetRe(real_t newRe);
+
+  void SetDt( real_t newDt);
+
   /// Getter functions for all parameters
   const real_t &Re() const;
   const real_t &Omega() const;
