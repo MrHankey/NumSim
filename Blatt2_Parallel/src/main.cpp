@@ -21,7 +21,9 @@
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
+#ifdef USE_DEBUG_VISU
+	#include "visu.hpp"
+#endif
 #include "vtk.hpp"
 
 #include <iostream>
