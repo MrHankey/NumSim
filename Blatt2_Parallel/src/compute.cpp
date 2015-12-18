@@ -187,8 +187,8 @@ void Compute::TimeStep(bool printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 
 		index_t small = 5;
-		index_t med = 32;
-		index_t big = 60;
+		index_t med = 64;
+		index_t big = 120;
 
 		index_t linPos1 = _geom->Size()[0]*small + big;
 		index_t linPos2 = _geom->Size()[0]*med + med;
