@@ -32,7 +32,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GOOD_FLAGS}")
 
 # debug visu?
 option (DEBUG_VISU
-  "Enable debugging visualization" ON)
+  "Enable debugging visualization" 0)
 
 # find sdl 2
 INCLUDE(FindPkgConfig)
@@ -85,6 +85,9 @@ endif (DEBUG_VISU)
 add_executable (numsim ${SOURCES})
 target_link_libraries (numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
+set (MPI_COMPILE_FLAGS " -flto -O3")
+set (MPI_LINK_FLAGS " -flto -O3")
+
 if (MPI_COMPILE_FLAGS)
   set_target_properties(numsim PROPERTIES
     COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
@@ -94,3 +97,5 @@ if (MPI_LINK_FLAGS)
   set_target_properties (numsim PROPERTIES
     LINK_FLAGS "${MPI_LINK_FLAGS}")
 endif()
+
+set(CMAKE_BUILD_TYPE Release)
