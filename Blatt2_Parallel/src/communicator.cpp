@@ -250,8 +250,8 @@ int Communicator::getNeighbour(int side) const {
  */
 bool Communicator::copyLeftBoundary(Grid* grid) const {
 	// Initialize
-	real_t boundary[grid->getGeometry()->Size()[1]];
-	real_t ghostLayer[grid->getGeometry()->Size()[1]];
+	real_t* boundary = new real_t[grid->getGeometry()->Size()[1]];
+	real_t* ghostLayer = new real_t[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryLeft);
 	int i = 0;
@@ -293,6 +293,10 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
 				i++;
 		}
 	}
+
+	delete[] boundary;
+	delete[] ghostLayer;
+
 	return true;
 }
 
@@ -304,8 +308,8 @@ bool Communicator::copyLeftBoundary(Grid* grid) const {
  */
 bool Communicator::copyRightBoundary(Grid* grid) const {
 	// Initialize
-	real_t boundary[grid->getGeometry()->Size()[1]];
-	real_t ghostLayer[grid->getGeometry()->Size()[1]];
+	real_t* boundary = new real_t[grid->getGeometry()->Size()[1]];
+	real_t* ghostLayer = new real_t[grid->getGeometry()->Size()[1]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryRight);
 	int i = 0;
@@ -345,6 +349,9 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
 		}
 	}
 
+	delete[] boundary;
+	delete[] ghostLayer;
+
 	return true;
 }
 
@@ -356,8 +363,8 @@ bool Communicator::copyRightBoundary(Grid* grid) const {
  */
 bool Communicator::copyTopBoundary(Grid* grid) const {
 	// Initialize
-	real_t boundary[grid->getGeometry()->Size()[0]];
-	real_t ghostLayer[grid->getGeometry()->Size()[0]];
+	real_t* boundary = new real_t[grid->getGeometry()->Size()[0]];
+	real_t* ghostLayer = new real_t[grid->getGeometry()->Size()[0]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryTop);
 	int i = 0;
@@ -396,6 +403,9 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
 		}
 	}
 
+	delete[] boundary;
+	delete[] ghostLayer;
+
 	return true;
 }
 
@@ -407,8 +417,8 @@ bool Communicator::copyTopBoundary(Grid* grid) const {
  */
 bool Communicator::copyBottomBoundary(Grid* grid) const {
 	// Initialize
-	real_t boundary[grid->getGeometry()->Size()[0]];
-	real_t ghostLayer[grid->getGeometry()->Size()[0]];
+	real_t* boundary = new real_t[grid->getGeometry()->Size()[0]];
+	real_t* ghostLayer = new real_t[grid->getGeometry()->Size()[0]];
 	BoundaryIterator it = BoundaryIterator(grid->getGeometry());
 	it.SetBoundary(it.boundaryBottom);
 	int i = 0;
@@ -445,6 +455,9 @@ bool Communicator::copyBottomBoundary(Grid* grid) const {
 				i++;
 		}
 	}
+
+	delete[] boundary;
+	delete[] ghostLayer;
 
 	return true;
 }

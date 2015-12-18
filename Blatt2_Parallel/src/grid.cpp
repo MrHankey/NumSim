@@ -233,9 +233,20 @@ real_t Grid::Min() const {
 	return min;
 }
 
+real_t Grid::InteriorMax() const {
+	real_t max = 0;
+	InteriorIterator it(_geom);
+	while (it.Valid())
+	{
+		max = std::fmax(max, _data[it]);
+		it.Next();
+	}
+	return max;
+}
+
 /// Returns the absolute maximal value
 real_t Grid::AbsMax() const {
-	real_t max = this->Max();
+	real_t max = this->InteriorMax();
 	real_t min = this->Min();
 	if ((max+min) > 0)
 		return fabs(max);

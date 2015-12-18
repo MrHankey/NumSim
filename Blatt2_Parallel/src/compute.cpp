@@ -108,6 +108,10 @@ Compute::~Compute() {
 void Compute::TimeStep(bool printInfo) {
 	// Compute boundary Values
 	// eigentlich erst nach dt, aber dann geht der erste Zeitschritt zu lang.
+
+	if ( _t > _param->Tend())
+		return;
+
 	_geom->Update_U(_u);
 	_geom->Update_V(_v);
 	_geom->Update_P(_p);
@@ -228,7 +232,7 @@ const Grid* Compute::GetStream() {
 	screenSize[0] = (_geom->TotalSize()[0]-2)/(_geom->Size()[0]-2);
 	screenSize[1] = (_geom->TotalSize()[1]-2)/(_geom->Size()[1]-2);
 
-	for(int i = 0;i<screenSize[0]+screenSize[1];i++){
+	for(index_t i = 0;i<screenSize[0]+screenSize[1];i++){
 
 		// Set first value to zero
 		it.First();
