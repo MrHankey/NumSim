@@ -130,7 +130,7 @@ if __name__ == "__main__":
     
     alpha = 0
             
-    if ( type > 3 or type < 0):
+    if ( type > 4 or type < 0):
         print "Error: invalid type specified"
         exit()
     
@@ -162,6 +162,9 @@ if __name__ == "__main__":
                         val = 3
                 elif col == res_x - 1:
                     val = 4
+                    
+                if ( type == 4 and col == res_x/2 ):
+                    val = 1;
                 
                 row.append(val)        
             rows.append(row)

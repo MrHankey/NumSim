@@ -426,6 +426,16 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				v->Cell(it)=0;
 				v->Cell(it.Down())=0;
 			}
+			else if(_b->Cell(it.Right())==0 && _b->Cell(it.Top())!=0 && _b->Cell(it.Left())==0 && _b->Cell(it.Down())!=0){
+				//Links und Rechts ist Wasser
+				//Rechts ist Wasser
+				p->Cell(it)= 0.5*(p->Cell(it.Right()) + p->Cell(it.Left()));
+				//p->Cell(it)=p->Cell(it.Right());
+				u->Cell(it)= 0;
+				v->Cell(it)= -0.5*(v->Cell(it.Right()) + v->Cell(it.Left()));
+				//v->Cell(it)= -(v->Cell(it.Right()));
+				//v->Cell(it.Down())= -(v->Cell(it.Down().Right()));
+			}
 			else{
 				cout<<"Error in CSV File"<< it.Value()<<"Bedingung:"<< _b->Cell(it)<<endl;
 			}
@@ -474,7 +484,7 @@ void Geometry::Update_All(Grid* p,Grid* u,Grid* v,real_t pL,real_t pR) const {
 				//Rechts ist Wasser
 				p->Cell(it)= 2.0*pL - p->Cell(it.Right());
 				//u->Cell(it.Right()) = u->Cell(it.Right().Right());
-				u->Cell(it)=u->Cell(it.Right());
+				u->Cell(it)= u->Cell(it.Right());
 				v->Cell(it)= v->Cell(it.Right());
 				//u->Cell(it) = 1.0;
 				//v->Cell(it) = 0.0;//2.0*0.0 - v->Cell(it.Right());

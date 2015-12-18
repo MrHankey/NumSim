@@ -95,7 +95,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_v->Initialize(0);
 	_p->Initialize(0);
 
-	_pL = 1.0; /// kann man auch noch aus Datei einlesen!
+	_pL = 0.05; /// kann man auch noch aus Datei einlesen!
 	_pR = 0.0;
 
 	_tmpVorticity->Initialize(0);
@@ -208,7 +208,7 @@ void Compute::TimeStep(bool printInfo) {
 	cell_x = (index_t)ceil((startPosition[0]/_geom->Mesh()[0]));
 	cell_y = (index_t)ceil((startPosition[1]/_geom->Mesh()[1]));
 	it = Iterator(_geom, cell_y*_geom->Size()[0] + cell_x);
-	StreakLinesGrid->Cell(it) = 2;
+	StreakLinesGrid->Cell(it) = 1;
 
 
 	//biggest dt of all is chosen.
@@ -268,10 +268,49 @@ void Compute::TimeStep(bool printInfo) {
 	// Next timestep
 	_t += dt;
 
+
+	if (_t >= 49.0)
+	{
+		InteriorIterator it = InteriorIterator(_geom);
+		index_t count = 0;
+		real_t sum = 0;
+		while (it.Valid())
+		{
+
+			multi_index_t it_pos = it.Pos();
+			multi_real_t sample_pos = {(it_pos[0]/(real_t)_geom->Size()[0])*_geom->Length()[0], (it_pos[1]/(real_t)_geom->Size()[1])*_geom->Length()[1] };
+
+			real_t exact = -0.5*_param->Re()*(_pL-_pR)/_geom->Length()[0]*sample_pos[1]*(sample_pos[1] - _geom->Length()[1]);
+
+
+			sum += fabs(_u->Interpolate(sample_pos) - exact);
+
+			count++;
+			it.Next();
+		}
+
+		sum /= count;
+		cout << "L2 error: " << sum << endl;
+	}
+
 	// Print info
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << " iter: " << i << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
-		//cout<<"Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[0]/8.0<<" Unser maximum: "<<_u->AbsMax()<<endl;
+		//cout<<"Theoretisches Maximum: "<<_param->Re()*(_pL-_pR)/_geom->Length()[0]*_geom->Length()[1]*_geom->Length()[1]/8.0<<" Unser maximum: "<<_u->AbsMax()<<endl;
+
+		/*multi_real_t sample_pos_1 = {_geom->Length()[0]/2, _geom->Length()[1]/6 };
+		multi_real_t sample_pos_2 = {_geom->Length()[0]/2, _geom->Length()[1]/3 };
+		multi_real_t sample_pos_3 = {_geom->Length()[0]/2, _geom->Length()[1]/2 };
+
+		real_t exact1 = -0.5*_param->Re()*(_pL-_pR)/_geom->Length()[0]*sample_pos_1[1]*(sample_pos_1[1] - _geom->Length()[1]);
+		real_t exact2 = -0.5*_param->Re()*(_pL-_pR)/_geom->Length()[0]*sample_pos_2[1]*(sample_pos_2[1] - _geom->Length()[1]);
+		real_t exact3 = -0.5*_param->Re()*(_pL-_pR)/_geom->Length()[0]*sample_pos_3[1]*(sample_pos_3[1] - _geom->Length()[1]);
+
+		real_t diff1 = fabs(_u->Interpolate(sample_pos_1) - exact1);
+		real_t diff2 = fabs(_u->Interpolate(sample_pos_2) - exact2);
+		real_t diff3 = fabs(_u->Interpolate(sample_pos_3) - exact3);
+
+		cout << "diffs_" << _geom->Size()[1] - 2 << " = [" << diff1 << ", " << diff2 << " ," << diff3 << "]" << endl;*/
 	}
 
 	//_u->Cell(it) = -10000;
