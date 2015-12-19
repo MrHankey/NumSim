@@ -63,14 +63,19 @@ int main(int argc, char **argv) {
   std::default_random_engine generator (seed);
   std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
 
-  real_t sample_re = distribution(generator);
+  real_t sample_re = 0.0;
+  while ( sample_re < 1000.0 || sample_re > 2000.0 )
+  {
+	  sample_re = distribution(generator);
+  }
+
   param.SetRe(sample_re);
 
   if ( argc >= 2)
         param.SetRe( atof(argv[1]) );
 
   //set fixed timestep
-  real_t dt = 1.0/(geom.Size()[0] + 2);
+  real_t dt = 1.0/(geom.TotalSize()[0] + 2);
   param.SetDt(dt);
 
 
@@ -112,7 +117,7 @@ int main(int argc, char **argv) {
   while (comp.GetTime() < param.Tend()) {
 #ifdef USE_DEBUG_VISU
     // Render and check if window is closed
-    switch (visu.Render(visugrid)) {
+    switch (visu.Render(visugrid, 0.0, 1.0)) {
     case -1:
       return -1;
     case 0:
