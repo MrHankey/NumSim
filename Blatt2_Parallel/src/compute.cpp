@@ -349,11 +349,30 @@ const Grid* Compute::GetVorticity() {
 	Iterator it = InteriorIterator(_geom);
 
 	// Cycle through all cells
-	while(it.Valid()) {
-		_tmpVorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
-		it.Next();
-	}
+	if(false) {
+		while(it.Valid()) {
+			_tmpVorticity->Cell(it) = _u->dy_r(it) - _v->dx_r(it);
+			it.Next();
+		}
+	} else {
+		while(it.Valid()) {
+			if     (_u->dy_r(it) - _v->dx_r(it)>0) _tmpVorticity->Cell(it) =  1;
+			else if(_u->dy_r(it) - _v->dx_r(it)<0) _tmpVorticity->Cell(it) = -1;
+			else								   _tmpVorticity->Cell(it) =  0;
+			it.Next();
+		}
+		BoundaryIterator itb = BoundaryIterator(_geom);
+		itb.SetBoundary(0);
 
+		while(itb.Valid()) {
+			if(_tmpVorticity->Cell(itb.Top()) == 1 /*&& _tmpVorticity->Cell(itb.Top().Left()) == -1*/) {
+				_tmpVorticity->Cell(itb.Top()) = 2;
+				std::cout<<"d_breakoff: "<<(itb.Value()*_geom->Mesh()[0])<<endl;
+				break;
+			}
+			itb.Next();
+		}
+	}
 	return _tmpVorticity;
 }
 

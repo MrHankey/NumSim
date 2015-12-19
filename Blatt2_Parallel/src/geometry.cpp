@@ -207,6 +207,26 @@ void Geometry::readCsvGrid(string fileName) const {
 		}
 	}
 
+
+	// Parallel dosnt work with flip csv
+	/*Iterator it = Iterator(this);
+	int rowBeg = (int)_comm->ThreadIdx()[1]*((int)this->Size()[1])-(int)_comm->ThreadIdx()[1]*2;
+	int colBeg = (int)_comm->ThreadIdx()[0]*((int)this->Size()[0])-(int)_comm->ThreadIdx()[0]*2;
+	int rowEnd = ((int)_comm->ThreadIdx()[1]+1)*((int)this->Size()[1])-(int)_comm->ThreadIdx()[1]*2;
+	int colEnd = ((int)_comm->ThreadIdx()[0]+1)*((int)this->Size()[0])-(int)_comm->ThreadIdx()[0]*2;
+
+	//cout<<"Row: "<<rowBeg<<", "<<rowEnd<<", "<<TotalSize()[1]<<endl;
+	//cout<<"Col: "<<colBeg<<", "<<colEnd<<", "<<TotalSize()[0]<<endl;
+
+	for(int i=rowBeg; i<rowEnd; i++) {
+		for(int j=colBeg; j<colEnd; j++) {
+			_b->Cell(it) = readFile[i][j];
+			it.Next();
+		}
+	}*/
+
+
+	// Flip csv reader
 	Grid *_bTmp;
 	_bTmp = new Grid(this);
 	Iterator ita = Iterator(this);
