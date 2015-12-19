@@ -203,9 +203,9 @@ void Compute::TimeStep(bool printInfo) {
 
 		std::ofstream outfile;
 		std::ostringstream name;
-		name <<  std::fixed << std::setprecision(8) << "samples/" << _param->Re() << ".txt";
+		name <<  std::fixed << std::setprecision(8) << "samples/" << _param->Re() << ".csv";
 		outfile.open( name.str() , std::ios_base::app);
-		outfile << std::fixed << std::setprecision(8) << u1 << ", " << u2 << ", " << u3 << ";" << std::endl;;
+		outfile << std::fixed << std::setprecision(8) << u1 << "," << u2 << "," << u3 << std::endl;;
 		outfile.close();
 
 	}
