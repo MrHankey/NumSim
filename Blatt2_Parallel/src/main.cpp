@@ -66,6 +66,9 @@ int main(int argc, char **argv) {
   real_t sample_re = distribution(generator);
   param.SetRe(sample_re);
 
+  if ( argc >= 2)
+        param.SetRe( atof(argv[1]) );
+
   //set fixed timestep
   real_t dt = 1.0/geom.Size()[0];
   param.SetDt(dt);
