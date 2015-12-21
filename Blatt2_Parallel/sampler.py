@@ -4,7 +4,7 @@ from time import sleep
 
 numProcs = int(sys.argv[1])
 numSamples = int(sys.argv[2])
-deterministic = bool(sys.argv[3])
+deterministic = sys.argv[3] in ["true", "True"]
 
 print "Starting " + str(numSamples) + " samples on " + str(numProcs) + " cores."
 
