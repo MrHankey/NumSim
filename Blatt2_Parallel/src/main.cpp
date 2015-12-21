@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator (seed);
-  std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
+  //std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
+  std::uniform_real_distribution<double> distribution(1000.0,2000.0);
 
   real_t sample_re = 0.0;
   while ( sample_re < 1000.0 || sample_re > 2000.0 )
