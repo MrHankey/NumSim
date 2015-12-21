@@ -36,7 +36,8 @@ if env['visu'] == 1:
     env.Append(CPPDEFINES = ['USE_DEBUG_VISU'])
 
 # give the program a name
-name = 'NumSim'
+name = 'numsim'
 
 # build it
-env.Program(name, srcs)
+prog = env.Program(name, srcs)
+env.Install('..', prog)
