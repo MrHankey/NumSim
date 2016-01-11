@@ -85,8 +85,9 @@ public:
   /// Return a pointer to the Geometry
   const Geometry *getGeometry() const;
 
-private:
   real_t *_data;
+private:
+
   multi_real_t _offset;
   const Geometry *_geom;
 };

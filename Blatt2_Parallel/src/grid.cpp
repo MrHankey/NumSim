@@ -146,6 +146,11 @@ real_t Grid::dxx(const Iterator& it) const {
 /// Computes the central difference quatient of 2nd order in y-dim at [it]
 //  @param it  iterator position
 real_t Grid::dyy(const Iterator& it) const {
+	if ( !std::isfinite(_data[it]) )
+	{
+		std::cout << "Iterator: " << it.Value() << " Value: " << _data[it] << std::endl;
+		exit(1);
+	}
 	return (_data[it.Top()]-2*_data[it]+_data[it.Down()])/_geom->Mesh()[1]/_geom->Mesh()[1];
 }
 
