@@ -21,7 +21,9 @@
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
+#ifdef USE_DEBUG_VISU
+	#include "visu.hpp"
+#endif
 #include "vtk.hpp"
 
 #include <iostream>
@@ -89,7 +91,7 @@ int main(int argc, char **argv) {
   while (comp.GetTime() < param.Tend()) {
 #ifdef USE_DEBUG_VISU
     // Render and check if window is closed
-    switch (visu.Render(visugrid)) {
+    switch (visu.Render(visugrid, 0.0, 1.0)) {
     case -1:
       return -1;
     case 0:
@@ -118,7 +120,7 @@ int main(int argc, char **argv) {
     // Create VTK Files in the folder VTK
     // Note that when using VTK module as it is you first have to write cell
     // information, then call SwitchToPointData(), and then write point data.
-    vtk.Init("VTK/field");
+    /*vtk.Init("VTK/field");
     vtk.AddRank();
     vtk.AddCellField("Cell Velocity", comp.GetU(), comp.GetV());
     vtk.SwitchToPointData();
@@ -126,7 +128,7 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Pressure", comp.GetP());
     vtk.AddPointScalar("Vorticity", comp.GetVorticity());
     vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.Finish();
+    vtk.Finish();*/
 
     // Run a few steps
     for (uint32_t i = 0; i < 9; ++i)

@@ -39,9 +39,12 @@ env.Append(
            ],
            LIBS=[
                  "mpi",
-                 "SDL2",
+                 "OpenCL",
            ]
           )
+
+if env['visu']:
+    env['LIBS'] += ["SDL2"]
 
 # add flags for debug and release build
 if debug == 0:

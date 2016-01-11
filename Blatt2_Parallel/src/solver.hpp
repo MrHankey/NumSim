@@ -21,6 +21,9 @@
 #define __SOLVER_HPP
 //------------------------------------------------------------------------------
 
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+
 /** abstract base class for an iterative solver
  */
 class Solver {
@@ -43,8 +46,20 @@ protected:
   real_t localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const;
 };
 
-//------------------------------------------------------------------------------
+class Jacobi : public Solver {
+public:
+	/// Constructs an actual Jacobi solver
+	  Jacobi(const Geometry *geom);
+	  /// Destructor
+	  ~Jacobi();
 
+	  /// Returns the total residual and executes a solver cycle
+	  // @param grid current pressure values
+	  // @param rhs right hand side
+	  real_t Cycle(Grid *grid, const Grid *rhs) const;
+};
+
+//------------------------------------------------------------------------------
 /** concrete SOR solver
  */
 class SOR : public Solver {
@@ -61,6 +76,34 @@ public:
 
 protected:
   real_t _omega;
+};
+//------------------------------------------------------------------------------
+
+/** concrete Jacobi OpenCL solver
+ */
+class JacobiOCL{
+public:
+  /// Constructs an actual SOR solver
+  JacobiOCL( const Geometry *geom);
+  /// Destructor
+  ~JacobiOCL();
+
+  /// Returns the total residual and executes a solver cycle
+  // @param grid current pressure values
+  // @param rhs right hand side
+  real_t Cycle(Grid *grid, const  Grid *rhs);
+  //real_t Cycle(Grid *grid, const Grid *rhs) const;
+
+protected:
+  const Geometry* _geom;
+  cl::Kernel _kernel;
+  cl::CommandQueue _queue;
+  cl::Buffer _bufOld;
+  cl::Buffer _bufRHS;
+  cl::Buffer _bufNew;
+  cl::Context _context;
+  std::vector<cl::Device> _all_devices;
+  cl::Program _program;
 };
 //------------------------------------------------------------------------------
 
