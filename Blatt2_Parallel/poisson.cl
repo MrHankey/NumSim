@@ -1,7 +1,8 @@
 __kernel void poisson_jacobi(	__global const float *oldGrid,
 								__global const float *rhs,
 								__global float *newGrid,
-								__global float *dx
+								__global float *dx,
+								__global float *resGrid
 						)
  {
  
@@ -23,6 +24,13 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
     	//printf("dx: %lf, rhs: %lf, newP: %lf \n", h, rhs[index_p], newPressure);
     	  
     newGrid[index_p] = newPressure;
+    
+    barrier(CLK_GLOBAL_MEM_FENCE | CLK_LOCAL_MEM_FENCE);
+    
+    float dxx = (newGrid[index_p_r]-2*newGrid[index_p]+newGrid[index_p_l])/h/h;
+	float dyy = (newGrid[index_p_u]-2*newGrid[index_p]+newGrid[index_p_d])/h/h;
+    
+    resGrid[index_p] = fabs( dxx + dyy - rhs[index_p]); 
 }
 
 __kernel void reduction_vector(__global float4* data,__local float4* partial_sums, __global float* output) 

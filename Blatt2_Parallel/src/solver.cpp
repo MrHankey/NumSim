@@ -179,12 +179,13 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	// Make kernel
 	_kernel = Kernel(_program, "poisson_jacobi");
 
-
+	Grid localResiduals = Grid(_geom, 0.0f);
 
 	// Create memory buffers
 	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
 	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
 	_bufNew = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t));
+	Buffer bufLocalRes = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t));
 	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
 
 #ifdef __CL_ENABLE_EXCEPTIONS
@@ -202,6 +203,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		_kernel.setArg(2, _bufNew);
 		//_kernel.setArg(3, sizeof(clDx), &clDx);
 		_kernel.setArg(3, clDx);
+		_kernel.setArg(4, bufLocalRes);
 
 		// Run the kernel on specific ND range
 		NDRange global(_geom->Size()[0] - 2, _geom->Size()[1] - 2);
@@ -213,6 +215,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		/*Grid newGrid = Grid(_geom);
 		newGrid.Initialize(0.0);*/
 		_queue.enqueueReadBuffer(_bufNew, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
+		_queue.enqueueReadBuffer(bufLocalRes, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
 #ifdef __CL_ENABLE_EXCEPTIONS
 	} catch(Error error) {
 	   std::cout << "Error initializing OpenCL: " << error.what() << "(" << error.err() << ")" << std::endl;
@@ -225,16 +228,9 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	int num = 0;
 	real_t res = 0;
 	while(it.Valid()) {
-		// Calculate and summ residual
+		// sum residual
 
-		//cout << "value: " << grid->Cell(it) << endl;
-
-		real_t dxx = grid->dxx(it);
-		real_t dyy = grid->dyy(it);
-		real_t fRhs = rhs->Cell(it);
-		real_t locRes = fabs( dxx + dyy - fRhs);
-
-		res += locRes;
+		res += localResiduals.Cell(it);
 		it.Next();
 		num++;
 	}
