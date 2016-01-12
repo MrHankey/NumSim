@@ -43,7 +43,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_solver = new Jacobi(_geom);
 
 	// Set time steps
-	_t = 0.0;
+	_t = 0.0f;
 	_dtlimit = param->Dt();
 
 	// Define offset
@@ -56,11 +56,11 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 
 	// Set offset
 	u_offset[0] = geom->Mesh()[0];
-	u_offset[1] = geom->Mesh()[0]/2.0;
-	v_offset[0] = geom->Mesh()[0]/2.0;
+	u_offset[1] = geom->Mesh()[0]/2.0f;
+	v_offset[0] = geom->Mesh()[0]/2.0f;
 	v_offset[1] = geom->Mesh()[1];
-	p_offset[0] = geom->Mesh()[0]/2.0;
-	p_offset[1] = geom->Mesh()[1]/2.0;
+	p_offset[0] = geom->Mesh()[0]/2.0f;
+	p_offset[1] = geom->Mesh()[1]/2.0f;
 
 	vort_offset[0] = geom->Mesh()[0];
 	vort_offset[1] = geom->Mesh()[1];
@@ -81,12 +81,12 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_tmpStream    = new Grid(geom, stream_offset);
 
 	// Set values
-	_u->Initialize(0);
-	_v->Initialize(0);
-	_p->Initialize(0);
+	_u->Initialize(0.0f);
+	_v->Initialize(0.0f);
+	_p->Initialize(0.0f);
 
-	_tmpVorticity->Initialize(0);
-	_tmpStream->Initialize(0);
+	_tmpVorticity->Initialize(0.0f);
+	_tmpStream->Initialize(0.0f);
 
 }
 
@@ -122,16 +122,16 @@ void Compute::TimeStep(bool printInfo) {
 
 
 	// Compute dt
-	/*real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
 
 	//biggest dt of all is chosen.
-	dt = _comm->gatherMin(dt);*/
+	dt = _comm->gatherMin(dt);
 
 	//USE FIXED TIMESTEP
-	real_t dt = _param->Tau()*_param->Dt();
+	//real_t dt = _param->Tau()*_param->Dt();
 
 	// Compute F, G
 	MomentumEqu(dt);
@@ -143,8 +143,8 @@ void Compute::TimeStep(bool printInfo) {
 	RHS(dt);
 
 	// Compute p
-	real_t total_res = 10000000;
-	real_t local_res = 0.0;
+	real_t total_res = 10000000.0f;
+	real_t local_res = 0.0f;
 	index_t i = 0;
 
 	// Update boundary
@@ -188,29 +188,6 @@ void Compute::TimeStep(bool printInfo) {
 	// Print info
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
-
-		index_t small = 5;
-		index_t med = 64;
-		index_t big = 120;
-
-		index_t linPos1 = _geom->Size()[0]*small + big;
-		index_t linPos2 = _geom->Size()[0]*med + med;
-		index_t linPos3 = _geom->Size()[0]*big + small;
-
-		Iterator it = Iterator(_geom, linPos1);
-		real_t u1 = _u->Cell(it);
-		Iterator it2 = Iterator(_geom, linPos2);
-		real_t u2 = _u->Cell(it2);
-		Iterator it3 = Iterator(_geom, linPos3);
-		real_t u3 = _u->Cell(it3);
-
-		std::ofstream outfile;
-		std::ostringstream name;
-		name <<  std::fixed << std::setprecision(8) << "samples/" << _param->Re() << ".csv";
-		outfile.open( name.str() , std::ios_base::app);
-		outfile << std::fixed << std::setprecision(8) << u1 << "," << u2 << "," << u3 << std::endl;;
-		outfile.close();
-
 	}
 }
 

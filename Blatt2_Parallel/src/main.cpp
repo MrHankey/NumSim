@@ -44,9 +44,6 @@ int main(int argc, char **argv) {
 		if (stat("VTK", &info) != 0) {
 			system("mkdir VTK");
 		}
-		if (stat("samples", &info) != 0) {
-			system("mkdir samples");
-		}
 	}
 
   Parameter param;
@@ -54,31 +51,6 @@ int main(int argc, char **argv) {
 
   param.Load("parameter.txt");
   geom.Load("geometry.txt");
-
-  // set re
-  /*if ( argc >= 2)
-      param.SetRe( atof(argv[1]) );*/
-
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::default_random_engine generator (seed);
-  //std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
-  std::uniform_real_distribution<double> distribution(1000.0,2000.0);
-
-  real_t sample_re = 0.0;
-  while ( sample_re < 1000.0 || sample_re > 2000.0 )
-  {
-	  sample_re = distribution(generator);
-  }
-
-  param.SetRe(sample_re);
-
-  if ( argc >= 2)
-        param.SetRe( atof(argv[1]) );
-
-  //set fixed timestep
-  real_t dt = 1.0/(geom.TotalSize()[0] + 2);
-  param.SetDt(dt);
-
 
   // Create the fluid solver
   Compute comp(&geom, &param, &comm);
@@ -99,8 +71,8 @@ int main(int argc, char **argv) {
   // Create a VTK generator;
   // use offset as the domain shift
   multi_real_t offset;
-  offset[0] = comm.ThreadIdx()[0] * (geom.Mesh()[0] * (double)(geom.Size()[0] - 2));
-  offset[1] = comm.ThreadIdx()[1] * (geom.Mesh()[1] * (double)(geom.Size()[1] - 2));
+  offset[0] = comm.ThreadIdx()[0] * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
+  offset[1] = comm.ThreadIdx()[1] * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
   VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), offset, comm.getRank(),
           comm.getSize(), comm.ThreadDim());
 
@@ -169,7 +141,7 @@ int main(int argc, char **argv) {
   if ( comm.getRank() == 0)
   {
 	  clock_t end = clock();
-	  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	  real_t elapsed_secs = real_t(end - begin) / CLOCKS_PER_SEC;
 	  std::cout << "duration: " << elapsed_secs << std::endl;
   }
 

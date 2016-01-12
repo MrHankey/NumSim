@@ -23,6 +23,7 @@
 #include <cmath>
 #include <utility>
 #include <fstream>
+#include <iostream>
 
 using namespace cl;
 using namespace std;
@@ -131,7 +132,7 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 
 	platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &_all_devices);
 	if(_all_devices.size()==0){
-		std::cout<<" No devices found. Check OpenCL installation!\n";
+		cout << " No devices found. Check OpenCL installation!\n";
 		exit(1);
 	}
 
@@ -171,8 +172,8 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	/*real_t *A = new real_t[(index_t)n];
 	real_t *B = new real_t[(index_t)n];
 	for(int i = 0; i < n; i++) {
-		A[i] = (double)i;
-		B[i] = (double)(n - i);
+		A[i] = (real_t)i;
+		B[i] = (real_t)(n - i);
 	}*/
 
 	// Make kernel
@@ -363,8 +364,8 @@ real_t Jacobi::Cycle(Grid* grid, const Grid* rhs) const {
 	InteriorIterator it = InteriorIterator(_geom);
 	real_t n, res, dx, dy;
 
-	n    = 0;
-	res  = 0;
+	n    = 0.0f;
+	res  = 0.0f;
 	dx   = _geom->Mesh()[0];
 	dy   = _geom->Mesh()[1];
 	//norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );

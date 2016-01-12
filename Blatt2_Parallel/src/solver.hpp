@@ -21,7 +21,7 @@
 #define __SOLVER_HPP
 //------------------------------------------------------------------------------
 
-#define __CL_ENABLE_EXCEPTIONS
+//#define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
 /** abstract base class for an iterative solver

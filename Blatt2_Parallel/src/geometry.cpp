@@ -30,9 +30,9 @@ using namespace std;
 /// driven cavity with 128 x 128 grid, no-slip boundary conditions
 Geometry::Geometry() {
 	// Set starting velocities
-	_velocity[0] = 1;
-	_velocity[1] = 0;
-	_pressure    = 0;
+	_velocity[0] = 1.0f;
+	_velocity[1] = 0.0f;
+	_pressure    = 0.0f;
 
 	_comm = nullptr;
 
@@ -41,8 +41,8 @@ Geometry::Geometry() {
 	_bsize[1] = 128;
 
 	// Length of driven cavity
-	_blength[0] = 1;
-	_blength[1] = 1;
+	_blength[0] = 1.0f;
+	_blength[1] = 1.0f;
 
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
@@ -172,7 +172,7 @@ void Geometry::Update_U(Grid* u) const {
 	if(_comm->isBottom()){
 		it.SetBoundary(it.boundaryBottom);
 		while ( it.Valid() ) {
-			u->Cell(it) = -1*u->Cell(it.Top());
+			u->Cell(it) = -1.0f*u->Cell(it.Top());
 			it.Next();
 		}
 	}
@@ -181,8 +181,8 @@ void Geometry::Update_U(Grid* u) const {
 	if(_comm->isRight()){
 		it.SetBoundary(it.boundaryRight);
 		while ( it.Valid() ) {
-			u->Cell(it) = 0;
-			u->Cell(it.Left()) = 0; // hier evtl deleten
+			u->Cell(it) = 0.0f;
+			u->Cell(it.Left()) = 0.0f; // hier evtl deleten
 			it.Next();
 		}
 	}
@@ -190,7 +190,7 @@ void Geometry::Update_U(Grid* u) const {
 	if(_comm->isTop()){
 		it.SetBoundary(it.boundaryTop);
 		while ( it.Valid() ) {
-			u->Cell(it) = 2*velocity - u->Cell(it.Down()) ;
+			u->Cell(it) = 2.0f*velocity - u->Cell(it.Down()) ;
 			it.Next();
 		}
 	}
@@ -198,7 +198,7 @@ void Geometry::Update_U(Grid* u) const {
 	if(_comm->isLeft()){
 		it.SetBoundary(it.boundaryLeft);
 		while ( it.Valid() ) {
-			u->Cell(it) = 0;
+			u->Cell(it) = 0.0f;
 			it.Next();
 		}
 	}
@@ -214,7 +214,7 @@ void Geometry::Update_V(Grid* v) const {
 	if(_comm->isBottom()){
 		it.SetBoundary(it.boundaryBottom);
 		while ( it.Valid() ) {
-			v->Cell(it) = 0;
+			v->Cell(it) = 0.0f;
 			it.Next();
 		}
 	}
@@ -222,7 +222,7 @@ void Geometry::Update_V(Grid* v) const {
 	if(_comm->isRight()){
 		it.SetBoundary(it.boundaryRight);
 		while ( it.Valid() ) {
-			v->Cell(it) = -1*v->Cell(it.Left());
+			v->Cell(it) = -1.0f*v->Cell(it.Left());
 			it.Next();
 		}
 	}
@@ -230,8 +230,8 @@ void Geometry::Update_V(Grid* v) const {
 	if(_comm->isTop()){
 		it.SetBoundary(it.boundaryTop);
 		while ( it.Valid() ) {
-			v->Cell(it.Down()) = 0; // hier evtl deleten
-			v->Cell(it) = 0;
+			v->Cell(it.Down()) = 0.0f; // hier evtl deleten
+			v->Cell(it) = 0.0f;
 			it.Next();
 		}
 	}
@@ -239,7 +239,7 @@ void Geometry::Update_V(Grid* v) const {
 	if(_comm->isLeft()){
 		it.SetBoundary(it.boundaryLeft);
 		while ( it.Valid() ) {
-			v->Cell(it) = -1*v->Cell(it.Right());
+			v->Cell(it) = -1.0f*v->Cell(it.Right());
 			it.Next();
 		}
 	}
