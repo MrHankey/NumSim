@@ -36,8 +36,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_geom   = geom;
 	_param  = param;
 	_comm = comm;
-	_solver = new RedOrBlackSOR(_geom,_param->Omega());
-	//_solver = new Jacobi(_geom);
+	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
+	_solver = new JacobiOCL(_geom);
 
 	// Set time steps
 	_t = 0.0;
@@ -139,7 +139,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Update boundary
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
-		bool even = _comm->EvenOdd();
+		/*bool even = _comm->EvenOdd();
 		if (even){
 			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
@@ -154,9 +154,9 @@ void Compute::TimeStep(bool printInfo) {
 			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 
-		}
+		}*/
 
-		//local_res = _solver->Cycle(_p, _rhs);
+		local_res = _solver->Cycle(_p, _rhs);
 		//cout << "res: " << local_res << endl;
 		_geom->Update_P(_p);
 		total_res = _comm->gatherSum(local_res)/_comm->getSize();
