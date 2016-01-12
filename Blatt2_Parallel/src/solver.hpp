@@ -92,6 +92,8 @@ public:
   // @param grid current pressure values
   // @param rhs right hand side
   real_t Cycle(Grid *grid, const  Grid *rhs);
+  void InitializeBuffers();
+  void UpdateBuffers(Grid *grid, const Grid *rhs);
   //real_t Cycle(Grid *grid, const Grid *rhs) const;
 
 protected:
@@ -101,6 +103,7 @@ protected:
   cl::Buffer _bufOld;
   cl::Buffer _bufRHS;
   cl::Buffer _bufNew;
+  cl::Buffer _bufLocalResiduals;
   cl::Context _context;
   std::vector<cl::Device> _all_devices;
   cl::Program _program;

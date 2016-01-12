@@ -154,10 +154,45 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 	// Build program for these specific devices
 	_program.build(_all_devices);
 	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+
+	InitializeBuffers();
 }
 
 /// Destructor
 JacobiOCL::~JacobiOCL() {}
+
+void JacobiOCL::InitializeBuffers() {
+	// Create memory buffers
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_bufOld = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
+	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
+	_bufNew = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
+	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
+
+}
+
+void JacobiOCL::UpdateBuffers(Grid* grid, const Grid* rhs) {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+
+	// Get exclusive access to the buffer
+	real_t* mappedOldGrid = 	(real_t*) _queue.enqueueMapBuffer(_bufOld, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
+	real_t* mappedRHS = 		(real_t*) _queue.enqueueMapBuffer(_bufRHS, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
+	real_t* mappedNewGrid = 	(float*) _queue.enqueueMapBuffer(_bufNew, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
+	//real_t* mappedLocRes = 	(float*) _queue.enqueueMapBuffer(_bufLocalResiduals, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
+
+    for ( int i = 0; i < gridSize; i++)
+    {
+    	mappedOldGrid[i] = grid->_data[i];
+    	mappedRHS[i] = rhs->_data[i];
+    	mappedNewGrid[i] = grid->_data[i];
+    }
+
+	// release the buffer back to OpenCL’s control
+	_queue.enqueueUnmapMemObject(_bufOld, mappedOldGrid);
+	_queue.enqueueUnmapMemObject(_bufRHS, mappedRHS);
+	_queue.enqueueUnmapMemObject(_bufNew, mappedNewGrid);
+
+}
 
 
 /// Returns the total residual and executes a solver cycle of SOR
@@ -181,21 +216,17 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	Grid localResiduals = Grid(_geom, 0.0f);
 
-	// Create memory buffers
-	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
-	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
-	_bufNew = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t));
-	Buffer bufLocalRes = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t));
-	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
+	UpdateBuffers(grid, rhs);
+	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
 
 #ifdef __CL_ENABLE_EXCEPTIONS
 	try	{
 #endif
 
 		// Copy lists A and B to the memory buffers
-		_queue.enqueueWriteBuffer(_bufOld, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
-		_queue.enqueueWriteBuffer(_bufRHS, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), rhs->_data);
-		_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
+		//_queue.enqueueWriteBuffer(_bufOld, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
+		//_queue.enqueueWriteBuffer(_bufRHS, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), rhs->_data);
+		//_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
 
 		// Set arguments to kernel
 		_kernel.setArg(0, _bufOld);
@@ -203,7 +234,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		_kernel.setArg(2, _bufNew);
 		//_kernel.setArg(3, sizeof(clDx), &clDx);
 		_kernel.setArg(3, clDx);
-		_kernel.setArg(4, bufLocalRes);
+		_kernel.setArg(4, _bufLocalResiduals);
 
 		// Run the kernel on specific ND range
 		NDRange global(_geom->Size()[0] - 2, _geom->Size()[1] - 2);
@@ -215,7 +246,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		/*Grid newGrid = Grid(_geom);
 		newGrid.Initialize(0.0);*/
 		_queue.enqueueReadBuffer(_bufNew, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
-		_queue.enqueueReadBuffer(bufLocalRes, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
+		_queue.enqueueReadBuffer(_bufLocalResiduals, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
 #ifdef __CL_ENABLE_EXCEPTIONS
 	} catch(Error error) {
 	   std::cout << "Error initializing OpenCL: " << error.what() << "(" << error.err() << ")" << std::endl;
