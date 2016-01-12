@@ -17,7 +17,7 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
     int index_p_l = j*(get_global_size(0)+2) + i - 1;
     
     float h = *dx;
-    float newPressure = 0.25*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - (h*h)*rhs[index_p]);
+    float newPressure = 0.25f*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - (h*h)*rhs[index_p]);
     
     //if ( i == 5 && j == 5)
     	//printf("dx: %lf, rhs: %lf, newP: %lf \n", h, rhs[index_p], newPressure);

@@ -139,7 +139,7 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 	// Create a command queue and use the first device
 	_queue = CommandQueue(_context, _all_devices[0]);
 
-	//cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
+	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
 
 	// Read source file
 	std::ifstream sourceFile("poisson.cl");
@@ -205,7 +205,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 		// Run the kernel on specific ND range
 		NDRange global(_geom->Size()[0] - 2, _geom->Size()[1] - 2);
-		NDRange local(1,1);
+		NDRange local(4,4);
 		_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local);
 		//_queue.enqueue
 
