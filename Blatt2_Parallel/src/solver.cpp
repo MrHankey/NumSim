@@ -167,7 +167,7 @@ JacobiOCL::~JacobiOCL() {}
 real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	real_t dx   = _geom->Mesh()[0];
-	real_t n = _geom->Size()[0]*_geom->Size()[1];
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 
 	/*real_t *A = new real_t[(index_t)n];
 	real_t *B = new real_t[(index_t)n];
@@ -179,7 +179,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	// Make kernel
 	_kernel = Kernel(_program, "poisson_jacobi");
 
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+
 
 	// Create memory buffers
 	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
@@ -192,9 +192,9 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 #endif
 
 		// Copy lists A and B to the memory buffers
-		_queue.enqueueWriteBuffer(_bufOld, CL_TRUE, 0, (index_t)n * sizeof(real_t), grid->_data);
-		_queue.enqueueWriteBuffer(_bufRHS, CL_TRUE, 0, (index_t)n * sizeof(real_t), rhs->_data);
-		_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, (index_t)n * sizeof(real_t), grid->_data);
+		_queue.enqueueWriteBuffer(_bufOld, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
+		_queue.enqueueWriteBuffer(_bufRHS, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), rhs->_data);
+		_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
 
 		// Set arguments to kernel
 		_kernel.setArg(0, _bufOld);
@@ -212,7 +212,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 		/*Grid newGrid = Grid(_geom);
 		newGrid.Initialize(0.0);*/
-		_queue.enqueueReadBuffer(_bufNew, CL_TRUE, 0, n * sizeof(real_t), grid->_data);
+		_queue.enqueueReadBuffer(_bufNew, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
 #ifdef __CL_ENABLE_EXCEPTIONS
 	} catch(Error error) {
 	   std::cout << "Error initializing OpenCL: " << error.what() << "(" << error.err() << ")" << std::endl;
@@ -226,10 +226,15 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	real_t res = 0;
 	while(it.Valid()) {
 		// Calculate and summ residual
+
+		//cout << "value: " << grid->Cell(it) << endl;
+
 		real_t dxx = grid->dxx(it);
 		real_t dyy = grid->dyy(it);
 		real_t fRhs = rhs->Cell(it);
-		res += fabs( dxx + dyy - fRhs);
+		real_t locRes = fabs( dxx + dyy - fRhs);
+
+		res += locRes;
 		it.Next();
 		num++;
 	}

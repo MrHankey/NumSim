@@ -131,12 +131,12 @@ int main(int argc, char **argv) {
     vtk.Finish();*/
 
     // Run a few steps
-    //for (uint32_t i = 0; i < 9; ++i)
-      //comp.TimeStep(false);
+    for (uint32_t i = 0; i < 9; ++i)
+      comp.TimeStep(false);
     bool printOnlyOnMaster = !comm.getRank();
     comp.TimeStep(printOnlyOnMaster);
 
-    std::cin.ignore();
+    //std::cin.ignore();
   }
 
   if ( comm.getRank() == 0)
