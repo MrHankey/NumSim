@@ -48,7 +48,8 @@ if env['visu']:
 
 # add flags for debug and release build
 if debug == 0:
-    env['CXXFLAGS'] += ["-O3"]
+    env['CXXFLAGS'] += ["-O3","-flto"]
+    env['LINKFLAGS'] += ["-flto"]
 else:
     env['CXXFLAGS'] += [
                         "-g3",

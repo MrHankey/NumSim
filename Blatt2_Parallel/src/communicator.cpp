@@ -104,9 +104,9 @@ void Communicator::SetEvenOdd(bool evenodd) {
  * @param val  the data over which the sum is to be calculated
  */
 real_t Communicator::gatherSum(const real_t& val) const {
-	double valid = val, getResult;
+	real_t valid = val, getResult;
 
-	MPI_Allreduce(&valid, &getResult, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	MPI_Allreduce(&valid, &getResult, 1, MPI_REAL_TYPE, MPI_SUM, MPI_COMM_WORLD);
 
 	return getResult;
 }
@@ -118,9 +118,9 @@ real_t Communicator::gatherSum(const real_t& val) const {
  * @param val  the data over which to find the minimum
  */
 real_t Communicator::gatherMin(const real_t& val) const {
-	double valid = val, getResult;
+	real_t valid = val, getResult;
 
-	MPI_Allreduce(&valid, &getResult, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+	MPI_Allreduce(&valid, &getResult, 1, MPI_REAL_TYPE, MPI_MIN, MPI_COMM_WORLD);
 
 	return getResult;
 }
@@ -132,9 +132,9 @@ real_t Communicator::gatherMin(const real_t& val) const {
  * @param val  the data over which to find the maximum
  */
 real_t Communicator::gatherMax(const real_t& val) const {
-	double valid = val, getResult;
+	real_t valid = val, getResult;
 
-	MPI_Allreduce(&valid, &getResult, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+	MPI_Allreduce(&valid, &getResult, 1, MPI_REAL_TYPE, MPI_MAX, MPI_COMM_WORLD);
 
 	return getResult;
 }

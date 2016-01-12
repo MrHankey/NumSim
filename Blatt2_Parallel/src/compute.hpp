@@ -82,7 +82,7 @@ private:
   Grid *_tmpVorticity;
   Grid *_tmpStream;
 
-  Jacobi *_solver;
+  RedOrBlackSOR *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;

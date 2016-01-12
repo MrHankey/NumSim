@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
   // Create a VTK generator;
   // use offset as the domain shift
   multi_real_t offset;
-  offset[0] = comm.ThreadIdx()[0] * (geom.Mesh()[0] * (double)(geom.Size()[0] - 2));
-  offset[1] = comm.ThreadIdx()[1] * (geom.Mesh()[1] * (double)(geom.Size()[1] - 2));
+  offset[0] = comm.ThreadIdx()[0] * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
+  offset[1] = comm.ThreadIdx()[1] * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
   VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), offset, comm.getRank(),
           comm.getSize(), comm.ThreadDim());
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
   while (comp.GetTime() < param.Tend()) {
 #ifdef USE_DEBUG_VISU
     // Render and check if window is closed
-    switch (visu.Render(visugrid, 0.0, 1.0)) {
+    switch (visu.Render(visugrid, 0.0f, 1.0f)) {
     case -1:
       return -1;
     case 0:
