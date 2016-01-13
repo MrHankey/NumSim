@@ -164,16 +164,24 @@ JacobiOCL::~JacobiOCL() {}
 void JacobiOCL::InitializeBuffers() {
 	// Create memory buffers
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+#ifdef PINNED_MEMORY
 	_bufOld = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
 	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
 	_bufNew = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
 	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
+#else
+	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
+	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
+	_bufNew = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t));
+	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t));
+#endif
 
 }
 
 void JacobiOCL::UpdateBuffers(Grid* grid, const Grid* rhs) {
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 
+#ifdef PINNED_MEMORY
 	// Get exclusive access to the buffer
 	real_t* mappedOldGrid = 	(real_t*) _queue.enqueueMapBuffer(_bufOld, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
 	real_t* mappedRHS = 		(real_t*) _queue.enqueueMapBuffer(_bufRHS, CL_TRUE, CL_MAP_READ, 0, gridSize*sizeof(real_t));
@@ -191,6 +199,11 @@ void JacobiOCL::UpdateBuffers(Grid* grid, const Grid* rhs) {
 	_queue.enqueueUnmapMemObject(_bufOld, mappedOldGrid);
 	_queue.enqueueUnmapMemObject(_bufRHS, mappedRHS);
 	_queue.enqueueUnmapMemObject(_bufNew, mappedNewGrid);
+#else
+	_queue.enqueueWriteBuffer(_bufOld, 1, 0, gridSize*sizeof(real_t), grid->_data, nullptr, nullptr);
+	_queue.enqueueWriteBuffer(_bufRHS, 1, 0, gridSize*sizeof(real_t), rhs->_data, nullptr, nullptr);
+	_queue.enqueueWriteBuffer(_bufNew, 1, 0, gridSize*sizeof(real_t), grid->_data, nullptr, nullptr);
+#endif
 
 }
 

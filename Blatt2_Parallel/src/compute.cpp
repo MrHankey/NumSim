@@ -37,8 +37,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_param  = param;
 	_comm = comm;
 	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
-	_solver = new SOR(_geom,_param->Omega());
-	//_solver = new JacobiOCL(_geom);
+	//_solver = new SOR(_geom,_param->Omega());
+	_solver = new JacobiOCL(_geom);
 
 	// Set time steps
 	_t = 0.0;
