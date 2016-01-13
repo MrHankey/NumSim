@@ -156,6 +156,8 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
 
 	InitializeBuffers();
+
+	_kernel = Kernel(_program, "poisson_jacobi");
 }
 
 /// Destructor
@@ -225,12 +227,14 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	}*/
 
 	// Make kernel
-	_kernel = Kernel(_program, "poisson_jacobi");
+
 
 	Grid localResiduals = Grid(_geom, 0.0f);
+	index_t strideSize = 1;
 
 	UpdateBuffers(grid, rhs);
 	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
+
 
 #ifdef __CL_ENABLE_EXCEPTIONS
 	try	{
@@ -250,7 +254,8 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		_kernel.setArg(4, _bufLocalResiduals);
 
 		// Run the kernel on specific ND range
-		NDRange global((_geom->Size()[0] - 2)/1, (_geom->Size()[1] - 2)/1);
+
+		NDRange global((_geom->Size()[0] - 2)/strideSize, (_geom->Size()[1] - 2)/strideSize);
 		NDRange local(16,16);
 		_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local);
 		//_queue.enqueue
@@ -268,19 +273,29 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 #endif
 
 	_queue.finish();
+
+	clock_t begin;
+	begin = clock();
+
 	InteriorIterator it = InteriorIterator(_geom);
 	int num = 0;
 	real_t res = 0;
-	while(it.Valid()) {
+
+
+	for ( index_t i = 0; i < gridSize; i++)
+	{
 		// sum residual
 
-		res += localResiduals.Cell(it);
-		it.Next();
-		num++;
+		res += localResiduals._data[i];
+
 	}
 
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	_gpu_time += elapsed_secs;
+
 	// Norm residual
-	return res/num;
+	return res/gridSize;
 
 	/*for(int i = 0; i < LIST_SIZE; i ++)
 		 std::cout << A[i] << " + " << B[i] << " = " << C[i] << std::endl; */

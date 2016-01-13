@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
   {
 	  clock_t end = clock();
 	  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	  std::cout << "duration: " << elapsed_secs << std::endl;
+	  std::cout << "duration: " << elapsed_secs << "solver_time: " << comp._solver_time << std::endl;
   }
 
   return 0;

@@ -53,6 +53,8 @@ public:
   /// Computes and returns the stream line values
   const Grid *GetStream();
 
+  double _solver_time;
+
 private:
   // current timestep
   real_t _t;

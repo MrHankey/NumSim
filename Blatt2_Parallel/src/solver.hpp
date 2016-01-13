@@ -96,6 +96,8 @@ public:
   void UpdateBuffers(Grid *grid, const Grid *rhs);
   //real_t Cycle(Grid *grid, const Grid *rhs) const;
 
+  double _gpu_time;
+
 protected:
   const Geometry* _geom;
   cl::Kernel _kernel;

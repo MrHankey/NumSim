@@ -40,6 +40,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	//_solver = new SOR(_geom,_param->Omega());
 	_solver = new JacobiOCL(_geom);
 
+	_solver_time = 0.0;
+
 	// Set time steps
 	_t = 0.0;
 	_dtlimit = param->Dt();
@@ -138,7 +140,9 @@ void Compute::TimeStep(bool printInfo) {
 	real_t local_res = 0.0;
 	index_t i = 0;
 
-	// Update boundary
+	clock_t begin;
+	begin = clock();
+
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 		/*bool even = _comm->EvenOdd();
 		if (even){
@@ -157,12 +161,19 @@ void Compute::TimeStep(bool printInfo) {
 
 		}*/
 
-		local_res = _solver->Cycle(_p, _rhs);
+		total_res = _solver->Cycle(_p, _rhs);
 		//cout << "res: " << local_res << endl;
+
 		_geom->Update_P(_p);
-		total_res = _comm->gatherSum(local_res)/_comm->getSize();
+
+		//total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
 	}
+
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_solver_time = _solver->_gpu_time;
+	_solver_time += elapsed_secs;
 
 	// Compute u,v
 	NewVelocities(dt);
