@@ -250,8 +250,8 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		_kernel.setArg(4, _bufLocalResiduals);
 
 		// Run the kernel on specific ND range
-		NDRange global((_geom->Size()[0] - 2)/4, (_geom->Size()[1] - 2)/4);
-		NDRange local(1,1);
+		NDRange global((_geom->Size()[0] - 2)/1, (_geom->Size()[1] - 2)/1);
+		NDRange local(16,16);
 		_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local);
 		//_queue.enqueue
 

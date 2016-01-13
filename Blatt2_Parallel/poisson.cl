@@ -16,7 +16,7 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
  {
  
  
- 	int strideSize = 4;
+ 	int strideSize = 1;
  
     // Get the index of the current element to be processed
     int i = get_global_id(0)*strideSize + 1;

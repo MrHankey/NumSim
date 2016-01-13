@@ -27,7 +27,7 @@
 
 #define DIM 2
 #define REAL_TYPE float
-#define INDEX_TYPE uint16_t
+#define INDEX_TYPE uint32_t
 #define MPI_REAL_TYPE MPI_FLOAT
 
 //------------------------------------------------------------------------------
