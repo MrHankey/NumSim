@@ -17,8 +17,12 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
     int index_p_r = j*(get_global_size(0)+2) + i + 1;
     int index_p_l = j*(get_global_size(0)+2) + i - 1;
     
+    
+    
     float h = *dx;
-    float newPressure = 0.25f*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - (h*h)*rhs[index_p]);
+    float h_square = h*h;
+    float h_square_inv = 1/h_square;
+    float newPressure = 0.25f*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - h_square*rhs[index_p]);
     
     //if ( i == 5 && j == 5)
     	//printf("dx: %lf, rhs: %lf, newP: %lf \n", h, rhs[index_p], newPressure);
@@ -27,8 +31,8 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
     
     barrier(CLK_GLOBAL_MEM_FENCE | CLK_LOCAL_MEM_FENCE);
     
-    float dxx = (newGrid[index_p_r]-2*newGrid[index_p]+newGrid[index_p_l])/h/h;
-	float dyy = (newGrid[index_p_u]-2*newGrid[index_p]+newGrid[index_p_d])/h/h;
+    float dxx = (newGrid[index_p_r]-2*newGrid[index_p]+newGrid[index_p_l])*h_square_inv;
+	float dyy = (newGrid[index_p_u]-2*newGrid[index_p]+newGrid[index_p_d])*h_square_inv;
     
     resGrid[index_p] = fabs( dxx + dyy - rhs[index_p]); 
 }

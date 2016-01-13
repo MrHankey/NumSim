@@ -83,7 +83,8 @@ private:
   Grid *_tmpStream;
 
   //RedOrBlackSOR *_solver;
-  JacobiOCL *_solver;
+  SOR *_solver;
+  //JacobiOCL *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;

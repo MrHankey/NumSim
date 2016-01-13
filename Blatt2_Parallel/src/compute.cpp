@@ -37,7 +37,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_param  = param;
 	_comm = comm;
 	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
-	_solver = new JacobiOCL(_geom);
+	_solver = new SOR(_geom,_param->Omega());
+	//_solver = new JacobiOCL(_geom);
 
 	// Set time steps
 	_t = 0.0;
@@ -80,7 +81,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	// Set values
 	_u->Initialize(0);
 	_v->Initialize(0);
-	_p->Initialize(0);
+	_p->Initialize(0.0);
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
