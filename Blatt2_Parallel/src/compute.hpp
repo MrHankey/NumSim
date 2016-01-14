@@ -54,6 +54,10 @@ public:
   const Grid *GetStream();
 
   double _solver_time;
+  double _time_buf;
+  double _time_buf_read;
+  double _time_kernel;
+  double _time_res;
 
 private:
   // current timestep

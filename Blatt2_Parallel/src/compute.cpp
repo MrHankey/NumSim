@@ -174,6 +174,10 @@ void Compute::TimeStep(bool printInfo) {
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	//_solver_time = _solver->_gpu_time;
 	_solver_time += elapsed_secs;
+	_time_buf = _solver->_time_buffer;
+	_time_buf_read = _solver->_time_buffer_read;
+	_time_kernel = _solver->_time_kernel;
+	_time_res = _solver->_time_res;
 
 	// Compute u,v
 	NewVelocities(dt);

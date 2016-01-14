@@ -123,6 +123,11 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 
 	cl_int err;
 
+	_time_buffer = 0.0;
+	_time_buffer_read = 0.0;
+	_time_kernel = 0.0;
+	_time_kernel = 0.0;
+
 	_geom  = geom;
 
 	vector<Platform> platforms;
@@ -238,22 +243,24 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	real_t dx   = _geom->Mesh()[0];
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
-
-	/*real_t *A = new real_t[(index_t)n];
-	real_t *B = new real_t[(index_t)n];
-	for(int i = 0; i < n; i++) {
-		A[i] = (real_t)i;
-		B[i] = (real_t)(n - i);
-	}*/
-
-	// Make kernel
+	clock_t begin;
+	clock_t end;
 
 
 	Grid localResiduals = Grid(_geom, 0.0f);
 	index_t strideSize = 1;
 
+	begin = clock();
+
 	UpdateBuffers(grid, rhs);
 	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
+
+	_queue.finish();
+	end = clock();
+	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
+	_time_buffer += elapsed_secs_buf;
+
+	begin = clock();
 
 
 #ifdef __CL_ENABLE_EXCEPTIONS
@@ -280,6 +287,14 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		checkErr(_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local), "enqueueNDRangeKernel");
 		//_queue.enqueue
 
+		_queue.finish();
+
+		end = clock();
+		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
+		_time_kernel += elapsed_secs_kernel;
+
+		begin = clock();
+
 
 		/*Grid newGrid = Grid(_geom);
 		newGrid.Initialize(0.0);*/
@@ -294,7 +309,11 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	_queue.finish();
 
-	clock_t begin;
+	end = clock();
+	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
+	_time_buffer_read += elapsed_secs_buf_read;
+
+
 	begin = clock();
 
 	InteriorIterator it = InteriorIterator(_geom);
@@ -310,9 +329,9 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	}
 
-	clock_t end = clock();
-	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	_gpu_time += elapsed_secs;
+	end = clock();
+	double elapsed_secs_res = double(end - begin) / CLOCKS_PER_SEC;
+	_time_res += elapsed_secs_res;
 
 	// Norm residual
 	return res/gridSize;
