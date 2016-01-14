@@ -282,6 +282,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		checkErr(_kernel.setArg(3, _bufLocalResiduals), "setArg3");
 		checkErr(_kernel.setArg(4, clHSquare), "setArg4");
 		checkErr(_kernel.setArg(5, clHSquareInv), "setArg5");
+		checkErr(_kernel.setArg(6, sizeof(real_t)*(strideSize+2)*(strideSize+2), NULL), "setArg6");
 
 		// Run the kernel on specific ND range
 
@@ -319,11 +320,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
 	begin = clock();
 
-	InteriorIterator it = InteriorIterator(_geom);
-	int num = 0;
 	real_t res = 0;
-
-
 	for ( index_t i = 0; i < gridSize; i++)
 	{
 		// sum residual
