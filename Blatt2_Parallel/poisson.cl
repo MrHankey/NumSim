@@ -10,8 +10,9 @@
 __kernel void poisson_jacobi(	__global const float *oldGrid,
 								__global const float *rhs,
 								__global float *newGrid,
-								__global float *dx,
-								__global float *resGrid
+								__global float *resGrid,
+								__global float *h_square,
+								__global float *h_square_inv
 						)
  {
  
@@ -24,9 +25,8 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
     
     
     
-    float h = *dx;
-    float h_square = h*h;
-    float h_square_inv = 1/h_square;
+    //float h_square = h*h;
+    //float h_square_inv = 1/h_square;
     int strideFac = (get_global_size(0)*strideSize+2);
     int base_index = 0;
     int base_index_d = 0;
@@ -57,7 +57,7 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
 		    index_p_r = index_p + 1;
 		    index_p_l = index_p - 1;
 		    
-		    newPressure = 0.25f*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - h_square*rhs[index_p]);
+		    newPressure = 0.25f*(oldGrid[index_p_r] + oldGrid[index_p_l] + oldGrid[index_p_u] + oldGrid[index_p_d] - (*h_square)*rhs[index_p]);
 		    
 		    //if ( i == 5 && j == 5)
 		    	//printf("dx: %lf, rhs: %lf, newP: %lf \n", h, rhs[index_p], newPressure);
@@ -89,8 +89,8 @@ __kernel void poisson_jacobi(	__global const float *oldGrid,
 		    index_p_r = index_p + 1;
 		    index_p_l = index_p - 1;
     
-		    dxx = (newGrid[index_p_r]-2*newGrid[index_p]+newGrid[index_p_l])*h_square_inv;
-			dyy = (newGrid[index_p_u]-2*newGrid[index_p]+newGrid[index_p_d])*h_square_inv;
+		    dxx = (newGrid[index_p_r]-2*newGrid[index_p]+newGrid[index_p_l])*(*h_square_inv);
+			dyy = (newGrid[index_p_u]-2*newGrid[index_p]+newGrid[index_p_d])*(*h_square_inv);
     
     		resGrid[index_p] = fabs( dxx + dyy - rhs[index_p]);
 		}

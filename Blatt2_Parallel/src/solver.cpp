@@ -241,7 +241,8 @@ void JacobiOCL::UpdateBuffers(Grid* grid, const Grid* rhs) {
 // @return Cycle  calculate all new p_ij for one cycle
 real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 
-	real_t dx   = _geom->Mesh()[0];
+	real_t h_square   = _geom->Mesh()[0]*_geom->Mesh()[0];
+	real_t h_square_inv = 1.0/h_square;
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	clock_t begin;
 	clock_t end;
@@ -253,7 +254,8 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	begin = clock();
 
 	UpdateBuffers(grid, rhs);
-	Buffer clDx = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dx);
+	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
+	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
 
 	_queue.finish();
 	end = clock();
@@ -277,8 +279,9 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		checkErr(_kernel.setArg(1, _bufRHS), "setArg1");
 		checkErr(_kernel.setArg(2, _bufNew), "setArg2");
 		//_kernel.setArg(3, sizeof(clDx), &clDx);
-		checkErr(_kernel.setArg(3, clDx), "setArg3");
-		checkErr(_kernel.setArg(4, _bufLocalResiduals), "setArg4");
+		checkErr(_kernel.setArg(3, _bufLocalResiduals), "setArg3");
+		checkErr(_kernel.setArg(4, clHSquare), "setArg4");
+		checkErr(_kernel.setArg(5, clHSquareInv), "setArg5");
 
 		// Run the kernel on specific ND range
 
