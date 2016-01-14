@@ -28,6 +28,13 @@
 using namespace cl;
 using namespace std;
 
+inline void checkErr(cl_int err, const char * name) {
+    if (err != CL_SUCCESS) {
+      std::cerr << "ERROR: " << name  << " (" << err << ")" << std::endl;
+      exit(EXIT_FAILURE);
+   }
+}
+
 /// Constructor of the abstract Solver class
 //  @param geom  get field geometry
 Solver::Solver(const Geometry* geom) {
@@ -114,6 +121,8 @@ real_t SOR::Cycle(Grid* grid, const Grid* rhs) const {
 //  @param omega  get scaling factor
 JacobiOCL::JacobiOCL( const Geometry* geom) {
 
+	cl_int err;
+
 	_geom  = geom;
 
 	vector<Platform> platforms;
@@ -125,19 +134,21 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 		(cl_context_properties)(platforms[0])(),
 		0
 	};
-	_context = Context( CL_DEVICE_TYPE_ALL, cps);
+	_context = Context( CL_DEVICE_TYPE_ALL, cps, nullptr, nullptr, &err);
+	checkErr(err, "Context::Context()");
 
 	// Get a list of devices on this platform
 	//vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
-	platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &_all_devices);
+	checkErr(platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &_all_devices), "Platform::getDevices()");
 	if(_all_devices.size()==0){
 		std::cout<<" No devices found. Check OpenCL installation!\n";
 		exit(1);
 	}
 
 	// Create a command queue and use the first device
-	_queue = CommandQueue(_context, _all_devices[0]);
+	_queue = CommandQueue(_context, _all_devices[0], 0, &err);
+	checkErr(err, "CommandQueue::CommandQueue()");
 
 	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
 
@@ -149,21 +160,26 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 	Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length()+1));
 
 	// Make program of the source code in the context
-	_program = Program(_context, source);
+	_program = Program(_context, source, &err);
+	checkErr(err, "Program::Program()");
 
 	// Build program for these specific devices
-	_program.build(_all_devices);
+	checkErr(_program.build(_all_devices), "Program::build()");
 	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+
+	_kernel = Kernel(_program, "poisson_jacobi", &err);
+	checkErr(err, "Kernel::Kernel()");
 
 	InitializeBuffers();
 
-	_kernel = Kernel(_program, "poisson_jacobi");
+
 }
 
 /// Destructor
 JacobiOCL::~JacobiOCL() {}
 
 void JacobiOCL::InitializeBuffers() {
+	cl_int err;
 	// Create memory buffers
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 #ifdef PINNED_MEMORY
@@ -172,10 +188,14 @@ void JacobiOCL::InitializeBuffers() {
 	_bufNew = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
 	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, gridSize * sizeof(real_t), nullptr);
 #else
-	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
-	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t));
-	_bufNew = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t));
-	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t));
+	_bufOld = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t), nullptr, &err);
+	checkErr(err, "Buffer::Buffer() old");
+	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t), nullptr, &err);
+	checkErr(err, "Buffer::Buffer() rhs");
+	_bufNew = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
+	checkErr(err, "Buffer::Buffer() new");
+	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t), nullptr, &err);
+	checkErr(err, "Buffer::Buffer() res");
 #endif
 
 }
@@ -202,9 +222,9 @@ void JacobiOCL::UpdateBuffers(Grid* grid, const Grid* rhs) {
 	_queue.enqueueUnmapMemObject(_bufRHS, mappedRHS);
 	_queue.enqueueUnmapMemObject(_bufNew, mappedNewGrid);
 #else
-	_queue.enqueueWriteBuffer(_bufOld, 1, 0, gridSize*sizeof(real_t), grid->_data, nullptr, nullptr);
-	_queue.enqueueWriteBuffer(_bufRHS, 1, 0, gridSize*sizeof(real_t), rhs->_data, nullptr, nullptr);
-	_queue.enqueueWriteBuffer(_bufNew, 1, 0, gridSize*sizeof(real_t), grid->_data, nullptr, nullptr);
+	checkErr(_queue.enqueueWriteBuffer(_bufOld, CL_TRUE, 0, gridSize*sizeof(real_t), grid->_data), "Queue::enqueueWriteBuffer() old");
+	checkErr(_queue.enqueueWriteBuffer(_bufRHS, CL_TRUE, 0, gridSize*sizeof(real_t), rhs->_data), "Queue::enqueueWriteBuffer() rhs");
+	checkErr(_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, gridSize*sizeof(real_t), grid->_data), "Queue::enqueueWriteBuffer() new");
 #endif
 
 }
@@ -246,18 +266,18 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 		//_queue.enqueueWriteBuffer(_bufNew, CL_TRUE, 0, (index_t)gridSize * sizeof(real_t), grid->_data);
 
 		// Set arguments to kernel
-		_kernel.setArg(0, _bufOld);
-		_kernel.setArg(1, _bufRHS);
-		_kernel.setArg(2, _bufNew);
+		checkErr(_kernel.setArg(0, _bufOld), "setArg0");
+		checkErr(_kernel.setArg(1, _bufRHS), "setArg1");
+		checkErr(_kernel.setArg(2, _bufNew), "setArg2");
 		//_kernel.setArg(3, sizeof(clDx), &clDx);
-		_kernel.setArg(3, clDx);
-		_kernel.setArg(4, _bufLocalResiduals);
+		checkErr(_kernel.setArg(3, clDx), "setArg3");
+		checkErr(_kernel.setArg(4, _bufLocalResiduals), "setArg4");
 
 		// Run the kernel on specific ND range
 
 		NDRange global((_geom->Size()[0] - 2)/strideSize, (_geom->Size()[1] - 2)/strideSize);
 		NDRange local(16,16);
-		_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local);
+		checkErr(_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local), "enqueueNDRangeKernel");
 		//_queue.enqueue
 
 
