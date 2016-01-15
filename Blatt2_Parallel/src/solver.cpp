@@ -446,7 +446,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	Grid localResiduals = Grid(_geom);
 	localResiduals.Initialize(0.0f);
 
-	index_t localSize = 1;
+	index_t localSize = 16;
 	index_t localCellCount = (localSize+2)*(localSize+2);
 
 	begin = clock();

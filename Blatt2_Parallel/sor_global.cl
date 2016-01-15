@@ -16,7 +16,7 @@ __kernel void sor(	__global float *grid,
 					//__local float* localRHS
 				)
  {
-	float omega = 1.3f;
+	float omega = 1.0f;
 	float hs = (*h_square);
 	float hsi = (*h_square_inv);
 
@@ -47,7 +47,7 @@ __kernel void sor(	__global float *grid,
     	//printf("red: %d %d pstar: %f result: %f \n", g_x, g_y, p_star, grid[idx]);
     }
 
-    barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     //black cycle
     if (((g_x + g_y) % 2) != 0)
