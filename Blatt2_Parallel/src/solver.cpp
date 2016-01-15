@@ -449,7 +449,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	index_t localSize = 1;
 	index_t localCellCount = (localSize+2)*(localSize+2);
 
-	//begin = clock();
+	begin = clock();
 
 	//copy grid data to device
 	UpdateBuffers(grid, rhs, &localResiduals);
@@ -457,12 +457,12 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
 	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
 
-	/*_queue.finish();
+	_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
 
-	begin = clock();*/
+	begin = clock();
 
 
 #ifdef __CL_ENABLE_EXCEPTIONS
@@ -486,11 +486,11 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 
 		_queue.finish();
 
-		/*end = clock();
+		end = clock();
 		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
 		_time_kernel += elapsed_secs_kernel;
 
-		begin = clock();*/
+		begin = clock();
 
 		_queue.enqueueReadBuffer(_bufGrid, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
 		_queue.enqueueReadBuffer(_bufLocalResiduals, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
@@ -501,14 +501,14 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	}
 #endif
 
-	/*_queue.finish();
+	_queue.finish();
 
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer_read += elapsed_secs_buf_read;
 
 
-	begin = clock();*/
+	begin = clock();
 
 
 	real_t res = 0;
@@ -537,9 +537,9 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 
 	//cin.ignore();
 
-	/*end = clock();
+	end = clock();
 	double elapsed_secs_res = double(end - begin) / CLOCKS_PER_SEC;
-	_time_res += elapsed_secs_res;*/
+	_time_res += elapsed_secs_res;
 
 	// Norm residual
 	return res/gridSize;
