@@ -38,7 +38,7 @@ __kernel void sor(	__global float *grid,
     float p_rhs = rhs[idx];
 
     //red cycle
-    if ((((g_x + g_y)) % 2) == 0)
+    if ((((g_x + g_y)) & 1) == 0)
     {
 
     	float p_star = fac*(p_d + p_l + p_r + p_u - hs*p_rhs);
@@ -50,7 +50,7 @@ __kernel void sor(	__global float *grid,
     barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
 
     //black cycle
-    if (((g_x + g_y) % 2) != 0)
+    if (((g_x + g_y) & 1) != 0)
     {
     	float p_star = fac*(p_d + p_l + p_r + p_u - hs*p_rhs);
     	//float p_star = fac2*((p_d + p_u)*hsi + (p_l + p_r)*hsi - p_rhs);
