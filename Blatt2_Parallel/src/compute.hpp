@@ -90,7 +90,8 @@ private:
 
   //RedOrBlackSOR *_solver;
   //SOR *_solver;
-  JacobiOCL *_solver;
+  //JacobiOCL *_solver;
+  SOROCL *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;

@@ -21,7 +21,7 @@
 #define __SOLVER_HPP
 //------------------------------------------------------------------------------
 
-#define __CL_ENABLE_EXCEPTIONS
+//#define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 
 /** abstract base class for an iterative solver
@@ -108,6 +108,42 @@ protected:
   cl::Buffer _bufOld;
   cl::Buffer _bufRHS;
   cl::Buffer _bufNew;
+  cl::Buffer _bufLocalResiduals;
+  cl::Context _context;
+  std::vector<cl::Device> _all_devices;
+  cl::Program _program;
+};
+//------------------------------------------------------------------------------
+
+/** concrete SOR OpenCL solver
+ */
+class SOROCL{
+public:
+  /// Constructs an actual SOR solver
+  SOROCL( const Geometry *geom, const real_t& omega);
+  /// Destructor
+  ~SOROCL();
+
+  /// Returns the total residual and executes a solver cycle
+  // @param grid current pressure values
+  // @param rhs right hand side
+  real_t Cycle(Grid *grid, const  Grid *rhs);
+  void InitializeBuffers();
+  void UpdateBuffers(Grid *grid, const Grid *rhs, Grid* zeroGrid);
+  //real_t Cycle(Grid *grid, const Grid *rhs) const;
+
+  double _time_res;
+  double _time_kernel;
+  double _time_buffer;
+  double _time_buffer_read;
+
+protected:
+  const Geometry* _geom;
+  real_t _omega;
+  cl::Kernel _kernel;
+  cl::CommandQueue _queue;
+  cl::Buffer _bufGrid;
+  cl::Buffer _bufRHS;
   cl::Buffer _bufLocalResiduals;
   cl::Context _context;
   std::vector<cl::Device> _all_devices;

@@ -38,7 +38,8 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_comm = comm;
 	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
 	//_solver = new SOR(_geom,_param->Omega());
-	_solver = new JacobiOCL(_geom);
+	//_solver = new JacobiOCL(_geom);
+	_solver = new SOROCL(_geom, _param->Omega());
 
 	_solver_time = 0.0;
 
@@ -193,7 +194,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
-		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
+		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 	}
 }
 

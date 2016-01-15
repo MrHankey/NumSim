@@ -7,7 +7,7 @@
 #define float4
 #endif
 
-__kernel void sor(	__global const float *grid,
+__kernel void sor(	__global float *grid,
 					__global const float *rhs,
 					__global float *resGrid,
 					__global float *h_square,
@@ -32,36 +32,42 @@ __kernel void sor(	__global const float *grid,
     int wg_x = get_group_id(0)*get_local_size(0)+1;
     int wg_y = get_group_id(1)*get_local_size(1)+1;
 
-    for (int i = 0; i < locGridSize; i++)
+    /*for (int i = 0; i < locGridSize; i++)
     {
     	for (int j = 0; j < locGridSize; j++)
     	{
     		localGrid[j*locGridSize + i] = grid	[(wg_y-1 + j)*gridSize + wg_x-1 + i];
     		localRHS[j*locGridSize + i] = rhs	[(wg_y-1 + j)*gridSize + wg_x-1 + i];
     	}
-    }
+    }*/
+
+    localGrid[localIdx] = grid[idx];
+    localGrid[localIdx-1] = grid[idx-1];
+    localGrid[localIdx+1] = grid[idx+1];
+    localGrid[localIdx+locGridSize] = grid[idx+gridSize];
+    localGrid[localIdx-locGridSize] = grid[idx-gridSize];
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
     //red cycle
-    if ((g_x + g_y)&1 == 0)
+    if (((g_x + g_y)&1) == 0)
     {
-    	float p_star = fac*(localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - h_square*localRHS[localIdx]);
+    	float p_star = fac*(localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - (*h_square)*localRHS[localIdx]);
     	localGrid[localIdx] = (1-omega)*localGrid[localIdx] + omega*p_star;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
     //black cycle
-    if ((g_x + g_y)&1 != 0)
+    if (((g_x + g_y)&1) != 0)
     {
-    	float p_star = fac*(localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - h_square*localRHS[localIdx]);
+    	float p_star = fac*(localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - (*h_square)*localRHS[localIdx]);
     	localGrid[localIdx] = (1-omega)*localGrid[localIdx] + omega*p_star;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-	resGrid[idx] = localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - 4*localGrid[localIdx] - h_square*localRHS[localIdx];
+	resGrid[idx] = localGrid[localIdx-locGridSize] + localGrid[localIdx-1] + localGrid[localIdx+1] + localGrid[localIdx+locGridSize] - 4*localGrid[localIdx] - (*h_square)*localRHS[localIdx];
 
     for (int i = 0; i < locGridSize; i++)
     {
