@@ -382,7 +382,7 @@ SOROCL::SOROCL(const Geometry* geom, const real_t& omega)
 	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
 
 	// Read source file
-	std::ifstream sourceFile("sor.cl");
+	std::ifstream sourceFile("sor_global.cl");
 	std::string sourceCode(
 		std::istreambuf_iterator<char>(sourceFile),
 		(std::istreambuf_iterator<char>()));
@@ -416,9 +416,9 @@ void SOROCL::InitializeBuffers()
 
 	_bufGrid = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
 	checkErr(err, "Buffer::Buffer() grid");
-	_bufRHS = Buffer(_context, CL_MEM_READ_ONLY, gridSize * sizeof(real_t), nullptr, &err);
+	_bufRHS = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
 	checkErr(err, "Buffer::Buffer() rhs");
-	_bufLocalResiduals = Buffer(_context, CL_MEM_WRITE_ONLY, gridSize * sizeof(real_t), nullptr, &err);
+	_bufLocalResiduals = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
 	checkErr(err, "Buffer::Buffer() res");
 }
 
@@ -436,16 +436,20 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 {
 	real_t h_square   = _geom->Mesh()[0]*_geom->Mesh()[0];
 	real_t h_square_inv = 1.0/h_square;
+
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	clock_t begin;
 	clock_t end;
 
+	//grid for saving local residuals
+	//initialize as 0
+	Grid localResiduals = Grid(_geom);
+	localResiduals.Initialize(0.0f);
 
-	Grid localResiduals = Grid(_geom, 0.0f);
-	index_t localSize = 2;
+	index_t localSize = 1;
 	index_t localCellCount = (localSize+2)*(localSize+2);
 
-	begin = clock();
+	//begin = clock();
 
 	//copy grid data to device
 	UpdateBuffers(grid, rhs, &localResiduals);
@@ -453,12 +457,12 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
 	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
 
-	_queue.finish();
+	/*_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
 
-	begin = clock();
+	begin = clock();*/
 
 
 #ifdef __CL_ENABLE_EXCEPTIONS
@@ -471,27 +475,23 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 		checkErr(_kernel.setArg(2, _bufLocalResiduals), "setArg2");
 		checkErr(_kernel.setArg(3, clHSquare), "setArg3");
 		checkErr(_kernel.setArg(4, clHSquareInv), "setArg4");
-		checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
-		checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
+		//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
+		//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
 
 		// Run the kernel on specific ND range
 		//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
 		NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
-		NDRange local(1,1);
+		NDRange local(localSize,localSize);
 		checkErr(_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local), "enqueueNDRangeKernel");
-		//_queue.enqueue
 
 		_queue.finish();
 
-		end = clock();
+		/*end = clock();
 		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
 		_time_kernel += elapsed_secs_kernel;
 
-		begin = clock();
+		begin = clock();*/
 
-
-		/*Grid newGrid = Grid(_geom);
-		newGrid.Initialize(0.0);*/
 		_queue.enqueueReadBuffer(_bufGrid, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
 		_queue.enqueueReadBuffer(_bufLocalResiduals, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
 #ifdef __CL_ENABLE_EXCEPTIONS
@@ -501,14 +501,15 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	}
 #endif
 
-	_queue.finish();
+	/*_queue.finish();
 
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer_read += elapsed_secs_buf_read;
 
 
-	begin = clock();
+	begin = clock();*/
+
 
 	real_t res = 0;
 	for ( index_t i = 0; i < gridSize; i++)
@@ -523,9 +524,22 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 
 	}
 
-	end = clock();
+	/*InteriorIterator it = InteriorIterator(_geom);
+	while (it.Valid())
+	{
+		real_t loc = localResiduals.Cell(it);
+		//if ( loc > 0.0)
+			//cout << loc << endl;
+
+		res += loc;
+		it.Next();
+	}*/
+
+	//cin.ignore();
+
+	/*end = clock();
 	double elapsed_secs_res = double(end - begin) / CLOCKS_PER_SEC;
-	_time_res += elapsed_secs_res;
+	_time_res += elapsed_secs_res;*/
 
 	// Norm residual
 	return res/gridSize;
