@@ -141,6 +141,7 @@ protected:
   const Geometry* _geom;
   real_t _omega;
   cl::Kernel _kernel;
+  cl::Kernel _kernel_reduce;
   cl::CommandQueue _queue;
   cl::Buffer _bufGrid;
   cl::Buffer _bufRHS;

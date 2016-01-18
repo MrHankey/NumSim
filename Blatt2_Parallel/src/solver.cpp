@@ -399,6 +399,8 @@ SOROCL::SOROCL(const Geometry* geom, const real_t& omega)
 
 	_kernel = Kernel(_program, "sor", &err);
 	checkErr(err, "Kernel::Kernel()");
+	/*_kernel_reduce = Kernel(_program, "reduction_vector", &err);
+	checkErr(err, "Kernel::Kernel()");*/
 
 	InitializeBuffers();
 }
@@ -434,6 +436,8 @@ void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
 
 real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 {
+
+	cl_int err;
 	real_t h_square   = _geom->Mesh()[0]*_geom->Mesh()[0];
 	real_t h_square_inv = 1.0/h_square;
 
@@ -510,6 +514,30 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 
 	begin = clock();
 
+
+
+	/*index_t wgSize = 128;
+	index_t gSize = gridSize/4;
+
+	real_t partialSums[wgSize];
+
+	Buffer result = Buffer(_context, CL_MEM_READ_WRITE, sizeof(real_t)*wgSize, nullptr, &err);
+
+	checkErr(_kernel.setArg(0, _bufLocalResiduals), "setArg0");
+	checkErr(_kernel.setArg(1, sizeof(cl_float4)*wgSize, nullptr), "setArg1");
+	checkErr(_kernel.setArg(2, result), "setArg2");
+
+	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce, NullRange, NDRange(gSize), NDRange(wgSize)), "enqueueNDRangeKernel");
+
+
+	_queue.enqueueReadBuffer(_bufGrid, CL_TRUE, 0, (gridSize * sizeof(real_t))/wgSize, partialSums);
+	_queue.finish();
+
+	real_t res = 0.0;
+	for (index_t i = 0; i < wgSize; i++)
+	{
+		res += partialSums[i];
+	}*/
 
 	real_t res = 0;
 	for ( index_t i = 0; i < gridSize; i++)

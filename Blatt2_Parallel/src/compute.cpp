@@ -25,8 +25,17 @@
 #include "iterator.hpp"
 #include "solver.hpp"
 #include "communicator.hpp"
+#include <fstream>
 
 using namespace std;
+using namespace cl;
+
+inline void checkErr(cl_int err, const char * name) {
+    if (err != CL_SUCCESS) {
+      std::cerr << "ERROR: " << name  << " (" << err << ")" << std::endl;
+      exit(EXIT_FAILURE);
+   }
+}
 
 /// Creates a compute instance with given geometry and parameter
 //  @param geom  get geometry
@@ -89,6 +98,58 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
 
+	InitOCL();
+
+}
+
+void Compute::InitOCL()
+{
+	cl_int err;
+	vector<Platform> platforms;
+	Platform::get(&platforms);
+
+	// Select the default platform and create a context using this platform and the GPU
+	cl_context_properties cps[3] = {
+		CL_CONTEXT_PLATFORM,
+		(cl_context_properties)(platforms[0])(),
+		0
+	};
+	_context = Context( CL_DEVICE_TYPE_ALL, cps, nullptr, nullptr, &err);
+	checkErr(err, "Context::Context()");
+
+	// Get a list of devices on this platform
+	//vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+
+	checkErr(platforms[0].getDevices(CL_DEVICE_TYPE_ALL, &_all_devices), "Platform::getDevices()");
+	if(_all_devices.size()==0){
+		std::cout<<" No devices found. Check OpenCL installation!\n";
+		exit(1);
+	}
+
+	// Create a command queue and use the first device
+	_queue = CommandQueue(_context, _all_devices[0], 0, &err);
+	checkErr(err, "CommandQueue::CommandQueue()");
+
+	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
+
+	// Read source file
+	std::ifstream sourceFile("compute.cl");
+	std::string sourceCode(
+		std::istreambuf_iterator<char>(sourceFile),
+		(std::istreambuf_iterator<char>()));
+	Program::Sources source(1, std::make_pair(sourceCode.c_str(), sourceCode.length()+1));
+
+	// Make program of the source code in the context
+	_program = Program(_context, source, &err);
+	checkErr(err, "Program::Program()");
+
+	// Build program for these specific devices
+	err = _program.build(_all_devices);
+	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+	checkErr(err, "Program::build()");
+
+	_kernel_newvel = Kernel(_program, "newvel", &err);
+	checkErr(err, "Kernel::Kernel()");
 }
 
 /// Destructor: deletes all grids
@@ -144,7 +205,7 @@ void Compute::TimeStep(bool printInfo) {
 	clock_t begin;
 	begin = clock();
 
-	while(total_res >_param->Eps() && i < _param->IterMax() ) {
+	//while(total_res >_param->Eps() && i < _param->IterMax() ) {
 		/*bool even = _comm->EvenOdd();
 		if (even){
 			local_res = _solver->RedCycle(_p,_rhs);
@@ -162,14 +223,17 @@ void Compute::TimeStep(bool printInfo) {
 
 		}*/
 
-		total_res = _solver->Cycle(_p, _rhs);
+		/*total_res = _solver->Cycle(_p, _rhs);
 		//cout << "res: " << local_res << endl;
 
 		_geom->Update_P(_p);
 
 		//total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
-	}
+	}*/
+
+	total_res = _solver->Cycle(_p, _rhs);
+	//_geom->Update_P(_p);
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -274,6 +338,45 @@ const Grid* Compute::GetStream() {
 /// Compute the new velocites u,v
 //  @param dt  get timestep
 void Compute::NewVelocities(const real_t& dt) {
+
+
+	/*index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	index_t localSize = 16;
+	real_t h_inv = 1.0f/_geom->Mesh()[0];
+	real_t dt_var = dt;
+
+	Buffer clF = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*gridSize, _F->_data);
+	Buffer clG = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*gridSize, _G->_data);
+	Buffer clp = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*gridSize, _p->_data);
+	Buffer clu = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*gridSize, _u->_data);
+	Buffer clv = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*gridSize, _v->_data);
+	Buffer clHInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_inv);
+	Buffer clDT = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+
+	// Set arguments to kernel
+	checkErr(_kernel_newvel.setArg(0, clF), "setArg0");
+	checkErr(_kernel_newvel.setArg(1, clG), "setArg1");
+	checkErr(_kernel_newvel.setArg(2, clp), "setArg2");
+	checkErr(_kernel_newvel.setArg(3, clu), "setArg3");
+	checkErr(_kernel_newvel.setArg(4, clv), "setArg4");
+	checkErr(_kernel_newvel.setArg(5, clHInv), "setArg4");
+	checkErr(_kernel_newvel.setArg(6, clDT), "setArg4");
+	//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
+	//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
+
+	// Run the kernel on specific ND range
+	//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
+	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
+	NDRange local(localSize,localSize);
+	checkErr(_queue.enqueueNDRangeKernel(_kernel_newvel, NullRange, global, local), "enqueueNDRangeKernel");
+
+
+
+	_queue.enqueueReadBuffer(clu, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_queue.enqueueReadBuffer(clv, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+
+	_queue.finish();*/
+
 	// Initialize interior iterator
 	InteriorIterator it = InteriorIterator(_geom);
 

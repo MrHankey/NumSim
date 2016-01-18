@@ -17,6 +17,7 @@
 
 #include "typedef.hpp"
 #include "solver.hpp"
+#include <CL/cl.hpp>
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -97,12 +98,20 @@ private:
   const Parameter *_param;
   const Communicator *_comm;
 
+  cl::Kernel _kernel_newvel;
+  cl::CommandQueue _queue;
+  cl::Context _context;
+  std::vector<cl::Device> _all_devices;
+  cl::Program _program;
+
   /// Compute the new velocites u,v
   void NewVelocities(const real_t &dt);
   /// Compute the temporary velocites F,G
   void MomentumEqu(const real_t &dt);
   /// Compute the RHS of the poisson equation
   void RHS(const real_t &dt);
+
+  void InitOCL();
 };
 //------------------------------------------------------------------------------
 #endif // __COMPUTE_HPP
