@@ -27,19 +27,21 @@
 #include "communicator.hpp"
 
 using namespace std;
+using namespace cl;
 
 /// Creates a compute instance with given geometry and parameter
 //  @param geom  get geometry
 //  @param param get parameter
-Compute::Compute(const Geometry *geom, const Parameter *param, const Communicator *comm) {
+Compute::Compute(const Geometry *geom, const Parameter *param, const Communicator *comm, OCLManager* oclmanager) {
 	// Initialize
 	_geom   = geom;
 	_param  = param;
 	_comm = comm;
+	_oclmanager = oclmanager;
 	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
 	//_solver = new SOR(_geom,_param->Omega());
 	//_solver = new JacobiOCL(_geom);
-	_solver = new SOROCL(_geom, _param->Omega());
+	_solver = new SOROCL(_geom, _param->Omega(), _oclmanager);
 
 	_solver_time = 0.0;
 
@@ -169,7 +171,7 @@ void Compute::TimeStep(bool printInfo) {
 		total_res = _solver->Cycle(_p, _rhs, 10);
 		//cout << "res: " << local_res << endl;
 
-		_geom->Update_P(_p);
+		//_geom->Update_P(_p);
 
 		//total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
@@ -278,6 +280,36 @@ const Grid* Compute::GetStream() {
 /// Compute the new velocites u,v
 //  @param dt  get timestep
 void Compute::NewVelocities(const real_t& dt) {
+
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	index_t localSize = 16;
+	real_t h_inv = 1.0f/_geom->Mesh()[0];
+	real_t dt_var = dt;
+
+
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+
+	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	// Set arguments to kernel
+	checkErr(_oclmanager->_kernel_newvel.setArg(0, _oclmanager->_F), "setArg0");
+	checkErr(_oclmanager->_kernel_newvel.setArg(1, _oclmanager->_G), "setArg1");
+	checkErr(_oclmanager->_kernel_newvel.setArg(2, _oclmanager->_p), "setArg2");
+	checkErr(_oclmanager->_kernel_newvel.setArg(3, _oclmanager->_u), "setArg3");
+	checkErr(_oclmanager->_kernel_newvel.setArg(4, _oclmanager->_v), "setArg4");
+	checkErr(_oclmanager->_kernel_newvel.setArg(5, _oclmanager->_h_inv), "setArg5");
+	checkErr(_oclmanager->_kernel_newvel.setArg(6, clDT), "setArg6");
+	//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
+	//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
+	// Run the kernel on specific ND range
+	//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
+	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
+	NDRange local(localSize,localSize);
+	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_newvel, NullRange, global, local), "enqueueNDRangeKernel");
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+	_oclmanager->_queue.finish();
+
 	// Initialize interior iterator
 	InteriorIterator it = InteriorIterator(_geom);
 

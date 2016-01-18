@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+#include "oclmanager.hpp"
 //------------------------------------------------------------------------------
 #ifndef __SOLVER_HPP
 #define __SOLVER_HPP
@@ -120,7 +121,7 @@ protected:
 class SOROCL{
 public:
   /// Constructs an actual SOR solver
-  SOROCL( const Geometry *geom, const real_t& omega);
+  SOROCL( const Geometry *geom, const real_t& omega, OCLManager* oclmanager);
   /// Destructor
   ~SOROCL();
 
@@ -150,6 +151,8 @@ protected:
   cl::Context _context;
   std::vector<cl::Device> _all_devices;
   cl::Program _program;
+
+  OCLManager* _oclmanager;
 };
 //------------------------------------------------------------------------------
 

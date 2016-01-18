@@ -26,7 +26,9 @@ __kernel void sor(	__global float *grid,
     int g_x = get_global_id(0) + 1;
     int g_y = get_global_id(1) + 1;
 
-    int gridSize = get_global_size(0) + 2;
+    int gridSizeInterior = get_global_size(0);
+    int gridSize = gridSizeInterior + 2;
+
     int idx = g_y*gridSize + g_x;
 
 
@@ -64,9 +66,56 @@ __kernel void sor(	__global float *grid,
     p_u = grid[idx+gridSize];
     p_d = grid[idx-gridSize];
 
-    //float dxx = (p_l - 2*p + p_r) * hsi;
-	//float dyy = (p_u - 2*p + p_d) * hsi;
 
-	//resGrid[idx] = fabs( dxx + dyy - p_rhs);
-    resGrid[idx] = fabs(p_l + p_r + p_u + p_d - 6.0f*p - hs*p_rhs);
+
+    float dxx = (p_l - 2*p + p_r) * hsi;
+	float dyy = (p_u - 2*p + p_d) * hsi;
+
+	resGrid[idx] = fabs( dxx + dyy - p_rhs);
+    //resGrid[idx] = fabs(p_l + p_r + p_u + p_d - 6.0f*p - hs*p_rhs);
+
+    if (g_x == 1){
+		grid[idx-1] = p;
+	}
+	if (g_x == gridSizeInterior){
+		grid[idx+1] = p;
+	}
+	if (g_y == 1){
+		grid[idx-gridSize] = p;
+	}
+	if (g_y == gridSizeInterior){
+		grid[idx+gridSize] = p;
+	}
+}
+
+__kernel void newvel(	__global const float *FGrid,
+					__global const float *GGrid,
+					__global const float *pGrid,
+					__global float *uGrid,
+					__global float *vGrid,
+					__global float *h_inv,
+					__global float *deltaT
+				)
+{
+
+	float hi = (*h_inv);
+	float dt = (*deltaT);
+
+	int g_x = get_global_id(0) + 1;
+	int g_y = get_global_id(1) + 1;
+
+	int gridSize = get_global_size(0) + 2;
+	int idx = g_y*gridSize + g_x;
+
+	float F = FGrid[idx];
+	float G = GGrid[idx];
+
+	float p = pGrid[idx];
+	float p_r = pGrid[idx+1];
+	float p_u = pGrid[idx+gridSize];
+
+	uGrid[idx] = F - dt * (p_r - p)*hi;
+	vGrid[idx] = G - dt * (p_u - p)*hi;
+
+
 }

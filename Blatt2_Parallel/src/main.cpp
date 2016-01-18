@@ -21,6 +21,7 @@
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
+#include "oclmanager.hpp"
 #ifdef USE_DEBUG_VISU
 	#include "visu.hpp"
 #endif
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
   Communicator comm(&argc, &argv);
   Parameter param;
   Geometry geom(&comm);
+  OCLManager oclmanager(&geom);
 
   if ( argc >= 2)
     param.Load(argv[1]);
@@ -48,7 +50,7 @@ int main(int argc, char **argv) {
     geom.Load("geometry.txt");
 
   // Create the fluid solver
-  Compute comp(&geom, &param, &comm);
+  Compute comp(&geom, &param, &comm, &oclmanager);
 
   if (comm.getRank() == 0) {
 
