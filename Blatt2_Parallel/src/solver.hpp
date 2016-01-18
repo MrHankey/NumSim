@@ -127,7 +127,7 @@ public:
   /// Returns the total residual and executes a solver cycle
   // @param grid current pressure values
   // @param rhs right hand side
-  real_t Cycle(Grid *grid, const  Grid *rhs);
+  real_t Cycle(Grid *grid, const  Grid *rhs, index_t iIterations = 1);
   void InitializeBuffers();
   void UpdateBuffers(Grid *grid, const Grid *rhs, Grid* zeroGrid);
   //real_t Cycle(Grid *grid, const Grid *rhs) const;
@@ -145,6 +145,8 @@ protected:
   cl::Buffer _bufGrid;
   cl::Buffer _bufRHS;
   cl::Buffer _bufLocalResiduals;
+  cl::Buffer _clHSquare;
+  cl::Buffer _clHSquareInv;
   cl::Context _context;
   std::vector<cl::Device> _all_devices;
   cl::Program _program;

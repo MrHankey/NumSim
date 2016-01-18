@@ -144,7 +144,11 @@ void Compute::TimeStep(bool printInfo) {
 	clock_t begin;
 	begin = clock();
 
-	while(total_res >_param->Eps() && i < _param->IterMax() ) {
+	Grid zeroGrid = Grid(_geom);
+	zeroGrid.Initialize(0.0f);
+	_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
+
+	while(total_res >_param->Eps() && i < 10 /*_param->IterMax()*/ ) {
 		/*bool even = _comm->EvenOdd();
 		if (even){
 			local_res = _solver->RedCycle(_p,_rhs);
@@ -162,7 +166,7 @@ void Compute::TimeStep(bool printInfo) {
 
 		}*/
 
-		total_res = _solver->Cycle(_p, _rhs);
+		total_res = _solver->Cycle(_p, _rhs, 10);
 		//cout << "res: " << local_res << endl;
 
 		_geom->Update_P(_p);

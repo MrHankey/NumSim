@@ -420,6 +420,12 @@ void SOROCL::InitializeBuffers()
 	checkErr(err, "Buffer::Buffer() rhs");
 	_bufLocalResiduals = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
 	checkErr(err, "Buffer::Buffer() res");
+
+	real_t h_square   = _geom->Mesh()[0]*_geom->Mesh()[0];
+	real_t h_square_inv = 1.0/h_square;
+
+	_clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
+	_clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
 }
 
 void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
@@ -432,10 +438,9 @@ void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
 
 }
 
-real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
+real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 {
-	real_t h_square   = _geom->Mesh()[0]*_geom->Mesh()[0];
-	real_t h_square_inv = 1.0/h_square;
+
 
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	clock_t begin;
@@ -452,10 +457,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	begin = clock();
 
 	//copy grid data to device
-	UpdateBuffers(grid, rhs, &localResiduals);
-
-	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
-	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
+	//UpdateBuffers(grid, rhs, &localResiduals);
 
 	_queue.finish();
 	end = clock();
@@ -473,8 +475,8 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 		checkErr(_kernel.setArg(0, _bufGrid), "setArg0");
 		checkErr(_kernel.setArg(1, _bufRHS), "setArg1");
 		checkErr(_kernel.setArg(2, _bufLocalResiduals), "setArg2");
-		checkErr(_kernel.setArg(3, clHSquare), "setArg3");
-		checkErr(_kernel.setArg(4, clHSquareInv), "setArg4");
+		checkErr(_kernel.setArg(3, _clHSquare), "setArg3");
+		checkErr(_kernel.setArg(4, _clHSquareInv), "setArg4");
 		//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
 		//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
 
@@ -482,7 +484,11 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 		//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
 		NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 		NDRange local(localSize,localSize);
-		checkErr(_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local), "enqueueNDRangeKernel");
+
+		for (int i = 0; i < iIterations; i++)
+		{
+			checkErr(_queue.enqueueNDRangeKernel(_kernel, NullRange, global, local), "enqueueNDRangeKernel");
+		}
 
 		_queue.finish();
 
@@ -542,7 +548,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs)
 	_time_res += elapsed_secs_res;
 
 	// Norm residual
-	return res/gridSize;
+	return 1.0f;//res/gridSize;
 }
 
 //---------------------------------------------------------------------------------------------------
