@@ -45,10 +45,15 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	_geom   = geom;
 	_param  = param;
 	_comm = comm;
-	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
+#ifdef OCL_SOLVER
+	_solver = new SOROCL(_geom, _param->Omega());
+#else
+	_solver = new RedOrBlackSOR(_geom,_param->Omega());
+#endif
+
 	//_solver = new SOR(_geom,_param->Omega());
 	//_solver = new JacobiOCL(_geom);
-	_solver = new SOROCL(_geom, _param->Omega());
+
 
 	_solver_time = 0.0;
 
@@ -205,8 +210,9 @@ void Compute::TimeStep(bool printInfo) {
 	clock_t begin;
 	begin = clock();
 
-	//while(total_res >_param->Eps() && i < _param->IterMax() ) {
-		/*bool even = _comm->EvenOdd();
+#ifndef OCL_SOLVER
+	while(total_res >_param->Eps() && i < _param->IterMax() ) {
+		bool even = _comm->EvenOdd();
 		if (even){
 			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
@@ -221,28 +227,33 @@ void Compute::TimeStep(bool printInfo) {
 			local_res = _solver->RedCycle(_p,_rhs);
 			_comm->copyBoundary(_p);
 
-		}*/
+		}
 
-		/*total_res = _solver->Cycle(_p, _rhs);
+		//total_res = _solver->Cycle(_p, _rhs);
 		//cout << "res: " << local_res << endl;
 
 		_geom->Update_P(_p);
 
-		//total_res = _comm->gatherSum(local_res)/_comm->getSize();
+		total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
-	}*/
+	}
+#endif
 
+#ifdef OCL_SOLVER
 	total_res = _solver->Cycle(_p, _rhs);
 	//_geom->Update_P(_p);
+#endif
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	//_solver_time = _solver->_gpu_time;
 	_solver_time += elapsed_secs;
+#ifdef OCL_SOLVER
 	_time_buf = _solver->_time_buffer;
 	_time_buf_read = _solver->_time_buffer_read;
 	_time_kernel = _solver->_time_kernel;
 	_time_res = _solver->_time_res;
+#endif
 
 	// Compute u,v
 	NewVelocities(dt);
@@ -258,6 +269,7 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Print info
 	if (printInfo) {
+		cout << "solver_time: " << _solver_time << endl;
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 	}
 }

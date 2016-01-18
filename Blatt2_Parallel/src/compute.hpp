@@ -18,6 +18,9 @@
 #include "typedef.hpp"
 #include "solver.hpp"
 #include <CL/cl.hpp>
+
+#define OCL_SOLVER
+
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
@@ -89,10 +92,13 @@ private:
   Grid *_tmpVorticity;
   Grid *_tmpStream;
 
-  //RedOrBlackSOR *_solver;
+#ifdef OCL_SOLVER
+  SOROCL *_solver;
+#else
+  RedOrBlackSOR *_solver;
+#endif
   //SOR *_solver;
   //JacobiOCL *_solver;
-  SOROCL *_solver;
 
   const Geometry *_geom;
   const Parameter *_param;
