@@ -335,8 +335,38 @@ void Compute::NewVelocities(const real_t& dt) {
 /// Compute the temporary velocities F,G
 //  @param dt  get timestep
 void Compute::MomentumEqu(const real_t& dt) {
+
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	index_t localSize = 16;
+	real_t dt_var = dt;
+	real_t RE_inv = 1.0f/_param->Re();
+
+
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+
+	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
+	// Set arguments to kernel
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(0, _oclmanager->_F), "setArg0");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(1, _oclmanager->_G), "setArg1");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(2, _oclmanager->_u), "setArg2");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(3, _oclmanager->_v), "setArg3");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(4, _oclmanager->_h_inv), "setArg4");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(5, _oclmanager->_hs_inv), "setArg5");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(6, clDT), "setArg6");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(7, clRE_inv), "setArg7");
+
+	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
+	NDRange local(localSize,localSize);
+	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_momentumeq, NullRange, global, local), "enqueueNDRangeKernel");
+
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+	_oclmanager->_queue.finish();
+
 	// Initialize interior iterator
-	InteriorIterator it = InteriorIterator(_geom);
+	/*InteriorIterator it = InteriorIterator(_geom);
 
 	// Cycle through all interior cells
 	while ( it.Valid() ) {
@@ -358,7 +388,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 
 		// Next cell
 		it.Next();
-	}
+	}*/
 
 	_geom->Update_U(_F);
 	_geom->Update_V(_G);

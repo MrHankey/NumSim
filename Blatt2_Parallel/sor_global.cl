@@ -17,6 +17,37 @@ float d_r(float right, float mid, float hi) {
 	return (right-mid)*hi;
 }
 
+float ddx(float right, float left, float mid, float hsi) {
+	//return (_data[it.Top()]-2*_data[it]+_data[it.Down()])/_geom->Mesh()[1]/_geom->Mesh()[1];
+	return (right-2*mid+left)*hsi;
+}
+
+float xdx_x(float right, float left, float mid, float hi) {
+	//real_t A = (_data[it]+_data[it.Right()])/2.0;
+	//real_t B = (_data[it.Left()]+_data[it])/2.0;
+	//real_t C = (_data[it]-_data[it.Right()])/2.0;
+	//real_t D = (_data[it.Left()]-_data[it])/2.0;
+	//return (( A*A - B*B) + alpha*(fabs(A)*C-fabs(B)*D) )/_geom->Mesh()[0];
+	float A = (mid+right)*0.5f;
+	float B = (left+mid)*0.5f;
+	float C = (mid-right)*0.5f;
+	float D = (left-mid)*0.5f;
+	return (( A*A - B*B) + 0.9f*(fabs(A)*C-fabs(B)*D) )*hi;
+}
+
+float xdy_x(float right, float left, float mid, float other_r, float other_l, float other_lt, float other_m, float hi) {
+	float A = (other_m + other_r)*0.5f;
+	float B = (mid + right)*0.5f;
+	float C = (other_l + other_lt)*0.5f;
+	float D = (mid + left)*0.5f;
+	float E = (mid - right)*0.5f;
+	float F = (left - mid)*0.5f;
+
+	return (( A * B - C * D) + 0.9f * ( fabs(A)*E-fabs(C)*F )) * hi;
+
+	//TODO CHECK SYMMETRY
+}
+
 __kernel void sor(	__global float *grid,
 					__global const float *rhs,
 					__global float *resGrid,
@@ -133,8 +164,8 @@ __kernel void newvel(	__global const float *FGrid,
 __kernel void rhs(	__global const float *FGrid,
 					__global const float *GGrid,
 					__global float *rhs,
-					__global float *h_inv,
-					__global float *deltaTInv
+					__global const float *h_inv,
+					__global const float *deltaTInv
 				)
 {
 
@@ -155,4 +186,55 @@ __kernel void rhs(	__global const float *FGrid,
 
 	rhs[idx] = (d_l(F_l, F, hi) + d_l(G_d, G, hi)) * dti;
 
+}
+
+__kernel void momentumeq(	__global float *FGrid,
+					__global float *GGrid,
+					__global float *uGrid,
+					__global float *vGrid,
+					__global const float *h_inv,
+					__global const float *h_inv_squared,
+					__global const float *deltaT,
+					__global const float *RE_inv
+				)
+{
+
+	float hi = (*h_inv);
+	float hsi = (*h_inv_squared);
+	float dt = (*deltaT);
+	float rei = (*RE_inv);
+
+	int g_x = get_global_id(0) + 1;
+	int g_y = get_global_id(1) + 1;
+
+	int gridSize = get_global_size(0) + 2;
+	int idx = g_y*gridSize + g_x;
+
+	float u = uGrid[idx];
+	float v = vGrid[idx];
+
+	float u_r = uGrid[idx+1];
+	float v_r = vGrid[idx+1];
+
+	float u_l = uGrid[idx-1];
+	float v_l = vGrid[idx-1];
+
+	float u_t = uGrid[idx+gridSize];
+	float v_t = vGrid[idx+gridSize];
+
+	float u_d = uGrid[idx-gridSize];
+	float v_d = vGrid[idx-gridSize];
+
+	float u_lt = uGrid[idx-1+gridSize];
+	float v_dr = vGrid[idx+1-gridSize];
+
+
+	float A = rei * ( ddx(u_r, u_l, u, hsi) + ddx(u_t, u_d, u, hsi) - xdx_x(u_r, u_l, u, hi) - xdy_x(u_t, u_d, u, v_r, v_d, v_dr, v, hi));
+	float B = rei * ( ddx(v_r, v_l, v, hsi) + ddx(v_t, v_d, v, hsi) - xdx_x(v_r, v_l, v, hi) - xdy_x(v_r, v_l, v, u_t, u_l, u_lt, u, hi));
+
+	FGrid[idx] = u + dt*A;
+	GGrid[idx] = v + dt*B;
+
+
+	//TODO UPDATE F G
 }

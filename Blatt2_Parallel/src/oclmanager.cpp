@@ -62,6 +62,9 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_rhs = Kernel(_program, "rhs", &err);
 	checkErr(err, "Kernel::Kernel() rhs");
 
+	_kernel_momentumeq = Kernel(_program, "momentumeq", &err);
+	checkErr(err, "Kernel::Kernel() momentumeq");
+
 	//Initialize();
 	//InitFields();
 }
