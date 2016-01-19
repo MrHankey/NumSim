@@ -149,9 +149,9 @@ void Compute::TimeStep(bool printInfo) {
 	clock_t begin;
 	begin = clock();
 
-	Grid zeroGrid = Grid(_geom);
-	zeroGrid.Initialize(0.0f);
-	_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
+	//Grid zeroGrid = Grid(_geom);
+	//zeroGrid.Initialize(0.0f);
+	//_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
 
 	while(total_res >_param->Eps() && i < 10 /*_param->IterMax()*/ ) {
 		/*bool even = _comm->EvenOdd();
