@@ -378,7 +378,6 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	//grid for saving local residuals
 	//initialize as 0
 	Grid localResiduals = Grid(_geom);
-	localResiduals.Initialize(0.0f);
 
 	index_t localSize = 16;
 	index_t localCellCount = (localSize+2)*(localSize+2);
@@ -388,7 +387,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	//copy grid data to device
 	//UpdateBuffers(grid, rhs, &localResiduals);
 
-	//_oclmanager->_queue.finish();
+	_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
@@ -406,8 +405,6 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 		checkErr(_oclmanager->_kernel_solver.setArg(2, _oclmanager->_locRes), "setArg2");
 		checkErr(_oclmanager->_kernel_solver.setArg(3, _oclmanager->_hs), "setArg3");
 		checkErr(_oclmanager->_kernel_solver.setArg(4, _oclmanager->_hs_inv), "setArg4");
-		//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
-		//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
 
 		// Run the kernel on specific ND range
 		//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
@@ -427,7 +424,6 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 		begin = clock();
 
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize * sizeof(real_t), grid->_data);
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_locRes, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
 #ifdef __CL_ENABLE_EXCEPTIONS
 	} catch(Error error) {
