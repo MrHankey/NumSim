@@ -7,6 +7,16 @@
 #define float4
 #endif
 
+float d_l(float left, float mid, float hi) {
+	//return (_data[it]-_data[it.Left()])/_geom->Mesh()[0];
+	return (mid-left)*hi;
+}
+
+float d_r(float right, float mid, float hi) {
+	//return (_data[it.Right()]-_data[it])/_geom->Mesh()[0];
+	return (right-mid)*hi;
+}
+
 __kernel void sor(	__global float *grid,
 					__global const float *rhs,
 					__global float *resGrid,
@@ -114,8 +124,35 @@ __kernel void newvel(	__global const float *FGrid,
 	float p_r = pGrid[idx+1];
 	float p_u = pGrid[idx+gridSize];
 
-	uGrid[idx] = F - dt * (p_r - p)*hi;
-	vGrid[idx] = G - dt * (p_u - p)*hi;
+	uGrid[idx] = F - dt * d_r(p_r, p, hi);//(p_r - p)*hi;
+	vGrid[idx] = G - dt * d_r(p_u, p, hi);//(p_u - p)*hi;
 
+
+}
+
+__kernel void rhs(	__global const float *FGrid,
+					__global const float *GGrid,
+					__global float *rhs,
+					__global float *h_inv,
+					__global float *deltaTInv
+				)
+{
+
+	float hi = (*h_inv);
+	float dti = (*deltaTInv);
+
+	int g_x = get_global_id(0) + 1;
+	int g_y = get_global_id(1) + 1;
+
+	int gridSize = get_global_size(0) + 2;
+	int idx = g_y*gridSize + g_x;
+
+	float F = FGrid[idx];
+	float G = GGrid[idx];
+
+	float F_l = FGrid[idx-1];
+	float G_d = GGrid[idx-gridSize];
+
+	rhs[idx] = (d_l(F_l, F, hi) + d_l(G_d, G, hi)) * dti;
 
 }

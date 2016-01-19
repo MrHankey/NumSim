@@ -367,8 +367,33 @@ void Compute::MomentumEqu(const real_t& dt) {
 /// Compute the RHS of the poisson equation
 //  @param dt  get timestep
 void Compute::RHS(const real_t& dt) {
+
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	index_t localSize = 16;
+	real_t h_inv = 1.0f/_geom->Mesh()[0];
+	real_t dt_inv = 1.0f/dt;
+
+
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+
+	Buffer clDTInv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_inv);
+	// Set arguments to kernel
+	checkErr(_oclmanager->_kernel_rhs.setArg(0, _oclmanager->_F), "setArg0 rhs");
+	checkErr(_oclmanager->_kernel_rhs.setArg(1, _oclmanager->_G), "setArg1 rhs");
+	checkErr(_oclmanager->_kernel_rhs.setArg(2, _oclmanager->_rhs), "setArg2 rhs");
+	checkErr(_oclmanager->_kernel_rhs.setArg(3, _oclmanager->_h_inv), "setArg3 rhs");
+	checkErr(_oclmanager->_kernel_rhs.setArg(4, clDTInv), "setArg4 rhs");
+
+	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
+	NDRange local(localSize,localSize);
+	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_rhs, NullRange, global, local), "enqueueNDRangeKernel");
+
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_rhs, CL_TRUE, 0, gridSize * sizeof(real_t), _rhs->_data);
+	_oclmanager->_queue.finish();
+
 	// Initialize interior iterator
-	InteriorIterator it = InteriorIterator(_geom);
+	/*InteriorIterator it = InteriorIterator(_geom);
 
 	// Cycle through all interior cells
 	while ( it.Valid() ) {
@@ -385,5 +410,5 @@ void Compute::RHS(const real_t& dt) {
 
 		// Next cell
 		it.Next();
-	}
+	}*/
 }

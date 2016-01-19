@@ -59,6 +59,9 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_newvel = Kernel(_program, "newvel", &err);
 	checkErr(err, "Kernel::Kernel() newvel");
 
+	_kernel_rhs = Kernel(_program, "rhs", &err);
+	checkErr(err, "Kernel::Kernel() rhs");
+
 	//Initialize();
 	//InitFields();
 }
