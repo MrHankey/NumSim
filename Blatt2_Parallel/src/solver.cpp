@@ -359,7 +359,7 @@ void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
 {
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 
-	checkErr(_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize*sizeof(real_t), grid->_data), "Queue::enqueueWriteBuffer() grid");
+	_oclmanager->SetP(grid);
 	checkErr(_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_rhs, CL_TRUE, 0, gridSize*sizeof(real_t), rhs->_data), "Queue::enqueueWriteBuffer() rhs");
 	checkErr(_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_locRes, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid->_data), "Queue::enqueueWriteBuffer() res");
 

@@ -15,6 +15,8 @@ public:
 	~OCLManager();
 
 	void Initialize();
+	void InitFields();
+	void SetP(Grid* p);
 
 	//Kernels
 	cl::Kernel _kernel_solver;

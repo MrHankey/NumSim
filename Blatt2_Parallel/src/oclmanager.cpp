@@ -1,7 +1,5 @@
 #include "oclmanager.hpp"
-
-
-
+#include "grid.hpp"
 
 using namespace std;
 using namespace cl;
@@ -61,10 +59,28 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_newvel = Kernel(_program, "newvel", &err);
 	checkErr(err, "Kernel::Kernel() newvel");
 
-	Initialize();
+	//Initialize();
+	//InitFields();
 }
 
 OCLManager::~OCLManager() {
+}
+
+void OCLManager::InitFields()
+{
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+
+	Grid zeroGrid = Grid(_geom);
+	zeroGrid.Initialize(0.0f);
+
+	checkErr(_queue.enqueueWriteBuffer(_p, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer p");
+	checkErr(_queue.enqueueWriteBuffer(_u, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer u");
+	checkErr(_queue.enqueueWriteBuffer(_v, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer v");
+	checkErr(_queue.enqueueWriteBuffer(_F, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer F");
+	checkErr(_queue.enqueueWriteBuffer(_G, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer G");
+	checkErr(_queue.enqueueWriteBuffer(_rhs, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer rhs");
+	checkErr(_queue.enqueueWriteBuffer(_locRes, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer locRes");
+
 }
 
 void OCLManager::Initialize() {
@@ -100,7 +116,13 @@ void OCLManager::Initialize() {
 	_h = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h, &err);
 	checkErr(err, "Buffer::Buffer() h");
 	_h_inv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_inv, &err);
-	checkErr(err, "Buffer::Buffer() hs");
+	checkErr(err, "Buffer::Buffer() hi");
 
 
+}
+
+void OCLManager::SetP(Grid* p)
+{
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	checkErr(_queue.enqueueWriteBuffer(_p, CL_TRUE, 0, gridSize*sizeof(real_t), p->_data), "ocl amanager set pu");
 }

@@ -86,7 +86,10 @@ Compute::Compute(const Geometry *geom, const Parameter *param, const Communicato
 	// Set values
 	_u->Initialize(0);
 	_v->Initialize(0);
-	_p->Initialize(0.0);
+	_p->Initialize(0);
+	_F->Initialize(0);
+	_G->Initialize(0);
+	_rhs->Initialize(0);
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -299,19 +302,17 @@ void Compute::NewVelocities(const real_t& dt) {
 	checkErr(_oclmanager->_kernel_newvel.setArg(4, _oclmanager->_v), "setArg4");
 	checkErr(_oclmanager->_kernel_newvel.setArg(5, _oclmanager->_h_inv), "setArg5");
 	checkErr(_oclmanager->_kernel_newvel.setArg(6, clDT), "setArg6");
-	//checkErr(_kernel.setArg(5, sizeof(real_t)*localCellCount, NULL), "setArg5");
-	//checkErr(_kernel.setArg(6, sizeof(real_t)*localCellCount, NULL), "setArg6");
-	// Run the kernel on specific ND range
-	//cout << _geom->Size()[0] - 2 << " " << (_geom->Size()[1] - 2) << endl;
+
 	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 	NDRange local(localSize,localSize);
 	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_newvel, NullRange, global, local), "enqueueNDRangeKernel");
+
 	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
 	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 	_oclmanager->_queue.finish();
 
 	// Initialize interior iterator
-	InteriorIterator it = InteriorIterator(_geom);
+	/*InteriorIterator it = InteriorIterator(_geom);
 
 	// Cycle through all interior cells
 	while ( it.Valid() ) {
@@ -325,7 +326,7 @@ void Compute::NewVelocities(const real_t& dt) {
 
 		// Next cell
 		it.Next();
-	}
+	}*/
 }
 
 

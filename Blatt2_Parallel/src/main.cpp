@@ -85,6 +85,9 @@ int main(int argc, char **argv) {
   visugrid = comp.GetVelocity();
 #endif // USE_DEBUG_VISU
 
+  oclmanager.Initialize();
+  oclmanager.InitFields();
+
   clock_t begin;
   if ( comm.getRank() == 0)
 	  begin = clock();
