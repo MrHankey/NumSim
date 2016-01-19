@@ -453,6 +453,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 		if ( std::isfinite(val))
 		{
 			res += val;
+			//res = fmax(val, res);
 		}
 
 	}

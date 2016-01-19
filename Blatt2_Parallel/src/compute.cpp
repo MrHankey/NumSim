@@ -290,8 +290,8 @@ void Compute::NewVelocities(const real_t& dt) {
 	real_t dt_var = dt;
 
 
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
 
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	// Set arguments to kernel
@@ -361,15 +361,15 @@ void Compute::MomentumEqu(const real_t& dt) {
 	NDRange local(localSize,localSize);
 	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_momentumeq, NullRange, global, local), "enqueueNDRangeKernel");
 
-	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
-	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
-	_oclmanager->_queue.finish();
+	//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+	//_oclmanager->_queue.finish();
 
 	// Initialize interior iterator
-	/*InteriorIterator it = InteriorIterator(_geom);
+	InteriorIterator it = InteriorIterator(_geom);
 
 	// Cycle through all interior cells
-	while ( it.Valid() ) {
+	/*while ( it.Valid() ) {
 		// Get current velocities
 		const real_t u = _u->Cell(it);
 		const real_t v = _v->Cell(it);
@@ -390,8 +390,8 @@ void Compute::MomentumEqu(const real_t& dt) {
 		it.Next();
 	}*/
 
-	_geom->Update_U(_F);
-	_geom->Update_V(_G);
+	//_geom->Update_U(_F);
+	//_geom->Update_V(_G);
 }
 
 /// Compute the RHS of the poisson equation
@@ -404,8 +404,8 @@ void Compute::RHS(const real_t& dt) {
 	real_t dt_inv = 1.0f/dt;
 
 
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
 
 	Buffer clDTInv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_inv);
 	// Set arguments to kernel

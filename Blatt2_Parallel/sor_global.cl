@@ -22,27 +22,59 @@ float ddx(float right, float left, float mid, float hsi) {
 	return (right-2*mid+left)*hsi;
 }
 
-float xdx_x(float right, float left, float mid, float hi) {
+float udu_x(float u_r, float u_l, float u, float hi) {
 	//real_t A = (_data[it]+_data[it.Right()])/2.0;
 	//real_t B = (_data[it.Left()]+_data[it])/2.0;
 	//real_t C = (_data[it]-_data[it.Right()])/2.0;
 	//real_t D = (_data[it.Left()]-_data[it])/2.0;
 	//return (( A*A - B*B) + alpha*(fabs(A)*C-fabs(B)*D) )/_geom->Mesh()[0];
-	float A = (mid+right)*0.5f;
-	float B = (left+mid)*0.5f;
-	float C = (mid-right)*0.5f;
-	float D = (left-mid)*0.5f;
+	float A = (u+u_r)*0.5f;
+	float B = (u_l+u)*0.5f;
+	float C = (u-u_r)*0.5f;
+	float D = (u_l-u)*0.5f;
+
+	//TODO ALPHA
 	return (( A*A - B*B) + 0.9f*(fabs(A)*C-fabs(B)*D) )*hi;
 }
 
-float xdy_x(float right, float left, float mid, float other_r, float other_l, float other_lt, float other_m, float hi) {
-	float A = (other_m + other_r)*0.5f;
-	float B = (mid + right)*0.5f;
-	float C = (other_l + other_lt)*0.5f;
-	float D = (mid + left)*0.5f;
-	float E = (mid - right)*0.5f;
-	float F = (left - mid)*0.5f;
+float vdv_y(float v_t, float v_d, float v, float hi) {
+	//real_t A = (_data[it]+_data[it.Right()])/2.0;
+	//real_t B = (_data[it.Left()]+_data[it])/2.0;
+	//real_t C = (_data[it]-_data[it.Right()])/2.0;
+	//real_t D = (_data[it.Left()]-_data[it])/2.0;
+	//return (( A*A - B*B) + alpha*(fabs(A)*C-fabs(B)*D) )/_geom->Mesh()[0];
+	float A = (v+v_t)*0.5f;
+	float B = (v_d+v)*0.5f;
+	float C = (v-v_t)*0.5f;
+	float D = (v_d-v)*0.5f;
 
+	//TODO ALPHA
+	return (( A*A - B*B) + 0.9f*(fabs(A)*C-fabs(B)*D) )*hi;
+}
+
+float vdu_y(float u_t, float u_d, float u, float v_r, float v_d, float v_dr, float v, float hi) {
+	float A = (v + v_r)*0.5f;
+	float B = (u + u_t)*0.5f;
+	float C = (v_d + v_dr)*0.5f;
+	float D = (u + u_d)*0.5f;
+	float E = (u - u_t)*0.5f;
+	float F = (u_d - u)*0.5f;
+
+	//TODO ALPHA
+	return (( A * B - C * D) + 0.9f * ( fabs(A)*E-fabs(C)*F )) * hi;
+
+	//TODO CHECK SYMMETRY
+}
+
+float udv_x(float v_r, float v_l, float v, float u_t, float u_l, float u_lt, float u, float hi) {
+	float A = (u + u_t)*0.5f;
+	float B = (v + v_r)*0.5f;
+	float C = (u_l + u_lt)*0.5f;
+	float D = (v + v_l)*0.5f;
+	float E = (v - v_r)*0.5f;
+	float F = (v_l - v)*0.5f;
+
+	//TODO ALPHA
 	return (( A * B - C * D) + 0.9f * ( fabs(A)*E-fabs(C)*F )) * hi;
 
 	//TODO CHECK SYMMETRY
@@ -204,6 +236,9 @@ __kernel void momentumeq(	__global float *FGrid,
 	float dt = (*deltaT);
 	float rei = (*RE_inv);
 
+	//TODO DONT HARDCODE
+	float velocity = 1.0f;
+
 	int g_x = get_global_id(0) + 1;
 	int g_y = get_global_id(1) + 1;
 
@@ -229,12 +264,35 @@ __kernel void momentumeq(	__global float *FGrid,
 	float v_dr = vGrid[idx+1-gridSize];
 
 
-	float A = rei * ( ddx(u_r, u_l, u, hsi) + ddx(u_t, u_d, u, hsi) - xdx_x(u_r, u_l, u, hi) - xdy_x(u_t, u_d, u, v_r, v_d, v_dr, v, hi));
-	float B = rei * ( ddx(v_r, v_l, v, hsi) + ddx(v_t, v_d, v, hsi) - xdx_x(v_r, v_l, v, hi) - xdy_x(v_r, v_l, v, u_t, u_l, u_lt, u, hi));
+	float A = rei * ( ddx(u_r, u_l, u, hsi) + ddx(u_t, u_d, u, hsi) ) - udu_x(u_r, u_l, u, hi) - vdu_y(u_t, u_d, u, v_r, v_d, v_dr, v, hi);
+	float B = rei * ( ddx(v_r, v_l, v, hsi) + ddx(v_t, v_d, v, hsi) ) - vdv_y(v_t, v_d, v, hi) - udv_x(v_r, v_l, v, u_t, u_l, u_lt, u, hi);
 
 	FGrid[idx] = u + dt*A;
 	GGrid[idx] = v + dt*B;
 
 
 	//TODO UPDATE F G
+
+	//left
+	if (g_x == 1){
+		FGrid[idx-1] = 0;
+		GGrid[idx-1] = -1.0f*GGrid[idx];
+	}
+	//right
+	if (g_x == gridSize-2){
+		FGrid[idx+1] = 0;
+		FGrid[idx] = 0;
+		GGrid[idx+1] = -1.0f*GGrid[idx];
+	}
+	//bottom
+	if (g_y == 1){
+		FGrid[idx-gridSize] = -1.0f*FGrid[idx];
+		GGrid[idx-gridSize] = 0;
+	}
+	//top
+	if (g_y == gridSize-2){
+		FGrid[idx+gridSize] = 2.0f*velocity - FGrid[idx];
+		GGrid[idx+gridSize] = 0;
+		GGrid[idx] = 0;
+	}
 }
