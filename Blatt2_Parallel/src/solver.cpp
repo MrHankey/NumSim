@@ -368,10 +368,12 @@ void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
 real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 {
 
-
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	clock_t begin;
 	clock_t end;
+	begin = clock();
+
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+
 
 	//grid for saving local residuals
 	//initialize as 0
@@ -381,12 +383,12 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	index_t localSize = 16;
 	index_t localCellCount = (localSize+2)*(localSize+2);
 
-	begin = clock();
+
 
 	//copy grid data to device
 	//UpdateBuffers(grid, rhs, &localResiduals);
 
-	_oclmanager->_queue.finish();
+	//_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
