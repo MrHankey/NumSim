@@ -89,7 +89,7 @@ __kernel void sor(	__global float *grid,
 					//__local float* localRHS
 				)
  {
-	float omega = 1.0f;
+	float omega = 1.7f;
 	float hs = (*h_square);
 	float hsi = (*h_square_inv);
 
@@ -124,6 +124,12 @@ __kernel void sor(	__global float *grid,
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
+    p = grid[idx];
+    p_l = grid[idx-1];
+    p_r = grid[idx+1];
+    p_u = grid[idx+gridSize];
+    p_d = grid[idx-gridSize];
+
     //black cycle
     if (((g_x + g_y) & 1) != 0)
     {
@@ -139,10 +145,8 @@ __kernel void sor(	__global float *grid,
     p_u = grid[idx+gridSize];
     p_d = grid[idx-gridSize];
 
-
-
-    float dxx = (p_l - 2*p + p_r) * hsi;
-	float dyy = (p_u - 2*p + p_d) * hsi;
+    float dxx = (p_l - 2.0f*p + p_r) * hsi;
+	float dyy = (p_u - 2.0f*p + p_d) * hsi;
 
 	resGrid[idx] = fabs( dxx + dyy - p_rhs);
     //resGrid[idx] = fabs(p_l + p_r + p_u + p_d - 6.0f*p - hs*p_rhs);
