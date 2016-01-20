@@ -177,10 +177,10 @@ void Compute::TimeStep(bool printInfo) {
 	_solver_time += elapsed_secs;
 
 
-	//_time_buf = _solver->_time_buffer;
-	//_time_buf_read = _solver->_time_buffer_read;
-	//_time_kernel = _solver->_time_kernel;
-	//_time_res = _solver->_time_res;
+	_time_buf = _solver->_time_buffer;
+	_time_buf_read = _solver->_time_buffer_read;
+	_time_kernel = _solver->_time_kernel;
+	_time_res = _solver->_time_res;
 
 	static real_t timing_nv = 0.0f;
 	begin = clock();
