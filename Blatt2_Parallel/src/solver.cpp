@@ -130,7 +130,7 @@ JacobiOCL::JacobiOCL( const Geometry* geom) {
 
 	_geom  = geom;
 
-	vector<Platform> platforms;
+	std::vector<Platform> platforms;
 	Platform::get(&platforms);
 
 	// Select the default platform and create a context using this platform and the GPU
@@ -254,8 +254,8 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	begin = clock();
 
 	UpdateBuffers(grid, rhs);
-	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
-	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
+	Buffer clHSquare = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square);
+	Buffer clHSquareInv = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &h_square_inv);
 
 	_queue.finish();
 	end = clock();

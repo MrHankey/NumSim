@@ -11,7 +11,7 @@ OCLManager::OCLManager(Geometry* geom) {
 
 	cl_int err;
 
-	vector<Platform> platforms;
+	std::vector<Platform> platforms;
 	Platform::get(&platforms);
 
 	// Select the default platform and create a context using this platform and the GPU
@@ -158,7 +158,7 @@ real_t OCLManager::ReduceMaxVelocity()
 	NDRange global_red(1*128);
 	NDRange local_red(128);
 
-	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
+	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
 	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &result);
 
 	checkErr(_kernel_reduce_max.setArg(0, _u), "setArg0 red max u");
@@ -193,7 +193,7 @@ real_t OCLManager::ReduceResidual()
 	NDRange global_red(1*128);
 	NDRange local_red(128);
 
-	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
+	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
 	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &result);
 
 	checkErr(_kernel_reduce_sum.setArg(0, _locRes), "setArg0 red sum");

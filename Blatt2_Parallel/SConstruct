@@ -24,7 +24,7 @@ env = Environment(variables=vars)
 debug = ARGUMENTS.get('debug', 0)
 
 # parallel
-env.Replace(CXX='mpic++')
+env.Replace(CXX='g++')
 
 #serial
 # env.Replace(CXX='g++')

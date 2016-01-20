@@ -304,7 +304,7 @@ void Compute::NewVelocities(const real_t& dt) {
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
 
-	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_newvel.setArg(0, _oclmanager->_F), "setArg0");
 	checkErr(_oclmanager->_kernel_newvel.setArg(1, _oclmanager->_G), "setArg1");
@@ -352,8 +352,8 @@ void Compute::MomentumEqu(const real_t& dt) {
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 
-	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
-	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
+	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(0, _oclmanager->_F), "setArg0");
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(1, _oclmanager->_G), "setArg1");
@@ -414,7 +414,7 @@ void Compute::RHS(const real_t& dt) {
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
 
-	Buffer clDTInv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_inv);
+	Buffer clDTInv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_inv);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_rhs.setArg(0, _oclmanager->_F), "setArg0 rhs");
 	checkErr(_oclmanager->_kernel_rhs.setArg(1, _oclmanager->_G), "setArg1 rhs");

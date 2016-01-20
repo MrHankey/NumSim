@@ -19,7 +19,7 @@ Import('*')
 
 # get sources.
 srcs = ['src/main.cpp',
-        'src/communicator.cpp',
+#        'src/communicator.cpp',
         'src/compute.cpp',
         'src/geometry.cpp',
         'src/grid.cpp',
