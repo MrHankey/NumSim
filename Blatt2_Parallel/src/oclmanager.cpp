@@ -151,7 +151,7 @@ void OCLManager::Initialize() {
 
 real_t OCLManager::ReduceMaxVelocity()
 {
-	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1]);
+	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1] - 1);
 	real_t result = 0.0f;
 	//index_t numWorkGroups = 80;
 
