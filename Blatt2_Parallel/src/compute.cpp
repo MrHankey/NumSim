@@ -121,6 +121,7 @@ void Compute::TimeStep(bool printInfo) {
 	//_geom->Update_V(_v);
 	//_geom->Update_P(_p);
 
+	static real_t timing_dt = 0.0f;
 	clock_t begin;
 	begin = clock();
 
@@ -133,8 +134,9 @@ void Compute::TimeStep(bool printInfo) {
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	//_solver_time = _solver->_gpu_time;
-	_solver_time += elapsed_secs;
+	timing_dt += elapsed_secs;
 
+	static real_t timing_meq = 0.0f;
 	begin = clock();
 	// Compute F, G
 	MomentumEqu(dt);
@@ -144,25 +146,22 @@ void Compute::TimeStep(bool printInfo) {
 	//std::cin.ignore();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	//_time_buf += elapsed_secs;
+	timing_meq += elapsed_secs;
 
+	static real_t timing_rhs = 0.0f;
 	begin = clock();
 	// Compute RHS
 	RHS(dt);
 	_oclmanager->_queue.finish();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	//_time_buf_read += elapsed_secs;
+	timing_rhs += elapsed_secs;
 
 	// Compute p
 	real_t total_res = 10000000;
 	index_t i = 0;
 
 
-
-	//Grid zeroGrid = Grid(_geom);
-	//zeroGrid.Initialize(0.0f);
-	//_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
 	begin = clock();
 
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
@@ -175,7 +174,7 @@ void Compute::TimeStep(bool printInfo) {
 	_oclmanager->_queue.finish();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	//_time_kernel += elapsed_secs;
+	_solver_time += elapsed_secs;
 
 
 	//_time_buf = _solver->_time_buffer;
@@ -183,13 +182,14 @@ void Compute::TimeStep(bool printInfo) {
 	//_time_kernel = _solver->_time_kernel;
 	//_time_res = _solver->_time_res;
 
+	static real_t timing_nv = 0.0f;
 	begin = clock();
 	// Compute u,v
 	NewVelocities(dt);
 	_oclmanager->_queue.finish();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	//_time_res += elapsed_secs;
+	timing_nv += elapsed_secs;
 
 	//cout << "new vels done" << endl;
 
@@ -211,7 +211,7 @@ void Compute::TimeStep(bool printInfo) {
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
-		cout << "read: " << read_time << endl;
+		cout << "dt_time: " << timing_dt << " \tmeq: " << timing_meq << " \trhs: " << timing_rhs << " \tsolver: " << _solver_time << " \t nv:" << timing_nv << " \tread: " << read_time << endl;
 	}
 	_oclmanager->_queue.finish();
 	end = clock();
