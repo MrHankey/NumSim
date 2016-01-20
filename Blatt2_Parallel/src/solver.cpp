@@ -478,7 +478,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	_time_res += elapsed_secs_res;
 
 	// Norm residual
-	return res/gridSize;
+	return res;
 }
 
 //---------------------------------------------------------------------------------------------------
