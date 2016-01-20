@@ -66,25 +66,25 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_momentumeq = Kernel(_program, "momentumeq", &err);
 	checkErr(err, "Kernel::Kernel() momentumeq");
 
-	sourceFile = std::ifstream("reductions.cl");
-	sourceCode = std::string(
-		std::istreambuf_iterator<char>(sourceFile),
-		(std::istreambuf_iterator<char>()));
-	source = Program::Sources(1, std::make_pair(sourceCode.c_str(), sourceCode.length()+1));
+	std::ifstream sourceFileRed("reductions.cl");
+	std::string sourceCodeRed(
+			std::istreambuf_iterator<char>(sourceFileRed),
+			(std::istreambuf_iterator<char>()));
+	Program::Sources sourceRed(1, std::make_pair(sourceCodeRed.c_str(), sourceCodeRed.length()+1));
 
 	// Make program of the source code in the context
-	_program = Program(_context, source, &err);
+	_program_red = Program(_context, sourceRed, &err);
 	checkErr(err, "Program::Program(red)");
 
 	// Build program for these specific devices
-	err = _program.build(_all_devices);
-	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+	err = _program_red.build(_all_devices);
+	std::cout<<" Error building: "<<_program_red.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
 	checkErr(err, "Program::build(red)");
 
-	_kernel_reduce_sum = Kernel(_program, "reduce_sum", &err);
+	_kernel_reduce_sum = Kernel(_program_red, "reduce_sum", &err);
 	checkErr(err, "Kernel::Kernel() red_sum");
 
-	_kernel_reduce_max = Kernel(_program, "reduce_max", &err);
+	_kernel_reduce_max = Kernel(_program_red, "reduce_max", &err);
 	checkErr(err, "Kernel::Kernel() red_max");
 
 	//Initialize();
@@ -204,7 +204,7 @@ real_t OCLManager::ReduceResidual()
 	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_sum, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
 	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t), &result);
 
-	real_t uMax = result;
+	//real_t uMax = result;
 
 	return result;
 }

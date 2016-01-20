@@ -169,7 +169,7 @@ void Compute::TimeStep(bool printInfo) {
 	//_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
 	begin = clock();
 
-	while(total_res >_param->Eps() && i < 10 /*_param->IterMax()*/ ) {
+	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 
 
 		total_res = _solver->Cycle(_p, _rhs, 10);

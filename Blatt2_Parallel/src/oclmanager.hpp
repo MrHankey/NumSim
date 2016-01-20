@@ -51,6 +51,7 @@ public:
 private:
 	std::vector<cl::Device> _all_devices;
 	cl::Program _program;
+	cl::Program _program_red;
 
 	Geometry* _geom;
 
