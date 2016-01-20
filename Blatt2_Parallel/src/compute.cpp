@@ -122,6 +122,8 @@ void Compute::TimeStep(bool printInfo) {
 	//_geom->Update_V(_v);
 	//_geom->Update_P(_p);
 
+	clock_t begin;
+	begin = clock();
 
 	// Compute dt
 	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
@@ -132,26 +134,40 @@ void Compute::TimeStep(bool printInfo) {
 	//biggest dt of all is chosen.
 	dt = _comm->gatherMin(dt);
 
+	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_solver_time = _solver->_gpu_time;
+	_solver_time += elapsed_secs;
+
+	begin = clock();
 	// Compute F, G
 	MomentumEqu(dt);
+	_oclmanager->_queue.finish();
 	//_comm->copyBoundary(_F);
 	//_comm->copyBoundary(_G);
 	//std::cin.ignore();
+	end = clock();
+	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_time_buf += elapsed_secs;
 
+	begin = clock();
 	// Compute RHS
 	RHS(dt);
+	_oclmanager->_queue.finish();
+	end = clock();
+	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_time_buf_read += elapsed_secs;
 
 	// Compute p
 	real_t total_res = 10000000;
-	real_t local_res = 0.0;
 	index_t i = 0;
 
-	clock_t begin;
-	begin = clock();
+
 
 	//Grid zeroGrid = Grid(_geom);
 	//zeroGrid.Initialize(0.0f);
 	//_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
+	begin = clock();
 
 	while(total_res >_param->Eps() && i < 10 /*_param->IterMax()*/ ) {
 
@@ -160,17 +176,24 @@ void Compute::TimeStep(bool printInfo) {
 		i++;
 	}
 
-	clock_t end = clock();
-	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	//_solver_time = _solver->_gpu_time;
-	_solver_time += elapsed_secs;
+	_oclmanager->_queue.finish();
+	end = clock();
+	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_time_kernel += elapsed_secs;
+
+
 	_time_buf = _solver->_time_buffer;
 	_time_buf_read = _solver->_time_buffer_read;
 	_time_kernel = _solver->_time_kernel;
 	_time_res = _solver->_time_res;
 
+	begin = clock();
 	// Compute u,v
 	NewVelocities(dt);
+	_oclmanager->_queue.finish();
+	end = clock();
+	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	//_time_res += elapsed_secs;
 
 	//cout << "new vels done" << endl;
 
@@ -181,6 +204,9 @@ void Compute::TimeStep(bool printInfo) {
 	// Next timestep
 	_t += dt;
 
+	static real_t read_time = 0.0f;
+
+	begin = clock();
 	// Print info
 	if (printInfo) {
 		index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
@@ -190,6 +216,12 @@ void Compute::TimeStep(bool printInfo) {
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 	}
+	_oclmanager->_queue.finish();
+	end = clock();
+	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	read_time += elapsed_secs;
+	cout << "read: " << read_time << endl;
+
 }
 
 /* Getter functions */

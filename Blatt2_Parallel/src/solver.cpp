@@ -370,6 +370,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 	clock_t begin;
 	clock_t end;
+	_oclmanager->_queue.finish();
 	begin = clock();
 
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
@@ -387,7 +388,6 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	//copy grid data to device
 	//UpdateBuffers(grid, rhs, &localResiduals);
 
-	//_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
@@ -418,6 +418,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 		//_oclmanager->_queue.finish();
 
+		_oclmanager->_queue.finish();
 		end = clock();
 		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
 		_time_kernel += elapsed_secs_kernel;
@@ -434,6 +435,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 	//_oclmanager->_queue.finish();
 
+	_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer_read += elapsed_secs_buf_read;
@@ -469,6 +471,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 	//cin.ignore();
 
+	_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_res = double(end - begin) / CLOCKS_PER_SEC;
 	_time_res += elapsed_secs_res;

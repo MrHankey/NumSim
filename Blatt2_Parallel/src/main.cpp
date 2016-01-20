@@ -88,9 +88,11 @@ int main(int argc, char **argv) {
   oclmanager.Initialize();
   oclmanager.InitFields();
 
-  clock_t begin;
-  if ( comm.getRank() == 0)
-	  begin = clock();
+  clock_t begin_full;
+  begin_full = clock();
+  clock_t begin_step;
+
+  static real_t timing_step = 0.0f;
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend()) {
@@ -135,11 +137,15 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Stream", comp.GetStream());
     vtk.Finish();*/
 
+    begin_step = clock();
     // Run a few steps
     for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
     bool printOnlyOnMaster = !comm.getRank();
     comp.TimeStep(printOnlyOnMaster);
+    clock_t end = clock();
+	double elapsed_secs = double(end - begin_step) / CLOCKS_PER_SEC;
+	timing_step += elapsed_secs;
 
     //std::cin.ignore();
   }
@@ -147,8 +153,8 @@ int main(int argc, char **argv) {
   if ( comm.getRank() == 0)
   {
 	  clock_t end = clock();
-	  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	  std::cout << "duration: " << elapsed_secs << " solver_time: " << comp._solver_time << std::endl;
+	  double elapsed_secs = double(end - begin_full) / CLOCKS_PER_SEC;
+	  std::cout << "duration: " << elapsed_secs << "step: " << timing_step << " solver_time: " << comp._solver_time << std::endl;
 	  std::cout << "buf: " << comp._time_buf << " kernel: " << comp._time_kernel << " buf_read: " << comp._time_buf_read << " res: " << comp._time_res << std::endl;
   }
 
