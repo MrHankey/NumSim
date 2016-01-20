@@ -425,7 +425,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 		begin = clock();
 
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_locRes, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
+		//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_locRes, CL_TRUE, 0, gridSize * sizeof(real_t), localResiduals._data);
 #ifdef __CL_ENABLE_EXCEPTIONS
 	} catch(Error error) {
 	   std::cout << "Error initializing OpenCL: " << error.what() << "(" << error.err() << ")" << std::endl;
@@ -443,8 +443,9 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 
 	begin = clock();
 
+	real_t res = _oclmanager->ReduceResidual();
 
-	real_t res = 0.0f;
+	/*real_t res = 0.0f;
 	for ( index_t i = 0; i < gridSize; i++)
 	{
 		// sum residual
@@ -456,7 +457,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 			//res = fmax(val, res);
 		}
 
-	}
+	}*/
 
 	/*InteriorIterator it = InteriorIterator(_geom);
 	while (it.Valid())

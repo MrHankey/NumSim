@@ -1,5 +1,6 @@
 #include "oclmanager.hpp"
 #include "grid.hpp"
+#include <cmath>
 
 using namespace std;
 using namespace cl;
@@ -65,6 +66,27 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_momentumeq = Kernel(_program, "momentumeq", &err);
 	checkErr(err, "Kernel::Kernel() momentumeq");
 
+	sourceFile = std::ifstream("reductions.cl");
+	sourceCode = std::string(
+		std::istreambuf_iterator<char>(sourceFile),
+		(std::istreambuf_iterator<char>()));
+	source = Program::Sources(1, std::make_pair(sourceCode.c_str(), sourceCode.length()+1));
+
+	// Make program of the source code in the context
+	_program = Program(_context, source, &err);
+	checkErr(err, "Program::Program(red)");
+
+	// Build program for these specific devices
+	err = _program.build(_all_devices);
+	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+	checkErr(err, "Program::build(red)");
+
+	_kernel_reduce_sum = Kernel(_program, "reduce_sum", &err);
+	checkErr(err, "Kernel::Kernel() red_sum");
+
+	_kernel_reduce_max = Kernel(_program, "reduce_max", &err);
+	checkErr(err, "Kernel::Kernel() red_max");
+
 	//Initialize();
 	//InitFields();
 }
@@ -125,6 +147,66 @@ void OCLManager::Initialize() {
 	checkErr(err, "Buffer::Buffer() hi");
 
 
+}
+
+real_t OCLManager::ReduceMaxVelocity()
+{
+	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1]);
+	real_t result = 0.0f;
+	//index_t numWorkGroups = 80;
+
+	NDRange global_red(1*128);
+	NDRange local_red(128);
+
+	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
+	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &result);
+
+	checkErr(_kernel_reduce_max.setArg(0, _u), "setArg0 red max u");
+	checkErr(_kernel_reduce_max.setArg(1, sizeof(real_t)*128, nullptr), "setArg1 red max u");
+	checkErr(_kernel_reduce_max.setArg(2, clLength), "setArg2 red max u");
+	checkErr(_kernel_reduce_max.setArg(3, clResult), "setArg3 red max u");
+
+	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_max, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t), &result);
+
+	real_t uMax = result;
+
+	checkErr(_kernel_reduce_max.setArg(0, _v), "setArg0 red max v");
+	checkErr(_kernel_reduce_max.setArg(1, sizeof(real_t)*128, nullptr), "setArg1 red max v");
+	checkErr(_kernel_reduce_max.setArg(2, clLength), "setArg2 red max v");
+	checkErr(_kernel_reduce_max.setArg(3, clResult), "setArg3 red max v");
+
+	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_max, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t), &result);
+
+	real_t vMax = result;
+
+	return fmax(uMax,vMax);
+}
+
+real_t OCLManager::ReduceResidual()
+{
+	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1]);
+	real_t result = 0.0f;
+	//index_t numWorkGroups = 80;
+
+	NDRange global_red(1*128);
+	NDRange local_red(128);
+
+	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
+	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &result);
+
+	checkErr(_kernel_reduce_sum.setArg(0, _locRes), "setArg0 red sum");
+	checkErr(_kernel_reduce_sum.setArg(1, sizeof(real_t)*128, nullptr), "setArg1 red sum");
+	checkErr(_kernel_reduce_sum.setArg(2, clLength), "setArg2 red sum");
+	checkErr(_kernel_reduce_sum.setArg(3, clResult), "setArg3 red sum");
+
+	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_sum, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t), &result);
+
+	real_t uMax = result;
+
+	return result;
 }
 
 void OCLManager::SetP(Grid* p)

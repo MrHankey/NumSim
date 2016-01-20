@@ -18,11 +18,17 @@ public:
 	void InitFields();
 	void SetP(Grid* p);
 
+	real_t ReduceMaxVelocity();
+	real_t ReduceResidual();
+	//real_t ReduceSum(Grid* grid, index_t length);
+
 	//Kernels
 	cl::Kernel _kernel_solver;
 	cl::Kernel _kernel_rhs;
 	cl::Kernel _kernel_momentumeq;
 	cl::Kernel _kernel_newvel;
+	cl::Kernel _kernel_reduce_sum;
+	cl::Kernel _kernel_reduce_max;
 
 	//Grid Buffers
 	cl::Buffer _u;

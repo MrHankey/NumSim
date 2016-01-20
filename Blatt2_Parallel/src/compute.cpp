@@ -126,7 +126,7 @@ void Compute::TimeStep(bool printInfo) {
 	begin = clock();
 
 	// Compute dt
-	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/_oclmanager->ReduceMaxVelocity();
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
@@ -182,10 +182,10 @@ void Compute::TimeStep(bool printInfo) {
 	//_time_kernel += elapsed_secs;
 
 
-	_time_buf = _solver->_time_buffer;
-	_time_buf_read = _solver->_time_buffer_read;
-	_time_kernel = _solver->_time_kernel;
-	_time_res = _solver->_time_res;
+	//_time_buf = _solver->_time_buffer;
+	//_time_buf_read = _solver->_time_buffer_read;
+	//_time_kernel = _solver->_time_kernel;
+	//_time_res = _solver->_time_res;
 
 	begin = clock();
 	// Compute u,v
@@ -215,12 +215,12 @@ void Compute::TimeStep(bool printInfo) {
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
+		cout << "read: " << read_time << endl;
 	}
 	_oclmanager->_queue.finish();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	read_time += elapsed_secs;
-	cout << "read: " << read_time << endl;
 
 }
 
