@@ -32,6 +32,7 @@ Parameter::Parameter() {
 	_eps     = 0.001;
 	_tau     = 0.5;
 	_itermax = 100;
+	_pr		 = 3.0;
 
 	cout << "Loaded default parameters."<< endl;
 }
@@ -67,6 +68,7 @@ void Parameter::PrintVariables(){
 	cout << "Tend: "    << _tend    << endl;
 	cout << "eps: "     << _eps     << endl;
 	cout << "tau: "     << _tau     << endl;
+	cout << "Pr: "     << _pr     << endl;
 	cout << "itermax: " << _itermax << endl << endl;
 }
 
@@ -80,3 +82,4 @@ const real_t&  Parameter::Tend()    const {return _tend;}
 const index_t& Parameter::IterMax() const {return _itermax;}
 const real_t&  Parameter::Eps()     const {return _eps;}
 const real_t&  Parameter::Tau()     const {return _tau;}
+const real_t&  Parameter::Pr()     const {return _pr;}

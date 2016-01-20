@@ -27,6 +27,8 @@ public:
 	cl::Kernel _kernel_rhs;
 	cl::Kernel _kernel_momentumeq;
 	cl::Kernel _kernel_newvel;
+	cl::Kernel _kernel_T;
+
 	cl::Kernel _kernel_reduce_sum;
 	cl::Kernel _kernel_reduce_max;
 
@@ -38,6 +40,7 @@ public:
 	cl::Buffer _p;
 	cl::Buffer _rhs;
 	cl::Buffer _locRes;
+	cl::Buffer _T;
 
 	//Constants
 	cl::Buffer _h;

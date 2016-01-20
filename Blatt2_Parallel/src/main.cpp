@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
   while (comp.GetTime() < param.Tend()) {
 #ifdef USE_DEBUG_VISU
     // Render and check if window is closed
-    switch (visu.Render(visugrid, 0.0f, 1.0f)) {
+    switch (visu.Render(visugrid)) {
     case -1:
       return -1;
     case 0:
@@ -119,6 +119,9 @@ int main(int argc, char **argv) {
     case 5:
 	  visugrid = comp.GetStream();
 	  break;
+    case 6:
+      visugrid = comp.GetT();
+      break;
     default:
       break;
     };
@@ -139,7 +142,7 @@ int main(int argc, char **argv) {
 
     begin_step = clock();
     // Run a few steps
-    for (uint32_t i = 0; i < 99; ++i)
+    for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
     comp.TimeStep(true);
     clock_t end = clock();
