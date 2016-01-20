@@ -82,6 +82,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclma
 	_G   = new Grid(geom);
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
+	_T = new Grid(geom, p_offset);
 
 	_tmpVorticity = new Grid(geom, vort_offset);
 	_tmpStream    = new Grid(geom, stream_offset);
@@ -93,6 +94,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclma
 	_F->Initialize(0);
 	_G->Initialize(0);
 	_rhs->Initialize(0);
+	_T->Initialize(0);
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -104,6 +106,7 @@ Compute::~Compute() {
 	delete _p;
 	delete _u;
 	delete _v;
+	delete _T;
 
 	delete _F;
 	delete _G;
@@ -130,15 +133,27 @@ void Compute::TimeStep(bool printInfo) {
 	begin = clock();
 
 	// Compute dt
-	real_t dt = _param->Tau()*fmax(_geom->Mesh()[0],_geom->Mesh()[1])/_oclmanager->ReduceMaxVelocity();
-	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
-	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
+	real_t h_x = _geom->Mesh()[0];
+	real_t h_y = _geom->Mesh()[1];
+	real_t hs_x = h_x*h_x;
+	real_t hs_y = h_y*h_y;
+	// CFL
+	real_t dt = _param->Tau()*fmax(h_x,h_y)/_oclmanager->ReduceMaxVelocity();
+	// Mesh width and RE
+	real_t dt2 = _param->Tau()*_param->Re()/2* (hs_y*hs_x);
+	dt2 = dt2/(hs_y+hs_x);
+	// Temp restriction
+	real_t dt3 = _param->Re()*_param->Pr()*0.5f*(1.0f/hs_x + 1.0f/hs_y);
+
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
+	dt = std::min(dt, dt3);
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	//_solver_time = _solver->_gpu_time;
 	timing_dt += elapsed_secs;
+
+	Temperature(dt);
 
 	static real_t timing_meq = 0.0f;
 	begin = clock();
@@ -213,6 +228,7 @@ void Compute::TimeStep(bool printInfo) {
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize * sizeof(real_t), _p->_data);
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_T, CL_TRUE, 0, gridSize * sizeof(real_t), _T->_data);
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 		if ( _t >= _param->Tend())
@@ -236,6 +252,8 @@ const Grid*   Compute::GetV()    const {return _v;}
 const Grid*   Compute::GetP()    const {return _p;}
 /// Returns the pointer to RHS
 const Grid*   Compute::GetRHS()  const {return _rhs;}
+/// Returns the pointer to T
+const Grid*   Compute::GetT()  const {return _T;}
 
 
 /// Computes and returns the absolute velocity
@@ -356,18 +374,19 @@ void Compute::MomentumEqu(const real_t& dt) {
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
 	// Set arguments to kernel
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(0, _oclmanager->_F), "setArg0");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(1, _oclmanager->_G), "setArg1");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(2, _oclmanager->_u), "setArg2");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(3, _oclmanager->_v), "setArg3");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(4, _oclmanager->_h_inv), "setArg4");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(5, _oclmanager->_hs_inv), "setArg5");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(6, clDT), "setArg6");
-	checkErr(_oclmanager->_kernel_momentumeq.setArg(7, clRE_inv), "setArg7");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(0, _oclmanager->_F), "setArg0 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(1, _oclmanager->_G), "setArg1 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(2, _oclmanager->_u), "setArg2 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(3, _oclmanager->_v), "setArg3 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(4, _oclmanager->_h_inv), "setArg4 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(5, _oclmanager->_hs_inv), "setArg5 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(6, clDT), "setArg6 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(7, clRE_inv), "setArg7 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(8, _oclmanager->_T), "setArg8 meq");
 
 	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 	NDRange local(localSize,localSize);
-	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_momentumeq, NullRange, global, local), "enqueueNDRangeKernel");
+	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_momentumeq, NullRange, global, local), "enqueueNDRangeKernel meq");
 
 	//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
 	//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
@@ -447,4 +466,40 @@ void Compute::RHS(const real_t& dt) {
 		// Next cell
 		it.Next();
 	}*/
+}
+
+/// Compute the Temperature
+//  @param dt  get timestep
+void Compute::Temperature(const real_t& dt) {
+
+	index_t localSize = 16;
+	real_t dt_var = dt;
+
+	real_t RE_inv = 1.0f/_param->Re();
+	real_t PR_inv = 1.0f/_param->Pr();
+
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+
+	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
+	Buffer clPR_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &PR_inv);
+	// Set arguments to kernel
+	checkErr(_oclmanager->_kernel_T.setArg(0, _oclmanager->_T), "setArg0 T");
+	checkErr(_oclmanager->_kernel_T.setArg(1, _oclmanager->_u), "setArg1 T");
+	checkErr(_oclmanager->_kernel_T.setArg(2, _oclmanager->_v), "setArg2 T");
+	checkErr(_oclmanager->_kernel_T.setArg(3, _oclmanager->_h_inv), "setArg4");
+	checkErr(_oclmanager->_kernel_T.setArg(4, _oclmanager->_hs_inv), "setArg5");
+	checkErr(_oclmanager->_kernel_T.setArg(5, clDT), "setArg6");
+	checkErr(_oclmanager->_kernel_T.setArg(6, clRE_inv), "setArg7");
+	checkErr(_oclmanager->_kernel_T.setArg(7, clPR_inv), "setArg7");
+
+	//checkErr(_oclmanager->_kernel_newvel.setArg(5, _oclmanager->_h_inv), "setArg5");
+	//checkErr(_oclmanager->_kernel_newvel.setArg(6, clDT), "setArg6");
+
+	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
+	NDRange local(localSize,localSize);
+	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_T, NullRange, global, local), "enqueueNDRangeKernel temp");
+
+
 }

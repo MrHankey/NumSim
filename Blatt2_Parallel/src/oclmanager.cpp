@@ -72,6 +72,9 @@ OCLManager::OCLManager(Geometry* geom) {
 	_kernel_momentumeq = Kernel(_program, "momentumeq", &err);
 	checkErr(err, "Kernel::Kernel() momentumeq");
 
+	_kernel_T = Kernel(_program, "compT", &err);
+	checkErr(err, "Kernel::Kernel() T");
+
 	std::ifstream sourceFileRed("reductions.cl");
 	std::string sourceCodeRed(
 			std::istreambuf_iterator<char>(sourceFileRed),
@@ -114,6 +117,7 @@ void OCLManager::InitFields()
 	checkErr(_queue.enqueueWriteBuffer(_G, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer G");
 	checkErr(_queue.enqueueWriteBuffer(_rhs, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer rhs");
 	checkErr(_queue.enqueueWriteBuffer(_locRes, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer locRes");
+	checkErr(_queue.enqueueWriteBuffer(_T, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer T");
 
 }
 
@@ -135,6 +139,8 @@ void OCLManager::Initialize() {
 	checkErr(err, "Buffer::Buffer() G");
 	_locRes = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
 	checkErr(err, "Buffer::Buffer() res");
+	_T = Buffer(_context, CL_MEM_READ_WRITE, gridSize * sizeof(real_t), nullptr, &err);
+	checkErr(err, "Buffer::Buffer() T");
 
 	real_t h = _geom->Mesh()[0];
 	real_t h_inv = 1.0/h;

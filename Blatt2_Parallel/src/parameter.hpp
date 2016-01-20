@@ -38,6 +38,7 @@ public:
   const index_t &IterMax() const;
   const real_t &Eps() const;
   const real_t &Tau() const;
+  const real_t &Pr() const;
 
   void PrintVariables();
 
@@ -49,6 +50,7 @@ private:
   real_t _tend;
   real_t _eps;
   real_t _tau;
+  real_t _pr;
   index_t _itermax;
 };
 //------------------------------------------------------------------------------
