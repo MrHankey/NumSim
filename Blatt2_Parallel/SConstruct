@@ -38,7 +38,7 @@ env.Append(
                      "-std=c++11",
            ],
            LIBS=[
-                 "mpi",
+#                 "mpi",
                  "OpenCL",
            ]
           )

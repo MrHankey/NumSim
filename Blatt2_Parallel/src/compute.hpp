@@ -25,8 +25,7 @@
 class Compute {
 public:
   /// Creates a compute instance with given geometry and parameter
-  Compute(const Geometry *geom, const Parameter *param,
-          const Communicator *comm = 0, OCLManager* oclmanager = 0);
+  Compute(const Geometry *geom, const Parameter *param, OCLManager* oclmanager = 0);
   /// Deletes all grids
   ~Compute();
 
@@ -96,7 +95,7 @@ private:
 
   const Geometry *_geom;
   const Parameter *_param;
-  const Communicator *_comm;
+
   OCLManager* _oclmanager;
 
   /// Compute the new velocites u,v

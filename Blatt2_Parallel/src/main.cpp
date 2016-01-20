@@ -17,7 +17,7 @@
 
 //------------------------------------------------------------------------------
 #include "typedef.hpp"
-#include "communicator.hpp"
+//#include "communicator.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "parameter.hpp"
@@ -34,9 +34,8 @@
 int main(int argc, char **argv) {
 
   // Create parameter and geometry instances with default values
-  Communicator comm(&argc, &argv);
   Parameter param;
-  Geometry geom(&comm);
+  Geometry geom;
   OCLManager oclmanager(&geom);
 
   if ( argc >= 2)
@@ -50,9 +49,9 @@ int main(int argc, char **argv) {
     geom.Load("geometry.txt");
 
   // Create the fluid solver
-  Compute comp(&geom, &param, &comm, &oclmanager);
+  Compute comp(&geom, &param, &oclmanager);
 
-  if (comm.getRank() == 0) {
+  //if (comm.getRank() == 0) {
 
     geom.PrintVariables();
 	param.PrintVariables();
@@ -61,23 +60,27 @@ int main(int argc, char **argv) {
 
     if (stat("VTK", &info) != 0) {
       system("mkdir VTK");
-    }
+    //}
   }
+
+   multi_real_t offset_zero = {0.0, 0.0};
+   multi_index_t offset_zero_int = {0, 0};
+   multi_real_t offset_one = {0.0, 0.0};
+   multi_index_t offset_one_int = {1, 1};
 
 // Create and initialize the visualization
 #ifdef USE_DEBUG_VISU
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(800 / comm.ThreadDim()[0], 800 / comm.ThreadDim()[1],
-              comm.getRank() + 1, comm.ThreadIdx(), comm.ThreadDim());
+  visu.Init(800, 800, 1, offset_zero_int, offset_one_int);
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator;
   // use offset as the domain shift
   multi_real_t offset;
-  offset[0] = comm.ThreadIdx()[0] * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
-  offset[1] = comm.ThreadIdx()[1] * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
-  VTK vtk(geom.Mesh(), geom.Size(), geom.TotalSize(), offset, comm.getRank(),
-          comm.getSize(), comm.ThreadDim());
+  offset[0] = 0 * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
+  offset[1] = 0 * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
+  VTK vtk(geom.Mesh(), geom.Size(), geom.Size(), offset , 0,
+          1, 1);
 
 #ifdef USE_DEBUG_VISU
   const Grid *visugrid;
@@ -141,8 +144,7 @@ int main(int argc, char **argv) {
     // Run a few steps
     for (uint32_t i = 0; i < 9; ++i)
       comp.TimeStep(false);
-    bool printOnlyOnMaster = !comm.getRank();
-    comp.TimeStep(printOnlyOnMaster);
+    comp.TimeStep(true);
     clock_t end = clock();
 	double elapsed_secs = double(end - begin_step) / CLOCKS_PER_SEC;
 	timing_step += elapsed_secs;
@@ -150,13 +152,12 @@ int main(int argc, char **argv) {
     //std::cin.ignore();
   }
 
-  if ( comm.getRank() == 0)
-  {
-	  clock_t end = clock();
-	  double elapsed_secs = double(end - begin_full) / CLOCKS_PER_SEC;
-	  std::cout << "duration: " << elapsed_secs << "step: " << timing_step << " solver_time: " << comp._solver_time << std::endl;
-	  std::cout << "buf: " << comp._time_buf << " kernel: " << comp._time_kernel << " buf_read: " << comp._time_buf_read << " res: " << comp._time_res << std::endl;
-  }
+
+  clock_t end = clock();
+  double elapsed_secs = double(end - begin_full) / CLOCKS_PER_SEC;
+  std::cout << "duration: " << elapsed_secs << "step: " << timing_step << " solver_time: " << comp._solver_time << std::endl;
+  std::cout << "buf: " << comp._time_buf << " kernel: " << comp._time_kernel << " buf_read: " << comp._time_buf_read << " res: " << comp._time_res << std::endl;
+
 
   return 0;
 }

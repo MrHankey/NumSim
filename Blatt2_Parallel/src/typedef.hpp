@@ -16,7 +16,7 @@
  */
 
 #include <stdint.h>
-#include <mpi.h>
+//#include <mpi.h>
 
 //------------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ typedef array_t<index_t, DIM> multi_index_t;
 
 /// Forward declaration of classes used
 class Iterator;
-class Communicator;
+//class Communicator;
 class Geometry;
 class Grid;
 class Parameter;

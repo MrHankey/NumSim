@@ -32,11 +32,10 @@ using namespace cl;
 /// Creates a compute instance with given geometry and parameter
 //  @param geom  get geometry
 //  @param param get parameter
-Compute::Compute(const Geometry *geom, const Parameter *param, const Communicator *comm, OCLManager* oclmanager) {
+Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclmanager) {
 	// Initialize
 	_geom   = geom;
 	_param  = param;
-	_comm = comm;
 	_oclmanager = oclmanager;
 	//_solver = new RedOrBlackSOR(_geom,_param->Omega());
 	//_solver = new SOR(_geom,_param->Omega());
@@ -130,9 +129,6 @@ void Compute::TimeStep(bool printInfo) {
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
-
-	//biggest dt of all is chosen.
-	dt = _comm->gatherMin(dt);
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -271,16 +267,14 @@ const Grid* Compute::GetStream() {
 	Iterator it = InteriorIterator(_geom);
 
 	multi_index_t screenSize;
-	screenSize[0] = (_geom->TotalSize()[0]-2)/(_geom->Size()[0]-2);
-	screenSize[1] = (_geom->TotalSize()[1]-2)/(_geom->Size()[1]-2);
+	screenSize[0] = (_geom->Size()[0]-2)/(_geom->Size()[0]-2);
+	screenSize[1] = (_geom->Size()[1]-2)/(_geom->Size()[1]-2);
 
 	for(int i = 0;i<screenSize[0]+screenSize[1];i++){
 
 		// Set first value to zero
 		it.First();
 		_tmpStream->Cell(it.Left()) = 0;
-		_comm->copyBoundary(_tmpStream);
-		//it.Next();
 
 		// Cycle through all cells
 		while (it.Valid()){

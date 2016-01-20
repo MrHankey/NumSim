@@ -34,23 +34,17 @@ Geometry::Geometry() {
 	_velocity[1] = 0;
 	_pressure    = 0;
 
-	_comm = nullptr;
 
 	// Number of cells in one line
-	_bsize[0] = 128;
-	_bsize[1] = 128;
+	_size[0] = 128;
+	_size[1] = 128;
 
 	// Length of driven cavity
-	_blength[0] = 1;
-	_blength[1] = 1;
+	_length[0] = 1;
+	_length[1] = 1;
 
 	// Print vars
 	cout << "Loaded default geometry definition." << endl;
-}
-
-Geometry::Geometry(Communicator* comm) : Geometry() {
-	_comm = comm;
-	Initialize();
 }
 
 /// Loads a geometry from a file
@@ -69,10 +63,10 @@ void Geometry::Load(const char* file) {
 		fileStream >> _velocity[0];
 		fileStream >> _velocity[1];
 		fileStream >> _pressure;
-		fileStream >> _bsize[0];
-		fileStream >> _bsize[1];
-		fileStream >> _blength[0];
-		fileStream >> _blength[1];
+		fileStream >> _size[0];
+		fileStream >> _size[1];
+		fileStream >> _length[0];
+		fileStream >> _length[1];
 
 		// Success
 		cout << "Loaded geometry definitions from " << file << "." << endl;
@@ -83,44 +77,11 @@ void Geometry::Load(const char* file) {
 void Geometry::Initialize()
 {
 	// Cell Length
-	_h[0] = _blength[0]/(_bsize[0]);
-	_h[1] = _blength[1]/(_bsize[1]);
+	_h[0] = _length[0]/(_size[0]);
+	_h[1] = _length[1]/(_size[1]);
 
-	_size[0] = _bsize[0]/_comm->ThreadDim()[0] + 2;
-	_size[1] = _bsize[1]/_comm->ThreadDim()[1] + 2;
-
-	if ( _bsize[0] % _comm->ThreadDim()[0] != 0 || _bsize[1] % _comm->ThreadDim()[1] != 0 )
-	{
-		throw std::runtime_error("Number of cells not devisible by processor distribution");
-	}
-
-	_length[0] = _blength[0]/_comm->ThreadDim()[0];
-	_length[1] = _blength[1]/_comm->ThreadDim()[1];
-
-	_bsize[0] += 2;
-	_bsize[1] += 2;
-
-	if ( (_bsize[0] % 2) == 0 && (_bsize[1] % 2) == 0)
-	{
-		_comm->SetEvenOdd(true);
-	}
-	else if (_bsize[0] % 2 != 0 && _bsize[1] % 2 != 0)
-	{
-		_comm->SetEvenOdd((_comm->ThreadIdx()[0] + _comm->ThreadIdx()[1]) % 2 == 0 );
-	}
-	else if (_bsize[0] % 2 != 0 && _bsize[1] % 2 == 0)
-	{
-		_comm->SetEvenOdd(_comm->ThreadIdx()[0] % 2 == 0);
-	}
-	else if (_bsize[0] % 2 == 0 && _bsize[1] % 2 != 0)
-	{
-		_comm->SetEvenOdd(_comm->ThreadIdx()[1] % 2 == 0);
-	}
-
-	/*multi_index_t procPos = _comm->ThreadIdx();
-	multi_index_t startCell = {procPos[0]*(_size[0]) , procPos[1]*(_size[1])};
-	bool evenodd = (startCell[0] + _bsize[0]*startCell[1]) != 0;
-	_comm->SetEvenOdd(evenodd);*/
+	_size[0] += 2;
+	_size[1] += 2;
 
 	printf(" local_siz: %i \n", _size[0]);
 }
@@ -130,21 +91,13 @@ void Geometry::PrintVariables(){
 	cout << "vel_x: "    << _velocity[0]  << endl;
 	cout << "vel_y: "    << _velocity[1]  << endl;
 	cout << "p: "        << _pressure     << endl;
-	cout << "size_x: "   << _bsize[0]      << endl;
-	cout << "size_y: "   << _bsize[1]      << endl;
-	cout << "length_x: " << _blength[0]    << endl;
-	cout << "length_y "  << _blength[1]    << endl;
+	cout << "size_x: "   << _size[0]      << endl;
+	cout << "size_y: "   << _size[1]      << endl;
+	cout << "length_x: " << _length[0]    << endl;
+	cout << "length_y "  << _length[1]    << endl;
 	cout << "h_x: "      << _h[0]         << endl;
 	cout << "h_y: "      << _h[1] << endl << endl;
 
-}
-
-const multi_index_t& Geometry::TotalSize() const {
-	return _bsize;
-}
-
-const multi_real_t& Geometry::TotalLength() const {
-	return _blength;
 }
 
 /* Getter functions */
@@ -168,40 +121,35 @@ void Geometry::Update_U(Grid* u) const {
 	real_t velocity = _velocity[0];
 	BoundaryIterator it = BoundaryIterator(this);
 
-	// Bottom boundary update
-	if(_comm->isBottom()){
+
 		it.SetBoundary(it.boundaryBottom);
 		while ( it.Valid() ) {
 			u->Cell(it) = -1*u->Cell(it.Top());
 			it.Next();
 		}
-	}
 
-	// Right boundary update
-	if(_comm->isRight()){
+
+
 		it.SetBoundary(it.boundaryRight);
 		while ( it.Valid() ) {
 			u->Cell(it) = 0;
 			u->Cell(it.Left()) = 0; // hier evtl deleten
 			it.Next();
 		}
-	}
-	// Top boundary update
-	if(_comm->isTop()){
+
+
 		it.SetBoundary(it.boundaryTop);
 		while ( it.Valid() ) {
 			u->Cell(it) = 2*velocity - u->Cell(it.Down()) ;
 			it.Next();
 		}
-	}
-	// Left boundary update
-	if(_comm->isLeft()){
+
 		it.SetBoundary(it.boundaryLeft);
 		while ( it.Valid() ) {
 			u->Cell(it) = 0;
 			it.Next();
 		}
-	}
+
 }
 
 /// Updates the boundary velocity field v
@@ -210,39 +158,32 @@ void Geometry::Update_V(Grid* v) const {
 	// Initialize
 	BoundaryIterator it = BoundaryIterator(this);
 
-	// Bottom boundary update
-	if(_comm->isBottom()){
+
 		it.SetBoundary(it.boundaryBottom);
 		while ( it.Valid() ) {
 			v->Cell(it) = 0;
 			it.Next();
 		}
-	}
-	// Right boundary update
-	if(_comm->isRight()){
+
 		it.SetBoundary(it.boundaryRight);
 		while ( it.Valid() ) {
 			v->Cell(it) = -1*v->Cell(it.Left());
 			it.Next();
 		}
-	}
-	// Top boundary update
-	if(_comm->isTop()){
+
 		it.SetBoundary(it.boundaryTop);
 		while ( it.Valid() ) {
 			v->Cell(it.Down()) = 0; // hier evtl deleten
 			v->Cell(it) = 0;
 			it.Next();
 		}
-	}
-	// Left boundary update
-	if(_comm->isLeft()){
+
 		it.SetBoundary(it.boundaryLeft);
 		while ( it.Valid() ) {
 			v->Cell(it) = -1*v->Cell(it.Right());
 			it.Next();
 		}
-	}
+
 }
 
 /// Updates the boundary velocity field p
@@ -252,37 +193,31 @@ void Geometry::Update_P(Grid* p) const {
 	BoundaryIterator it = BoundaryIterator(this);
 	it.SetBoundary(it.boundaryBottom);
 
-	// Bottom boundary update
-	if(_comm->isBottom()){
+
 		while ( it.Valid() ) {
 			p->Cell(it) = p->Cell(it.Top());
 			it.Next();
 		}
-	}
-	// Right boundary update
-	if(_comm->isRight()){
+
 		it.SetBoundary(it.boundaryRight);
 		while ( it.Valid() ) {
 			p->Cell(it) = p->Cell(it.Left());
 			it.Next();
 		}
-	}
-	// Top boundary update
-	if(_comm->isTop()){
+
 		it.SetBoundary(it.boundaryTop);
 		while ( it.Valid() ) {
 			p->Cell(it) = p->Cell(it.Down());
 			it.Next();
 		}
-	}
-	// Left boundary update
-	if(_comm->isLeft()){
+
+
 		it.SetBoundary(it.boundaryLeft);
 		while ( it.Valid() ) {
 			p->Cell(it) = p->Cell(it.Right());
 			it.Next();
 		}
-	}
+
 }
 
 
