@@ -118,9 +118,9 @@ Compute::~Compute() {
 void Compute::TimeStep(bool printInfo) {
 	// Compute boundary Values
 	// eigentlich erst nach dt, aber dann geht der erste Zeitschritt zu lang.
-	_geom->Update_U(_u);
-	_geom->Update_V(_v);
-	_geom->Update_P(_p);
+	//_geom->Update_U(_u);
+	//_geom->Update_V(_v);
+	//_geom->Update_P(_p);
 
 
 	// Compute dt
@@ -134,8 +134,8 @@ void Compute::TimeStep(bool printInfo) {
 
 	// Compute F, G
 	MomentumEqu(dt);
-	_comm->copyBoundary(_F);
-	_comm->copyBoundary(_G);
+	//_comm->copyBoundary(_F);
+	//_comm->copyBoundary(_G);
 	//std::cin.ignore();
 
 	// Compute RHS
@@ -154,29 +154,9 @@ void Compute::TimeStep(bool printInfo) {
 	//_solver->UpdateBuffers(_p, _rhs, &zeroGrid);
 
 	while(total_res >_param->Eps() && i < 10 /*_param->IterMax()*/ ) {
-		/*bool even = _comm->EvenOdd();
-		if (even){
-			local_res = _solver->RedCycle(_p,_rhs);
-			_comm->copyBoundary(_p);
 
-			local_res = _solver->BlackCycle(_p,_rhs);
-			_comm->copyBoundary(_p);
-		}
-		else{
-			local_res = _solver->BlackCycle(_p,_rhs);
-			_comm->copyBoundary(_p);
-
-			local_res = _solver->RedCycle(_p,_rhs);
-			_comm->copyBoundary(_p);
-
-		}*/
 
 		total_res = _solver->Cycle(_p, _rhs, 10);
-		//cout << "res: " << local_res << endl;
-
-		//_geom->Update_P(_p);
-
-		//total_res = _comm->gatherSum(local_res)/_comm->getSize();
 		i++;
 	}
 
@@ -195,14 +175,19 @@ void Compute::TimeStep(bool printInfo) {
 	//cout << "new vels done" << endl;
 
 	// Send u,v
-	_comm->copyBoundary(_u);
-	_comm->copyBoundary(_v);
+	//_comm->copyBoundary(_u);
+	//_comm->copyBoundary(_v);
 
 	// Next timestep
 	_t += dt;
 
 	// Print info
 	if (printInfo) {
+		index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize * sizeof(real_t), _p->_data);
+		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 	}
 }
@@ -307,10 +292,6 @@ void Compute::NewVelocities(const real_t& dt) {
 	NDRange local(localSize,localSize);
 	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_newvel, NullRange, global, local), "enqueueNDRangeKernel");
 
-	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
-	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
-	_oclmanager->_queue.finish();
-
 	// Initialize interior iterator
 	/*InteriorIterator it = InteriorIterator(_geom);
 
@@ -342,8 +323,8 @@ void Compute::MomentumEqu(const real_t& dt) {
 	real_t RE_inv = 1.0f/_param->Re();
 
 
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
-	_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
@@ -366,7 +347,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 	//_oclmanager->_queue.finish();
 
 	// Initialize interior iterator
-	InteriorIterator it = InteriorIterator(_geom);
+	//InteriorIterator it = InteriorIterator(_geom);
 
 	// Cycle through all interior cells
 	/*while ( it.Valid() ) {
@@ -419,8 +400,8 @@ void Compute::RHS(const real_t& dt) {
 	NDRange local(localSize,localSize);
 	checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_rhs, NullRange, global, local), "enqueueNDRangeKernel");
 
-	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_rhs, CL_TRUE, 0, gridSize * sizeof(real_t), _rhs->_data);
-	_oclmanager->_queue.finish();
+	//_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_rhs, CL_TRUE, 0, gridSize * sizeof(real_t), _rhs->_data);
+	//_oclmanager->_queue.finish();
 
 	// Initialize interior iterator
 	/*InteriorIterator it = InteriorIterator(_geom);

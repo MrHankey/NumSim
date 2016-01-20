@@ -174,6 +174,9 @@ __kernel void newvel(	__global const float *FGrid,
 	float hi = (*h_inv);
 	float dt = (*deltaT);
 
+	//TODO DONT HARDCODE
+	float velocity = 1.0f;
+
 	int g_x = get_global_id(0) + 1;
 	int g_y = get_global_id(1) + 1;
 
@@ -189,6 +192,30 @@ __kernel void newvel(	__global const float *FGrid,
 
 	uGrid[idx] = F - dt * d_r(p_r, p, hi);//(p_r - p)*hi;
 	vGrid[idx] = G - dt * d_r(p_u, p, hi);//(p_u - p)*hi;
+
+	//UPDATE u v
+	//left
+	if (g_x == 1){
+		uGrid[idx-1] = 0;
+		vGrid[idx-1] = -1.0f*vGrid[idx];
+	}
+	//right
+	if (g_x == gridSize-2){
+		uGrid[idx+1] = 0;
+		uGrid[idx] = 0;
+		vGrid[idx+1] = -1.0f*vGrid[idx];
+	}
+	//bottom
+	if (g_y == 1){
+		uGrid[idx-gridSize] = -1.0f*uGrid[idx];
+		vGrid[idx-gridSize] = 0;
+	}
+	//top
+	if (g_y == gridSize-2){
+		uGrid[idx+gridSize] = 2.0f*velocity - uGrid[idx];
+		vGrid[idx+gridSize] = 0;
+		vGrid[idx] = 0;
+	}
 
 
 }
@@ -271,8 +298,7 @@ __kernel void momentumeq(	__global float *FGrid,
 	GGrid[idx] = v + dt*B;
 
 
-	//TODO UPDATE F G
-
+	//UPDATE F G
 	//left
 	if (g_x == 1){
 		FGrid[idx-1] = 0;

@@ -387,7 +387,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	//copy grid data to device
 	//UpdateBuffers(grid, rhs, &localResiduals);
 
-	_oclmanager->_queue.finish();
+	//_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer += elapsed_secs_buf;
@@ -416,7 +416,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 			checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_solver, NullRange, global, local), "enqueueNDRangeKernelSolver");
 		}
 
-		_oclmanager->_queue.finish();
+		//_oclmanager->_queue.finish();
 
 		end = clock();
 		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
@@ -432,7 +432,7 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	}
 #endif
 
-	_oclmanager->_queue.finish();
+	//_oclmanager->_queue.finish();
 
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
