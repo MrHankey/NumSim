@@ -54,6 +54,7 @@ private:
 	cl::Program _program_red;
 
 	Geometry* _geom;
+	index_t _numWorkGroups;
 
 };
 

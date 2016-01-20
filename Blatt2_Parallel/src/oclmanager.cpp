@@ -38,6 +38,10 @@ OCLManager::OCLManager(Geometry* geom) {
 
 	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
 
+	//intel: 15
+	//k20x: 96
+	_numWorkGroups = 96;
+
 	// Read source file
 	std::ifstream sourceFile("sor_global.cl");
 	std::string sourceCode(
@@ -152,15 +156,14 @@ void OCLManager::Initialize() {
 real_t OCLManager::ReduceMaxVelocity()
 {
 	//intel 15
-	index_t numWorkGroups = 15;
 	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1] - 1);
-	real_t result [numWorkGroups];
+	real_t result [_numWorkGroups];
 
-	NDRange global_red(numWorkGroups*128);
+	NDRange global_red(_numWorkGroups*128);
 	NDRange local_red(128);
 
 	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
-	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*numWorkGroups, &result);
+	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*_numWorkGroups, &result);
 
 	checkErr(_kernel_reduce_max.setArg(0, _u), "setArg0 red max u");
 	checkErr(_kernel_reduce_max.setArg(1, sizeof(real_t)*128, nullptr), "setArg1 red max u");
@@ -168,11 +171,11 @@ real_t OCLManager::ReduceMaxVelocity()
 	checkErr(_kernel_reduce_max.setArg(3, clResult), "setArg3 red max u");
 
 	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_max, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
-	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*numWorkGroups, &result);
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*_numWorkGroups, &result);
 
 	real_t uMax = result[0];
 
-	for (index_t i = 1; i < numWorkGroups; i++)
+	for (index_t i = 1; i < _numWorkGroups; i++)
 	{
 		uMax = fmax(result[i], uMax);
 	}
@@ -183,10 +186,10 @@ real_t OCLManager::ReduceMaxVelocity()
 	checkErr(_kernel_reduce_max.setArg(3, clResult), "setArg3 red max v");
 
 	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_max, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
-	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*numWorkGroups, &result);
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*_numWorkGroups, &result);
 
 	real_t vMax = result[0];
-	for (index_t i = 1; i < numWorkGroups; i++)
+	for (index_t i = 1; i < _numWorkGroups; i++)
 	{
 		vMax = fmax(result[i], vMax);
 	}
@@ -197,17 +200,15 @@ real_t OCLManager::ReduceMaxVelocity()
 real_t OCLManager::ReduceResidual()
 {
 
-	//intel: 15
-	index_t numWorkGroups = 15;
 	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1]);
-	real_t result[numWorkGroups];
+	real_t result[_numWorkGroups];
 
 
-	NDRange global_red(numWorkGroups*128);
+	NDRange global_red(_numWorkGroups*128);
 	NDRange local_red(128);
 
 	Buffer clLength = Buffer(_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_uint), &gridSize1D);
-	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*numWorkGroups, &result);
+	Buffer clResult = Buffer(_context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(real_t)*_numWorkGroups, &result);
 
 	checkErr(_kernel_reduce_sum.setArg(0, _locRes), "setArg0 red sum");
 	checkErr(_kernel_reduce_sum.setArg(1, sizeof(real_t)*128, nullptr), "setArg1 red sum");
@@ -215,11 +216,11 @@ real_t OCLManager::ReduceResidual()
 	checkErr(_kernel_reduce_sum.setArg(3, clResult), "setArg3 red sum");
 
 	checkErr(_queue.enqueueNDRangeKernel(_kernel_reduce_sum, NullRange, global_red, local_red), "enqueueNDRangeKernelSolver");
-	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*numWorkGroups, &result);
+	_queue.enqueueReadBuffer(clResult, CL_TRUE, 0, sizeof(real_t)*_numWorkGroups, &result);
 
 	real_t sum = 0.0f;
 
-	for (index_t i = 0; i < numWorkGroups; i++)
+	for (index_t i = 0; i < _numWorkGroups; i++)
 	{
 		sum += result[i];
 	}

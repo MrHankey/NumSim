@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 
     begin_step = clock();
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
+    for (uint32_t i = 0; i < 99; ++i)
       comp.TimeStep(false);
     comp.TimeStep(true);
     clock_t end = clock();

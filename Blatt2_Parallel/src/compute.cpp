@@ -211,7 +211,8 @@ void Compute::TimeStep(bool printInfo) {
 		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
-		cout << "dt_time: " << timing_dt << " \tmeq: " << timing_meq << " \trhs: " << timing_rhs << " \tsolver: " << _solver_time << " \t nv:" << timing_nv << " \tread: " << read_time << endl;
+		if ( _t >= _param->Tend())
+			cout << "dt_time: " << timing_dt << " \tmeq: " << timing_meq << " \trhs: " << timing_rhs << " \tsolver: " << _solver_time << " \t nv:" << timing_nv << " \tread: " << read_time << endl;
 	}
 	_oclmanager->_queue.finish();
 	end = clock();
