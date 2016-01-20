@@ -346,7 +346,7 @@ SOROCL::SOROCL(const Geometry* geom, const real_t& omega, OCLManager* oclmanager
 	_time_buffer = 0.0;
 	_time_buffer_read = 0.0;
 	_time_kernel = 0.0;
-	_time_kernel = 0.0;
+	_time_res = 0.0;
 
 	_geom  = geom;
 }
@@ -365,7 +365,7 @@ void SOROCL::UpdateBuffers(Grid* grid, const Grid* rhs, Grid* zeroGrid)
 
 }
 
-real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
+real_t SOROCL::Cycle(index_t iIterations)
 {
 
 	clock_t begin;
@@ -373,16 +373,12 @@ real_t SOROCL::Cycle(Grid* grid, const Grid* rhs, index_t iIterations)
 	_oclmanager->_queue.finish();
 	begin = clock();
 
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
-
 
 	//grid for saving local residuals
 	//initialize as 0
 	Grid localResiduals = Grid(_geom);
 
 	index_t localSize = 16;
-	index_t localCellCount = (localSize+2)*(localSize+2);
-
 
 
 	//copy grid data to device
@@ -602,12 +598,11 @@ Jacobi::~Jacobi() {
 real_t Jacobi::Cycle(Grid* grid, const Grid* rhs) const {
 	// Initialize
 	InteriorIterator it = InteriorIterator(_geom);
-	real_t n, res, dx, dy;
+	real_t n, res, dx;
 
 	n    = 0;
 	res  = 0;
 	dx   = _geom->Mesh()[0];
-	dy   = _geom->Mesh()[1];
 	//norm = 0.5*( (dx*dx*dy*dy)/(dx*dx+dy*dy) );
 
 	Grid oldGrid = Grid(_geom);
@@ -622,19 +617,13 @@ real_t Jacobi::Cycle(Grid* grid, const Grid* rhs) const {
 	while(it.Valid()) {
 		// Initialize
 		n++;
-		real_t pij, pij_d, pij_l, pij_t, pij_r, A, B, corr;
+		real_t pij_d, pij_l, pij_t, pij_r;
 
 		// define variables
-		pij  	= oldGrid.Cell(it);
 		pij_d   = oldGrid.Cell(it.Down());
 		pij_t 	= oldGrid.Cell(it.Top());
 		pij_l   = oldGrid.Cell(it.Left());
 		pij_r 	= oldGrid.Cell(it.Right());
-
-		A    	= (pij_l+pij_r)/(dx*dx);
-		B    	= (pij_d+pij_t)/(dy*dy);
-
-		corr = A+B-rhs->Cell(it);
 
 		grid->Cell(it) = 0.25*(pij_r + pij_l + pij_t + pij_d - (dx*dx)*rhs->Cell(it));
 

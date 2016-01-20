@@ -5,6 +5,10 @@
 using namespace std;
 using namespace cl;
 
+//intel: 15
+//k20x: 96
+#define NUM_WORKGROUPS 15
+
 OCLManager::OCLManager(Geometry* geom) {
 
 	_geom = geom;
@@ -38,9 +42,7 @@ OCLManager::OCLManager(Geometry* geom) {
 
 	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
 
-	//intel: 15
-	//k20x: 96
-	_numWorkGroups = 96;
+	_numWorkGroups = NUM_WORKGROUPS;
 
 	// Read source file
 	std::ifstream sourceFile("sor_global.cl");
@@ -157,7 +159,7 @@ real_t OCLManager::ReduceMaxVelocity()
 {
 	//intel 15
 	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1] - 1);
-	real_t result [_numWorkGroups];
+	real_t result [NUM_WORKGROUPS];
 
 	NDRange global_red(_numWorkGroups*128);
 	NDRange local_red(128);
@@ -201,7 +203,7 @@ real_t OCLManager::ReduceResidual()
 {
 
 	cl_uint gridSize1D = _geom->Size()[0] * (_geom->Size()[1]);
-	real_t result[_numWorkGroups];
+	real_t result[NUM_WORKGROUPS];
 
 
 	NDRange global_red(_numWorkGroups*128);

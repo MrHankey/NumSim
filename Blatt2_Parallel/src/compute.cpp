@@ -43,6 +43,10 @@ Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclma
 	_solver = new SOROCL(_geom, _param->Omega(), _oclmanager);
 
 	_solver_time = 0.0;
+	_time_buf = 0.0f;
+	_time_buf_read = 0.0f;
+	_time_kernel = 0.0f;
+	_time_res = 0.0f;
 
 	// Set time steps
 	_t = 0.0;
@@ -126,7 +130,7 @@ void Compute::TimeStep(bool printInfo) {
 	begin = clock();
 
 	// Compute dt
-	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/_oclmanager->ReduceMaxVelocity();
+	real_t dt = _param->Tau()*fmax(_geom->Mesh()[0],_geom->Mesh()[1])/_oclmanager->ReduceMaxVelocity();
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
@@ -167,7 +171,7 @@ void Compute::TimeStep(bool printInfo) {
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 
 
-		total_res = _solver->Cycle(_p, _rhs, 10);
+		total_res = _solver->Cycle(10);
 		i++;
 	}
 
@@ -271,7 +275,7 @@ const Grid* Compute::GetStream() {
 	screenSize[0] = (_geom->Size()[0]-2)/(_geom->Size()[0]-2);
 	screenSize[1] = (_geom->Size()[1]-2)/(_geom->Size()[1]-2);
 
-	for(int i = 0;i<screenSize[0]+screenSize[1];i++){
+	for(index_t i = 0;i<screenSize[0]+screenSize[1];i++){
 
 		// Set first value to zero
 		it.First();
@@ -296,9 +300,7 @@ const Grid* Compute::GetStream() {
 //  @param dt  get timestep
 void Compute::NewVelocities(const real_t& dt) {
 
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	index_t localSize = 16;
-	real_t h_inv = 1.0f/_geom->Mesh()[0];
 	real_t dt_var = dt;
 
 
@@ -344,11 +346,9 @@ void Compute::NewVelocities(const real_t& dt) {
 //  @param dt  get timestep
 void Compute::MomentumEqu(const real_t& dt) {
 
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	index_t localSize = 16;
 	real_t dt_var = dt;
 	real_t RE_inv = 1.0f/_param->Re();
-
 
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
@@ -406,9 +406,7 @@ void Compute::MomentumEqu(const real_t& dt) {
 //  @param dt  get timestep
 void Compute::RHS(const real_t& dt) {
 
-	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 	index_t localSize = 16;
-	real_t h_inv = 1.0f/_geom->Mesh()[0];
 	real_t dt_inv = 1.0f/dt;
 
 

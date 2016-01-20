@@ -51,25 +51,22 @@ int main(int argc, char **argv) {
   // Create the fluid solver
   Compute comp(&geom, &param, &oclmanager);
 
-  //if (comm.getRank() == 0) {
+  geom.PrintVariables();
+  param.PrintVariables();
+  // check if folder "VTK" exists
+  struct stat info;
 
-    geom.PrintVariables();
-	param.PrintVariables();
-    // check if folder "VTK" exists
-    struct stat info;
-
-    if (stat("VTK", &info) != 0) {
-      system("mkdir VTK");
-    //}
+  if (stat("VTK", &info) != 0) {
+    if( system("mkdir VTK") == -1 )
+    {
+    	std::cout << "Error creating VTK folder" << std::endl;
+    }
   }
-
-   multi_real_t offset_zero = {0.0, 0.0};
-   multi_index_t offset_zero_int = {0, 0};
-   multi_real_t offset_one = {0.0, 0.0};
-   multi_index_t offset_one_int = {1, 1};
 
 // Create and initialize the visualization
 #ifdef USE_DEBUG_VISU
+  multi_index_t offset_zero_int = {0, 0};
+  multi_index_t offset_one_int = {1, 1};
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(800, 800, 1, offset_zero_int, offset_one_int);
 #endif // USE_DEBUG_VISU
