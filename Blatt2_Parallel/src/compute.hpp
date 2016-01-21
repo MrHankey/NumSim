@@ -47,6 +47,7 @@ public:
   const Grid *GetRHS() const;
   /// Returns the pointer to T
   const Grid *GetT() const;
+  const Grid *GetRes() const;
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
@@ -84,6 +85,8 @@ private:
   // prel. vel
   Grid *_F;
   Grid *_G;
+
+  Grid *_locRes;
 
   // right-hand side
   Grid *_rhs;

@@ -30,9 +30,9 @@ using namespace std;
 /// driven cavity with 128 x 128 grid, no-slip boundary conditions
 Geometry::Geometry() {
 	// Set starting velocities
-	_velocity[0] = 1;
-	_velocity[1] = 0;
-	_pressure    = 0;
+	_velocity[0] = 1.0;
+	_velocity[1] = 0.0;
+	_pressure    = 0.0;
 
 
 	// Number of cells in one line
@@ -112,6 +112,8 @@ const multi_real_t&  Geometry::Length() const
 }
 /// Returns the meshwidth
 const multi_real_t&  Geometry::Mesh()   const {return _h;}
+
+const multi_real_t&  Geometry::Vel() const {return _velocity;}
 
 
 /// Updates the boundary velocity field u

@@ -83,6 +83,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclma
 	_rhs = new Grid(geom);
 	_tmp = new Grid(geom);
 	_T = new Grid(geom, p_offset);
+	_locRes = new Grid(geom, p_offset);
 
 	_tmpVorticity = new Grid(geom, vort_offset);
 	_tmpStream    = new Grid(geom, stream_offset);
@@ -95,6 +96,7 @@ Compute::Compute(const Geometry *geom, const Parameter *param, OCLManager* oclma
 	_G->Initialize(0);
 	_rhs->Initialize(0);
 	_T->Initialize(0);
+	_locRes->Initialize(0);
 
 	_tmpVorticity->Initialize(0);
 	_tmpStream->Initialize(0);
@@ -224,11 +226,6 @@ void Compute::TimeStep(bool printInfo) {
 	begin = clock();
 	// Print info
 	if (printInfo) {
-		index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize * sizeof(real_t), _p->_data);
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
-		_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_T, CL_TRUE, 0, gridSize * sizeof(real_t), _T->_data);
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 		if ( _t >= _param->Tend())
@@ -245,19 +242,50 @@ void Compute::TimeStep(bool printInfo) {
 /// Returns the simulated time in total
 const real_t& Compute::GetTime() const {return _t;}
 /// Returns the pointer to U
-const Grid*   Compute::GetU()    const {return _u;}
+const Grid*   Compute::GetU()    const {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	return _u;
+}
 /// Returns the pointer to V
-const Grid*   Compute::GetV()    const {return _v;}
+const Grid*   Compute::GetV()    const {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
+	return _v;
+}
 /// Returns the pointer to P
-const Grid*   Compute::GetP()    const {return _p;}
+const Grid*   Compute::GetP()    const {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_p, CL_TRUE, 0, gridSize * sizeof(real_t), _p->_data);
+	return _p;
+}
 /// Returns the pointer to RHS
-const Grid*   Compute::GetRHS()  const {return _rhs;}
+const Grid*   Compute::GetRHS()  const {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_rhs, CL_TRUE, 0, gridSize * sizeof(real_t), _rhs->_data);
+	return _rhs;
+}
 /// Returns the pointer to T
-const Grid*   Compute::GetT()  const {return _T;}
+const Grid*   Compute::GetT()  const {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_T, CL_TRUE, 0, gridSize * sizeof(real_t), _T->_data);
+	return _T;
+}
+
+const Grid*	  Compute::GetRes() const
+{
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_locRes, CL_TRUE, 0, gridSize * sizeof(real_t), _locRes->_data);
+	return _locRes;
+}
 
 
 /// Computes and returns the absolute velocity
 const Grid* Compute::GetVelocity() {
+
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 	// Initialize
 	Iterator it = Iterator(_geom);
 
@@ -272,6 +300,9 @@ const Grid* Compute::GetVelocity() {
 
 /// Computes and returns the vorticity
 const Grid* Compute::GetVorticity() {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 	// Initialize
 	Iterator it = InteriorIterator(_geom);
 
@@ -286,6 +317,9 @@ const Grid* Compute::GetVorticity() {
 
 /// Computes and returns the stream line values
 const Grid* Compute::GetStream() {
+	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
+	_oclmanager->_queue.enqueueReadBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 	// Initialize
 	Iterator it = InteriorIterator(_geom);
 
@@ -320,12 +354,14 @@ void Compute::NewVelocities(const real_t& dt) {
 
 	index_t localSize = 16;
 	real_t dt_var = dt;
+	real_t fVelocity = _geom->Vel()[0];
 
 
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
 
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
+	Buffer clVelocity = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fVelocity);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_newvel.setArg(0, _oclmanager->_F), "setArg0");
 	checkErr(_oclmanager->_kernel_newvel.setArg(1, _oclmanager->_G), "setArg1");
@@ -334,6 +370,7 @@ void Compute::NewVelocities(const real_t& dt) {
 	checkErr(_oclmanager->_kernel_newvel.setArg(4, _oclmanager->_v), "setArg4");
 	checkErr(_oclmanager->_kernel_newvel.setArg(5, _oclmanager->_h_inv), "setArg5");
 	checkErr(_oclmanager->_kernel_newvel.setArg(6, clDT), "setArg6");
+	checkErr(_oclmanager->_kernel_newvel.setArg(7, clVelocity), "setArg7");
 
 	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 	NDRange local(localSize,localSize);
@@ -367,12 +404,18 @@ void Compute::MomentumEqu(const real_t& dt) {
 	index_t localSize = 16;
 	real_t dt_var = dt;
 	real_t RE_inv = 1.0f/_param->Re();
+	real_t fGravity = _param->Gravity();
+	real_t fBeta = _param->Beta();
+	real_t fVelocity = _geom->Vel()[0];
 
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_u, CL_TRUE, 0, gridSize * sizeof(real_t), _u->_data);
 	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_v, CL_TRUE, 0, gridSize * sizeof(real_t), _v->_data);
 
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
+	Buffer clGravity = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fGravity);
+	Buffer clBeta = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fBeta);
+	Buffer clVelocity = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fVelocity);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(0, _oclmanager->_F), "setArg0 meq");
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(1, _oclmanager->_G), "setArg1 meq");
@@ -383,6 +426,9 @@ void Compute::MomentumEqu(const real_t& dt) {
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(6, clDT), "setArg6 meq");
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(7, clRE_inv), "setArg7 meq");
 	checkErr(_oclmanager->_kernel_momentumeq.setArg(8, _oclmanager->_T), "setArg8 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(9, clGravity), "setArg9 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(10, clBeta), "setArg10 meq");
+	checkErr(_oclmanager->_kernel_momentumeq.setArg(11, clVelocity), "setArg11 meq");
 
 	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 	NDRange local(localSize,localSize);
@@ -477,25 +523,28 @@ void Compute::Temperature(const real_t& dt) {
 
 	real_t RE_inv = 1.0f/_param->Re();
 	real_t PR_inv = 1.0f/_param->Pr();
-
-	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_F, CL_TRUE, 0, gridSize * sizeof(real_t), _F->_data);
-	//_oclmanager->_queue.enqueueWriteBuffer(_oclmanager->_G, CL_TRUE, 0, gridSize * sizeof(real_t), _G->_data);
+	real_t fTemp = _param->T();
+	real_t fQ = _param->Q();
+	real_t fGamma = _param->Gamma();
 
 	Buffer clDT = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &dt_var);
 	Buffer clRE_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &RE_inv);
 	Buffer clPR_inv = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &PR_inv);
+	Buffer clTemp = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fTemp);
+	Buffer clQ = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fQ);
+	Buffer clGamma = Buffer(_oclmanager->_context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(real_t), &fGamma);
 	// Set arguments to kernel
 	checkErr(_oclmanager->_kernel_T.setArg(0, _oclmanager->_T), "setArg0 T");
 	checkErr(_oclmanager->_kernel_T.setArg(1, _oclmanager->_u), "setArg1 T");
 	checkErr(_oclmanager->_kernel_T.setArg(2, _oclmanager->_v), "setArg2 T");
-	checkErr(_oclmanager->_kernel_T.setArg(3, _oclmanager->_h_inv), "setArg4");
-	checkErr(_oclmanager->_kernel_T.setArg(4, _oclmanager->_hs_inv), "setArg5");
-	checkErr(_oclmanager->_kernel_T.setArg(5, clDT), "setArg6");
-	checkErr(_oclmanager->_kernel_T.setArg(6, clRE_inv), "setArg7");
-	checkErr(_oclmanager->_kernel_T.setArg(7, clPR_inv), "setArg7");
-
-	//checkErr(_oclmanager->_kernel_newvel.setArg(5, _oclmanager->_h_inv), "setArg5");
-	//checkErr(_oclmanager->_kernel_newvel.setArg(6, clDT), "setArg6");
+	checkErr(_oclmanager->_kernel_T.setArg(3, _oclmanager->_h_inv), "setArg3 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(4, _oclmanager->_hs_inv), "setArg4 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(5, clDT), "setArg5 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(6, clRE_inv), "setArg6 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(7, clPR_inv), "setArg7 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(8, clTemp), "setArg8 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(9, clQ), "setArg9 temp");
+	checkErr(_oclmanager->_kernel_T.setArg(10, clGamma), "setArg10 temp");
 
 	NDRange global((_geom->Size()[0] - 2), (_geom->Size()[1] - 2));
 	NDRange local(localSize,localSize);

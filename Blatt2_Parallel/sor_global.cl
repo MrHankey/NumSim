@@ -171,15 +171,14 @@ __kernel void newvel(	__global const float *FGrid,
 					__global float *uGrid,
 					__global float *vGrid,
 					__global float *h_inv,
-					__global float *deltaT
+					__global float *deltaT,
+					__global float *pVelocity
 				)
 {
 
 	float hi = (*h_inv);
 	float dt = (*deltaT);
-
-	//TODO DONT HARDCODE
-	float velocity = 0.0f;
+	float velocity = (*pVelocity);
 
 	int g_x = get_global_id(0) + 1;
 	int g_y = get_global_id(1) + 1;
@@ -259,7 +258,10 @@ __kernel void momentumeq(	__global float *FGrid,
 					__global const float *h_inv_squared,
 					__global const float *deltaT,
 					__global const float *RE_inv,
-					__global const float *TGrid
+					__global const float *TGrid,
+					__global const float *pGravity,
+					__global const float *pBeta,
+					__global const float *pVelocity
 				)
 {
 
@@ -267,11 +269,12 @@ __kernel void momentumeq(	__global float *FGrid,
 	float hsi = (*h_inv_squared);
 	float dt = (*deltaT);
 	float rei = (*RE_inv);
+	float gravity = (*pGravity);
+	float beta = (*pBeta);
+	float velocity = (*pVelocity);
 
 	//TODO DONT HARDCODE
-	float velocity = 0.0f;
-	float gravity = -9.81f;
-	float beta = 10.0f;//0.5f;
+
 
 	int g_x = get_global_id(0) + 1;
 	int g_y = get_global_id(1) + 1;
@@ -302,7 +305,7 @@ __kernel void momentumeq(	__global float *FGrid,
 	float B = rei * ( ddx(v_r, v_l, v, hsi) + ddx(v_t, v_d, v, hsi) ) - vdv_y(v_t, v_d, v, hi) - udv_x(v_r, v_l, v, u_t, u_l, u_lt, u, hi) + gravity;
 
 	FGrid[idx] = u + dt*A;
-	GGrid[idx] = v + dt*B - dt * beta * gravity * ( TGrid[idx] + TGrid[idx + gridSize] )*0.5f;
+	GGrid[idx] = v + dt*B;// - dt * beta * gravity * ( TGrid[idx] + TGrid[idx + gridSize] )*0.5f;
 
 
 	//UPDATE F G
@@ -337,22 +340,21 @@ __kernel void compT(	__global float *TGrid,
 					__global const float *h_inv_squared,
 					__global const float *deltaT,
 					__global const float *RE_inv,
-					__global const float *PR_inv
+					__global const float *PR_inv,
+					__global const float *pTemp,
+					__global const float *pQ,
+					__global const float *pGamma
 				)
 {
-
-
 
 	float hi = (*h_inv);
 	float hsi = (*h_inv_squared);
 	float dt = (*deltaT);
 	float rei = (*RE_inv);
 	float pri = (*PR_inv);
-
-	//TODO DONT HARDCODE
-	float heat = 1.0f;
-	float Q = 0.0f;
-	float gamma = 0.9f;
+	float temp = (*pTemp);
+	float Q = (*pQ);
+	float gamma = (*pGamma);
 
 	int g_x = get_global_id(0) + 1;
 	int g_y = get_global_id(1) + 1;
@@ -371,9 +373,9 @@ __kernel void compT(	__global float *TGrid,
     float T_u = TGrid[idx+gridSize];
     float T_d = TGrid[idx-gridSize];
 
-    float duTdx = hi * ( (u * (T_r + T)*0.5f - u_l * (T + T_l)*0.5f) + gamma * (fabs(u) * (T - T_r)*0.5 - fabs(u_l) * (T_l - T)*0.5f ) );
+    float duTdx = hi * ( (u * (T_r + T)*0.5f - u_l * (T + T_l)*0.5f) + gamma * (fabs(u) * (T - T_r)*0.5f - fabs(u_l) * (T_l - T)*0.5f ) );
 
- 	float dvTdy = hi * ( (v * (T_u + T)*0.5f - v_d * (T + T_d)*0.5f) + gamma * (fabs(v) * (T - T_u)*0.5 - fabs(v_d) * (T_d - T)*0.5f ) );
+ 	float dvTdy = hi * ( (v * (T_u + T)*0.5f - v_d * (T + T_d)*0.5f) + gamma * (fabs(v) * (T - T_u)*0.5f - fabs(v_d) * (T_d - T)*0.5f ) );
 
  	float delT = rei*pri * (ddx(T_r, T_l, T, hsi) + ddx(T_u, T_d, T, hsi)) - duTdx - dvTdy + Q;
 
@@ -383,6 +385,7 @@ __kernel void compT(	__global float *TGrid,
 	//left
 	if (g_x == 1){
 		TGrid[idx-1] = TGrid[idx];
+		//TGrid[idx-1] = temp;
 	}
 	//right
 	if (g_x == gridSize-2){
@@ -390,10 +393,21 @@ __kernel void compT(	__global float *TGrid,
 	}
 	//bottom
 	if (g_y == 1){
-		TGrid[idx-gridSize] = heat;
+		/*if ( g_x < 96*2 && g_x > 32*2)
+			TGrid[idx-gridSize] = temp;
+		else
+			TGrid[idx-gridSize] = TGrid[idx];*/
+		TGrid[idx-gridSize] = TGrid[idx];
 	}
 	//top
 	if (g_y == gridSize-2){
 		TGrid[idx+gridSize] = TGrid[idx];
 	}
+
+	/*if ( g_y < 68 && g_y > 60){
+		if ( g_x < 80 && g_x > 48){
+			TGrid[idx] = temp;
+		}
+	}*/
+
 }
