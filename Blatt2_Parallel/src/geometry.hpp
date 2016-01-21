@@ -48,6 +48,8 @@ public:
   /// Returns the meshwidth
   const multi_real_t &Mesh() const;
 
+  const multi_real_t &Vel() const;
+
   /// Updates the velocity field u
   void Update_U(Grid *u) const;
   /// Updates the velocity field v

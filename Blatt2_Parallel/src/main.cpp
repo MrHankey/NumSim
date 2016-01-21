@@ -122,6 +122,9 @@ int main(int argc, char **argv) {
     case 6:
       visugrid = comp.GetT();
       break;
+    case 7:
+      visugrid = comp.GetRes();
+      break;
     default:
       break;
     };

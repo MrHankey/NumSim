@@ -39,6 +39,11 @@ public:
   const real_t &Eps() const;
   const real_t &Tau() const;
   const real_t &Pr() const;
+  const real_t&  Q() const;
+  const real_t&  Gravity() const;
+  const real_t&  Beta() const;
+  const real_t&  Gamma() const;
+  const real_t&  T() const;
 
   void PrintVariables();
 
@@ -52,6 +57,11 @@ private:
   real_t _tau;
   real_t _pr;
   index_t _itermax;
+  real_t _gravity;
+  real_t _beta;
+  real_t _gamma;
+  real_t _Tstart;
+  real_t _q;
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP

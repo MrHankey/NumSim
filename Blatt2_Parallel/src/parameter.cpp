@@ -33,6 +33,11 @@ Parameter::Parameter() {
 	_tau     = 0.5;
 	_itermax = 100;
 	_pr		 = 3.0;
+	_gravity = -9.81;
+	_beta	 = 0.5;
+	_Tstart	 = 10.0;
+	_q		 = 0.0;
+	_gamma   = 0.9;
 
 	cout << "Loaded default parameters."<< endl;
 }
@@ -68,7 +73,12 @@ void Parameter::PrintVariables(){
 	cout << "Tend: "    << _tend    << endl;
 	cout << "eps: "     << _eps     << endl;
 	cout << "tau: "     << _tau     << endl;
-	cout << "Pr: "     << _pr     << endl;
+	cout << "Pr: "      << _pr     << endl;
+	cout << "Grav: "    << _gravity     << endl;
+	cout << "beta: "    << _beta     << endl;
+	cout << "gamma: "    << _gamma     << endl;
+	cout << "Tstart: "    << _Tstart     << endl;
+	cout << "Q: "    << _q     << endl;
 	cout << "itermax: " << _itermax << endl << endl;
 }
 
@@ -83,3 +93,8 @@ const index_t& Parameter::IterMax() const {return _itermax;}
 const real_t&  Parameter::Eps()     const {return _eps;}
 const real_t&  Parameter::Tau()     const {return _tau;}
 const real_t&  Parameter::Pr()     const {return _pr;}
+const real_t&  Parameter::Q()     const {return _q;}
+const real_t&  Parameter::Gravity()     const {return _gravity;}
+const real_t&  Parameter::Beta()     const {return _beta;}
+const real_t&  Parameter::Gamma()     const {return _gamma;}
+const real_t&  Parameter::T()     const {return _Tstart;}
