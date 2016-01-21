@@ -18,7 +18,12 @@
 vars = Variables('custom.py')
 vars.Add (BoolVariable('visu', 'Set to 1 for enabling debug visu', 0))
 
-env = Environment(variables=vars)
+cppdefines = []
+for key, value in ARGLIST:
+    if key == 'define':
+        cppdefines.append(value)
+
+env = Environment(variables=vars,CPPDEFINES = cppdefines)
 
 # do debug build?
 debug = ARGUMENTS.get('debug', 0)

@@ -33,7 +33,11 @@ Parameter::Parameter() {
 	_tau     = 0.5;
 	_itermax = 100;
 	_pr		 = 3.0;
+#ifdef HEAT_COUPLING
 	_gravity = -9.81;
+#else
+	_gravity = 0.0;
+#endif
 	_beta	 = 0.5;
 	_Tstart	 = 10.0;
 	_q		 = 0.0;

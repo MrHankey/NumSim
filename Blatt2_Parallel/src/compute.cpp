@@ -144,18 +144,21 @@ void Compute::TimeStep(bool printInfo) {
 	// Mesh width and RE
 	real_t dt2 = _param->Tau()*_param->Re()/2* (hs_y*hs_x);
 	dt2 = dt2/(hs_y+hs_x);
+	dt = std::min(dt2,std::min(dt,_param->Dt()));
+#ifdef HEAT_COUPLING
 	// Temp restriction
 	real_t dt3 = _param->Re()*_param->Pr()*0.5f*(1.0f/hs_x + 1.0f/hs_y);
-
-	dt = std::min(dt2,std::min(dt,_param->Dt()));
 	dt = std::min(dt, dt3);
+#endif
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	//_solver_time = _solver->_gpu_time;
 	timing_dt += elapsed_secs;
 
+#ifdef HEAT_COUPLING
 	Temperature(dt);
+#endif
 
 	static real_t timing_meq = 0.0f;
 	begin = clock();

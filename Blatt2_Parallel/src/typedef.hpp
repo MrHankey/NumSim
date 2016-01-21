@@ -25,6 +25,8 @@
 
 //------------------------------------------------------------------------------
 
+//#define HEAT_COUPLING
+
 #define DIM 2
 #define REAL_TYPE float
 #define INDEX_TYPE uint32_t
