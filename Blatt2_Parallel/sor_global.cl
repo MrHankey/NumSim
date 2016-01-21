@@ -305,7 +305,7 @@ __kernel void momentumeq(	__global float *FGrid,
 	float B = rei * ( ddx(v_r, v_l, v, hsi) + ddx(v_t, v_d, v, hsi) ) - vdv_y(v_t, v_d, v, hi) - udv_x(v_r, v_l, v, u_t, u_l, u_lt, u, hi) + gravity;
 
 	FGrid[idx] = u + dt*A;
-	GGrid[idx] = v + dt*B;// - dt * beta * gravity * ( TGrid[idx] + TGrid[idx + gridSize] )*0.5f;
+	GGrid[idx] = v + dt*B - dt * beta * gravity * ( TGrid[idx] + TGrid[idx + gridSize] )*0.5f;
 
 
 	//UPDATE F G
@@ -385,7 +385,6 @@ __kernel void compT(	__global float *TGrid,
 	//left
 	if (g_x == 1){
 		TGrid[idx-1] = TGrid[idx];
-		//TGrid[idx-1] = temp;
 	}
 	//right
 	if (g_x == gridSize-2){
@@ -393,21 +392,11 @@ __kernel void compT(	__global float *TGrid,
 	}
 	//bottom
 	if (g_y == 1){
-		/*if ( g_x < 96*2 && g_x > 32*2)
-			TGrid[idx-gridSize] = temp;
-		else
-			TGrid[idx-gridSize] = TGrid[idx];*/
-		TGrid[idx-gridSize] = TGrid[idx];
+		TGrid[idx-gridSize] = temp;
 	}
 	//top
 	if (g_y == gridSize-2){
 		TGrid[idx+gridSize] = TGrid[idx];
 	}
-
-	/*if ( g_y < 68 && g_y > 60){
-		if ( g_x < 80 && g_x > 48){
-			TGrid[idx] = temp;
-		}
-	}*/
 
 }
