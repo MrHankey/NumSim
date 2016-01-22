@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     // Create VTK Files in the folder VTK
     // Note that when using VTK module as it is you first have to write cell
     // information, then call SwitchToPointData(), and then write point data.
-    /*vtk.Init("VTK/field");
+    vtk.Init("VTK/field");
     vtk.AddRank();
     vtk.AddCellField("Cell Velocity", comp.GetU(), comp.GetV());
     vtk.SwitchToPointData();
@@ -141,11 +141,15 @@ int main(int argc, char **argv) {
     vtk.AddPointScalar("Pressure", comp.GetP());
     vtk.AddPointScalar("Vorticity", comp.GetVorticity());
     vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.Finish();*/
+    vtk.AddPointScalar("Temperature", comp.GetT());
+    //vtk.AddPointScalar("Residual", comp.GetRes());
+    vtk.Finish();
 
     begin_step = clock();
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
+    real_t startTime = comp.GetTime();
+    //for (uint32_t i = 0; i < 99; ++i)
+    while ( comp.GetTime() - startTime < 0.04)
       comp.TimeStep(false);
     comp.TimeStep(true);
     clock_t end = clock();

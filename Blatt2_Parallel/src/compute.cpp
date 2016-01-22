@@ -140,16 +140,19 @@ void Compute::TimeStep(bool printInfo) {
 	real_t hs_x = h_x*h_x;
 	real_t hs_y = h_y*h_y;
 	// CFL
-	real_t dt = _param->Tau()*fmax(h_x,h_y)/_oclmanager->ReduceMaxVelocity();
+	real_t dt = fmax(h_x,h_y)/_oclmanager->ReduceMaxVelocity();
 	// Mesh width and RE
-	real_t dt2 = _param->Tau()*_param->Re()/2* (hs_y*hs_x);
+	real_t dt2 = _param->Re()/2* (hs_y*hs_x);
 	dt2 = dt2/(hs_y+hs_x);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
 #ifdef HEAT_COUPLING
 	// Temp restriction
-	real_t dt3 = _param->Re()*_param->Pr()*0.5f*(1.0f/hs_x + 1.0f/hs_y);
+	real_t dt3 = (_param->Re()*_param->Pr()*0.5f)*(1.0f/(1.0f/hs_x + 1.0f/hs_y));
+	//real_t dt3 = 0.5 * _param->Re() * _param->Pr() / ( 1/hs_x + 1/hs_y );
 	dt = std::min(dt, dt3);
 #endif
+
+	dt *= _param->Tau();
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -184,15 +187,16 @@ void Compute::TimeStep(bool printInfo) {
 	// Compute p
 	real_t total_res = 10000000;
 	index_t i = 0;
-
+	index_t numBlockCycles = 10;
 
 	begin = clock();
 
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
 
 
-		total_res = _solver->Cycle(10);
-		i++;
+
+		total_res = _solver->Cycle(numBlockCycles);
+		i += numBlockCycles;
 	}
 
 	_oclmanager->_queue.finish();

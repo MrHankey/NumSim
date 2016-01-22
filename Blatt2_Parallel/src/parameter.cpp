@@ -32,14 +32,14 @@ Parameter::Parameter() {
 	_eps     = 0.001;
 	_tau     = 0.5;
 	_itermax = 100;
-	_pr		 = 3.0;
+	_pr		 = 7.0;
 #ifdef HEAT_COUPLING
 	_gravity = -9.81;
 #else
 	_gravity = 0.0;
 #endif
-	_beta	 = 0.5;
-	_Tstart	 = 10.0;
+	_beta	 = 1.0;
+	_Tstart	 = 1.0;
 	_q		 = 0.0;
 	_gamma   = 0.9;
 
@@ -64,6 +64,11 @@ void Parameter::Load(const char* file) {
 		fileStream >> _eps;
 		fileStream >> _tau;
 		fileStream >> _itermax;
+		fileStream >> _pr;
+		fileStream >> _beta;
+		fileStream >> _Tstart;
+		fileStream >> _q;
+		fileStream >> _gamma;
 		cout << "Loaded parameters from " << file << "." << endl;
 	}
 }
