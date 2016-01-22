@@ -105,7 +105,7 @@ void OCLManager::InitFields()
 	index_t gridSize = _geom->Size()[0]*_geom->Size()[1];
 
 	Grid zeroGrid = Grid(_geom);
-	zeroGrid.Initialize(0.0f);
+	zeroGrid.Initialize(0.0001f);
 
 	checkErr(_queue.enqueueWriteBuffer(_p, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer p");
 	checkErr(_queue.enqueueWriteBuffer(_u, CL_TRUE, 0, gridSize*sizeof(real_t), zeroGrid._data), "manager write buffer u");

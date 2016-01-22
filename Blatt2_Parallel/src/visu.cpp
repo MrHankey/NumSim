@@ -129,7 +129,7 @@ Renderer::Renderer(const multi_real_t &length, const multi_real_t &h)
   _y = 1;
   _click_x = 0;
   _click_y = 1;
-  _grid = true;
+  _grid = length[0]/h[0] < 500;
   _min = std::numeric_limits<real_t>::max();
   _max = std::numeric_limits<real_t>::min();
 }
