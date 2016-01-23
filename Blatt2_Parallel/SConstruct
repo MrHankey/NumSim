@@ -17,16 +17,13 @@
 # add possibility to add a debug visu
 vars = Variables('custom.py')
 vars.Add (BoolVariable('visu', 'Set to 1 for enabling debug visu', 0))
+vars.Add (BoolVariable('debug', 'Set to 1 to enable debug flags', 0))
+vars.Add (BoolVariable('vtk', 'Set to 1 to enable vtk output', 0))
+vars.Add (BoolVariable('heat', 'Set to 1 to enable heat coupling', 0))
 
 cppdefines = []
-for key, value in ARGLIST:
-    if key == 'define':
-        cppdefines.append(value)
 
 env = Environment(variables=vars,CPPDEFINES = cppdefines)
-
-# do debug build?
-debug = ARGUMENTS.get('debug', 0)
 
 # parallel
 env.Replace(CXX='g++')
@@ -43,16 +40,21 @@ env.Append(
                      "-std=c++0x",
            ],
            LIBS=[
-#                 "mpi",
                  "OpenCL",
            ]
           )
 
 if env['visu']:
     env['LIBS'] += ["SDL2"]
+ 
+if env['vtk']:
+    env['CPPDEFINES'] += ["VTK_OUTPUT"]
+    
+if env['heat']:
+    env['CPPDEFINES'] += ["HEAT_COUPLING"]
 
 # add flags for debug and release build
-if debug == 0:
+if not env['debug']:
     env['CXXFLAGS'] += ["-O3","-flto"]
     env['LINKFLAGS'] += ["-flto"]
 else:

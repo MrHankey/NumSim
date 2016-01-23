@@ -74,10 +74,10 @@ int main(int argc, char **argv) {
   // Create a VTK generator;
   // use offset as the domain shift
   multi_real_t offset;
+  multi_index_t dims = {1,1};
   offset[0] = 0 * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
   offset[1] = 0 * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
-  VTK vtk(geom.Mesh(), geom.Size(), geom.Size(), offset , 0,
-          1, 1);
+  VTK vtk(geom.Mesh(), geom.Size());
 
 #ifdef USE_DEBUG_VISU
   const Grid *visugrid;
@@ -133,23 +133,25 @@ int main(int argc, char **argv) {
     // Create VTK Files in the folder VTK
     // Note that when using VTK module as it is you first have to write cell
     // information, then call SwitchToPointData(), and then write point data.
+#ifdef VTK_OUTPUT
     vtk.Init("VTK/field");
-    vtk.AddRank();
-    vtk.AddCellField("Cell Velocity", comp.GetU(), comp.GetV());
-    vtk.SwitchToPointData();
-    vtk.AddPointField("Velocity", comp.GetU(), comp.GetV());
-    vtk.AddPointScalar("Pressure", comp.GetP());
-    vtk.AddPointScalar("Vorticity", comp.GetVorticity());
-    vtk.AddPointScalar("Stream", comp.GetStream());
-    vtk.AddPointScalar("Temperature", comp.GetT());
+    //vtk.AddRank();
+    vtk.AddField("Cell Velocity", comp.GetU(), comp.GetV());
+    //vtk.SwitchToPointData();
+    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+    vtk.AddScalar("Pressure", comp.GetP());
+    vtk.AddScalar("Vorticity", comp.GetVorticity());
+    vtk.AddScalar("Stream", comp.GetStream());
+    vtk.AddScalar("Temperature", comp.GetT());
     //vtk.AddPointScalar("Residual", comp.GetRes());
     vtk.Finish();
+#endif
 
     begin_step = clock();
     // Run a few steps
     real_t startTime = comp.GetTime();
-    //for (uint32_t i = 0; i < 99; ++i)
-    while ( comp.GetTime() - startTime < 0.04)
+    for (uint32_t i = 0; i < 99; ++i)
+    //while ( comp.GetTime() - startTime < 0.04)
       comp.TimeStep(false);
     comp.TimeStep(true);
     clock_t end = clock();
