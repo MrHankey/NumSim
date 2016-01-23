@@ -121,16 +121,16 @@ void Compute::TimeStep(bool printInfo) {
 
 
 	// Compute dt
-	/*real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
+	real_t dt = _param->Tau()*std::fmax(_geom->Mesh()[0],_geom->Mesh()[1])/std::fmax(_u->AbsMax(),_v->AbsMax());
 	real_t dt2 = _param->Tau()*_param->Re()/2* (_geom->Mesh()[1]*_geom->Mesh()[1]*_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt2 = dt2/(_geom->Mesh()[1]*_geom->Mesh()[1]+_geom->Mesh()[0]*_geom->Mesh()[0]);
 	dt = std::min(dt2,std::min(dt,_param->Dt()));
 
 	//biggest dt of all is chosen.
-	dt = _comm->gatherMin(dt);*/
+	dt = _comm->gatherMin(dt);
 
 	//USE FIXED TIMESTEP
-	real_t dt = _param->Tau()*_param->Dt();
+	//real_t dt = _param->Tau()*_param->Dt();
 
 	// Compute F, G
 	MomentumEqu(dt);
@@ -186,7 +186,7 @@ void Compute::TimeStep(bool printInfo) {
 	if (printInfo) {
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << endl;
 
-		index_t small = 5;
+		/*index_t small = 5;
 		index_t med = 64;
 		index_t big = 120;
 
@@ -206,7 +206,7 @@ void Compute::TimeStep(bool printInfo) {
 		name <<  std::fixed << std::setprecision(8) << "samples/" << _param->Re() << ".csv";
 		outfile.open( name.str() , std::ios_base::app);
 		outfile << std::fixed << std::setprecision(8) << u1 << "," << u2 << "," << u3 << std::endl;;
-		outfile.close();
+		outfile.close();*/
 
 	}
 }

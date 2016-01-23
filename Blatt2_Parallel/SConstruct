@@ -39,7 +39,7 @@ env.Append(
            ],
            LIBS=[
                  "mpi",
-                 "SDL2",
+#                 "SDL2",
            ]
           )
 

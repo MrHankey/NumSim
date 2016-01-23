@@ -64,13 +64,13 @@ int main(int argc, char **argv) {
   //std::normal_distribution<real_t> distribution(1500.0,1000.0/6.0);
   std::uniform_real_distribution<double> distribution(1000.0,2000.0);
 
-  real_t sample_re = 0.0;
+  /*real_t sample_re = 0.0;
   while ( sample_re < 1000.0 || sample_re > 2000.0 )
   {
 	  sample_re = distribution(generator);
   }
 
-  param.SetRe(sample_re);
+  param.SetRe(sample_re);*/
 
   if ( argc >= 2)
         param.SetRe( atof(argv[1]) );
