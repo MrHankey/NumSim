@@ -45,7 +45,7 @@ OCLManager::OCLManager(Geometry* geom) {
 	_numWorkGroups = NUM_WORKGROUPS;
 
 	// Read source file
-	std::ifstream sourceFile("sor_global.cl");
+	std::ifstream sourceFile("computations.cl");
 	std::string sourceCode(
 		std::istreambuf_iterator<char>(sourceFile),
 		(std::istreambuf_iterator<char>()));
