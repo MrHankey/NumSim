@@ -1,2 +1,3 @@
 visu = 1 # do build a debug visualization
-# visu = 0 # do not build a debug visualization
+# vtk = 1 # build with vtk file output enabled
+# heat = 1 # build with heat coupling enabled
