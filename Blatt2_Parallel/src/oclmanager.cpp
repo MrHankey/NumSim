@@ -7,9 +7,9 @@ using namespace cl;
 
 //intel: 15
 //k20x: 96
-#define NUM_WORKGROUPS 15
+#define NUM_WORKGROUPS 96
 
-OCLManager::OCLManager(Geometry* geom) {
+OCLManager::OCLManager(Geometry* geom, index_t device) {
 
 	_geom = geom;
 
@@ -37,10 +37,10 @@ OCLManager::OCLManager(Geometry* geom) {
 	}
 
 	// Create a command queue and use the first device
-	_queue = CommandQueue(_context, _all_devices[0], 0, &err);
+	_queue = CommandQueue(_context, _all_devices[device], 0, &err);
 	checkErr(err, "CommandQueue::CommandQueue()");
 
-	cout << "Using device: " << _all_devices[0].getInfo<CL_DEVICE_NAME>() << endl;
+	cout << "Using device: " << _all_devices[device].getInfo<CL_DEVICE_NAME>() << endl;
 
 	_numWorkGroups = NUM_WORKGROUPS;
 
@@ -57,7 +57,9 @@ OCLManager::OCLManager(Geometry* geom) {
 
 	// Build program for these specific devices
 	err = _program.build(_all_devices);
-	std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+	if ( err != 0 )
+		std::cout<<" Error building: "<<_program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[device])<<"\n";
+
 	checkErr(err, "Program::build()");
 
 	_kernel_solver = Kernel(_program, "sor", &err);
@@ -87,7 +89,9 @@ OCLManager::OCLManager(Geometry* geom) {
 
 	// Build program for these specific devices
 	err = _program_red.build(_all_devices);
-	std::cout<<" Error building: "<<_program_red.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[0])<<"\n";
+	if (err != 0)
+		std::cout<<" Error building: "<<_program_red.getBuildInfo<CL_PROGRAM_BUILD_LOG>(_all_devices[device])<<"\n";
+
 	checkErr(err, "Program::build(red)");
 
 	_kernel_reduce_sum = Kernel(_program_red, "reduce_sum", &err);

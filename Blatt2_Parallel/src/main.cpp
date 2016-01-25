@@ -36,7 +36,11 @@ int main(int argc, char **argv) {
   // Create parameter and geometry instances with default values
   Parameter param;
   Geometry geom;
-  OCLManager oclmanager(&geom);
+  index_t device = 0;
+  if ( argc >= 4)
+	  device = atoi(argv[3]);
+
+  OCLManager oclmanager(&geom, device);
 
   if ( argc >= 2)
     param.Load(argv[1]);
@@ -136,12 +140,12 @@ int main(int argc, char **argv) {
 #ifdef VTK_OUTPUT
     vtk.Init("VTK/field");
     //vtk.AddRank();
-    vtk.AddField("Cell Velocity", comp.GetU(), comp.GetV());
+    //vtk.AddField("Cell Velocity", comp.GetU(), comp.GetV());
     //vtk.SwitchToPointData();
     vtk.AddField("Velocity", comp.GetU(), comp.GetV());
     vtk.AddScalar("Pressure", comp.GetP());
-    vtk.AddScalar("Vorticity", comp.GetVorticity());
-    vtk.AddScalar("Stream", comp.GetStream());
+    //vtk.AddScalar("Vorticity", comp.GetVorticity());
+    //vtk.AddScalar("Stream", comp.GetStream());
     vtk.AddScalar("Temperature", comp.GetT());
     //vtk.AddPointScalar("Residual", comp.GetRes());
     vtk.Finish();
@@ -150,7 +154,7 @@ int main(int argc, char **argv) {
     begin_step = clock();
     // Run a few steps
     real_t startTime = comp.GetTime();
-    for (uint32_t i = 0; i < 99; ++i)
+    for (uint32_t i = 0; i < 9; ++i)
     //while ( comp.GetTime() - startTime < 0.04)
       comp.TimeStep(false);
     comp.TimeStep(true);

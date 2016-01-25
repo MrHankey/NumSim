@@ -11,7 +11,7 @@
 
 class OCLManager {
 public:
-	OCLManager(Geometry* geom);
+	OCLManager(Geometry* geom, index_t device);
 	~OCLManager();
 
 	void Initialize();
