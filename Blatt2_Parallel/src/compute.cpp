@@ -236,7 +236,10 @@ void Compute::TimeStep(bool printInfo) {
 		//_oclmanager->_queue.finish();
 		cout << "t: " << _t << " dt: " << dt << "  \tres: " << std::scientific << total_res << "\t progress: " << std::fixed << _t/_param->Tend()*100 << "%" << " IterCount: " << i << endl;
 		if ( _t >= _param->Tend())
-			cout << "dt_time: " << timing_dt << " \tmeq: " << timing_meq << " \trhs: " << timing_rhs << " \tsolver: " << _solver_time << " \t nv:" << timing_nv << " \tread: " << read_time << endl;
+		{
+			cout << "Timestep timings:" << endl;
+			cout << "dt_time: \t" << timing_dt << " \nmeq: \t\t" << timing_meq << " \nrhs: \t\t" << timing_rhs << " \nsolver: \t" << _solver_time << " \nnv: \t\t" << timing_nv << " \nread: \t\t" << read_time << endl << endl;
+		}
 	}
 	_oclmanager->_queue.finish();
 	end = clock();

@@ -370,23 +370,7 @@ real_t SOROCL::Cycle(index_t iIterations)
 
 	clock_t begin;
 	clock_t end;
-	_oclmanager->_queue.finish();
-	begin = clock();
-
-
-	//grid for saving local residuals
-	//initialize as 0
-	Grid localResiduals = Grid(_geom);
-
 	index_t localSize = 16;
-
-
-	//copy grid data to device
-	//UpdateBuffers(grid, rhs, &localResiduals);
-
-	end = clock();
-	double elapsed_secs_buf = double(end - begin) / CLOCKS_PER_SEC;
-	_time_buffer += elapsed_secs_buf;
 
 	begin = clock();
 
@@ -412,8 +396,6 @@ real_t SOROCL::Cycle(index_t iIterations)
 			checkErr(_oclmanager->_queue.enqueueNDRangeKernel(_oclmanager->_kernel_solver, NullRange, global, local), "enqueueNDRangeKernelSolver");
 		}
 
-		//_oclmanager->_queue.finish();
-
 		_oclmanager->_queue.finish();
 		end = clock();
 		double elapsed_secs_kernel = double(end - begin) / CLOCKS_PER_SEC;
@@ -429,8 +411,6 @@ real_t SOROCL::Cycle(index_t iIterations)
 	}
 #endif
 
-	//_oclmanager->_queue.finish();
-
 	_oclmanager->_queue.finish();
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
@@ -440,33 +420,6 @@ real_t SOROCL::Cycle(index_t iIterations)
 	begin = clock();
 
 	real_t res = _oclmanager->ReduceResidual();
-
-	/*real_t res = 0.0f;
-	for ( index_t i = 0; i < gridSize; i++)
-	{
-		// sum residual
-
-		float val = localResiduals._data[i];
-		if ( std::isfinite(val))
-		{
-			res += val;
-			//res = fmax(val, res);
-		}
-
-	}*/
-
-	/*InteriorIterator it = InteriorIterator(_geom);
-	while (it.Valid())
-	{
-		real_t loc = localResiduals.Cell(it);
-		//if ( loc > 0.0)
-			//cout << loc << endl;
-
-		res += loc;
-		it.Next();
-	}*/
-
-	//cin.ignore();
 
 	_oclmanager->_queue.finish();
 	end = clock();

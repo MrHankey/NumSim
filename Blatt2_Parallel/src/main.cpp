@@ -78,7 +78,6 @@ int main(int argc, char **argv) {
   // Create a VTK generator;
   // use offset as the domain shift
   multi_real_t offset;
-  multi_index_t dims = {1,1};
   offset[0] = 0 * (geom.Mesh()[0] * (real_t)(geom.Size()[0] - 2));
   offset[1] = 0 * (geom.Mesh()[1] * (real_t)(geom.Size()[1] - 2));
   VTK vtk(geom.Mesh(), geom.Size());
@@ -153,8 +152,9 @@ int main(int argc, char **argv) {
 
     begin_step = clock();
     // Run a few steps
-    real_t startTime = comp.GetTime();
     for (uint32_t i = 0; i < 9; ++i)
+    // SWAP WITH ABOVE LINE TO ENABLE OUTPUT EVERY 1/25 SIMULATED SECONDS
+    //real_t startTime = comp.GetTime();
     //while ( comp.GetTime() - startTime < 0.04)
       comp.TimeStep(false);
     comp.TimeStep(true);
@@ -162,14 +162,14 @@ int main(int argc, char **argv) {
 	double elapsed_secs = double(end - begin_step) / CLOCKS_PER_SEC;
 	timing_step += elapsed_secs;
 
-    //std::cin.ignore();
   }
 
 
   clock_t end = clock();
   double elapsed_secs = double(end - begin_full) / CLOCKS_PER_SEC;
-  std::cout << "duration: " << elapsed_secs << "step: " << timing_step << " solver_time: " << comp._solver_time << std::endl;
-  std::cout << "buf: " << comp._time_buf << " kernel: " << comp._time_kernel << " buf_read: " << comp._time_buf_read << " res: " << comp._time_res << std::endl;
+  std::cout << "Other timings: " << std::endl;
+  std::cout << "duration:  \t" << elapsed_secs << "\nstep: \t\t" << timing_step << "\nsolver_time: \t" << comp._solver_time << std::endl;
+  std::cout << "kernel time: \t" << comp._time_kernel << "\nbuf_read: \t" << comp._time_buf_read << "\nres_calc: \t" << comp._time_res << std::endl;
 
 
   return 0;
