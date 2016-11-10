@@ -18,6 +18,39 @@
 #include "visu.hpp"
 #include <cmath>
 #include <limits>
+
+typedef struct {
+    double r,g,b;
+} COLOUR;
+
+COLOUR GetColour(double v,double vmin,double vmax)
+{
+   COLOUR c = {1.0,1.0,1.0}; // white
+   double dv;
+
+   if (v < vmin)
+      v = vmin;
+   if (v > vmax)
+      v = vmax;
+   dv = vmax - vmin;
+
+   if (v < (vmin + 0.25 * dv)) {
+      c.r = 0;
+      c.g = 4 * (v - vmin) / dv;
+   } else if (v < (vmin + 0.5 * dv)) {
+      c.r = 0;
+      c.b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+   } else if (v < (vmin + 0.75 * dv)) {
+      c.r = 4 * (v - vmin - 0.5 * dv) / dv;
+      c.b = 0;
+   } else {
+      c.g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+      c.b = 0;
+   }
+
+   return(c);
+}
+
 //------------------------------------------------------------------------------
 uint8_t HueR(real_t value, real_t min, real_t max) {
   real_t hue;
@@ -91,27 +124,25 @@ uint8_t HueB(real_t value, real_t min, real_t max) {
     return x * 255;
 }
 //------------------------------------------------------------------------------
-void setpixelhue(SDL_Surface *screen, int x, int y, real_t value, real_t min,
+void Renderer::setpixelhue(int x, int y, real_t value, real_t min,
                  real_t max) {
-  uint32_t *pixmem32;
   uint32_t colour;
 
-  colour = SDL_MapRGB(screen->format, HueR(value, min, max),
-                      HueG(value, min, max), HueB(value, min, max));
+  COLOUR col = GetColour(value,min,max);
 
-  pixmem32 = (uint32_t *)screen->pixels + y * screen->w + x;
-  *pixmem32 = colour;
+  colour = SDL_MapRGB(SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888), col.r*255.0f,
+                      col.g*255.0f, col.b*255.0f);
+
+ _pixelArray[(uint32_t)y * _width + x] = colour;
 }
 //------------------------------------------------------------------------------
-void setpixelrgb(SDL_Surface *screen, int x, int y, uint8_t r, uint8_t g,
+void Renderer::setpixelrgb(int x, int y, uint8_t r, uint8_t g,
                  uint8_t b) {
-  uint32_t *pixmem32;
-  uint32_t colour;
+  Uint32 colour;
 
-  colour = SDL_MapRGB(screen->format, r, g, b);
+  colour = SDL_MapRGB(SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888), r, g, b);
 
-  pixmem32 = (uint32_t *)screen->pixels + y * screen->w + x;
-  *pixmem32 = colour;
+  _pixelArray[(uint32_t)y * _width + x] = colour;
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -148,11 +179,23 @@ void Renderer::Init(const index_t &width, const index_t &height,
   _width = width;
   _height = height;
   _idx = idx;
-  _window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED,
-                             SDL_WINDOWPOS_UNDEFINED, _width, _height, 0);
-  _screen = SDL_GetWindowSurface(_window); // SDL_SetVideoMode(_width,_height,
-                                           // 32, SDL_HWSURFACE |
-                                           // SDL_DOUBLEBUF);
+
+  _pixelArray = (Uint32*)malloc(sizeof(Uint32)*width*height);
+
+  if (SDL_CreateWindowAndRenderer(_width, _height, SDL_WINDOW_RESIZABLE, &_window, &_renderer)) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
+    return;
+  }
+
+  _texture = SDL_CreateTexture(_renderer,
+                               SDL_PIXELFORMAT_ARGB8888,
+                               SDL_TEXTUREACCESS_STREAMING,
+                               _width, _height);
+
+  SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+  SDL_RenderClear(_renderer);
+  SDL_RenderPresent(_renderer);
+
   // 70 and 30 is distance to left and top window border, here set to 70 and 30 to fit Ubuntu Unity launcher
   SDL_SetWindowPosition(_window, 70 + _width * t_idx[0], 30 + (t_dim[1] - t_idx[1] - 1) * _height);
 }
@@ -256,9 +299,6 @@ int Renderer::Render(const Grid *grid, const real_t &min, const real_t &max) {
     return -1;
   real_t treshold[2] = {0, 0};
   real_t value;
-  if (SDL_MUSTLOCK(_screen))
-    if (SDL_LockSurface(_screen) < 0)
-      return -1;
 
   _orig[_x] = _length[_x] * _click_x / _width;
   _orig[_y] = _length[_y] * (_height - _click_y - 1) / _height;
@@ -280,17 +320,17 @@ int Renderer::Render(const Grid *grid, const real_t &min, const real_t &max) {
     for (uint32_t y = 0; y < _height; ++y) {
       _orig[_y] = _length[_y] * (_height - y - 1) / _height;
       if (x == _click_x || y == _click_y) {
-        setpixelrgb(_screen, x, y, 255, 255, 255);
+        setpixelrgb(x, y, 255, 255, 255);
         continue;
       }
       if (_grid && _orig[_x] >= treshold[0]) {
-        setpixelrgb(_screen, x, y, 20, 20, 20);
+        setpixelrgb(x, y, 20, 20, 20);
       } else if (_grid && _orig[_y] < treshold[1]) {
-        setpixelrgb(_screen, x, y, 20, 20, 20);
+        setpixelrgb(x, y, 20, 20, 20);
         treshold[1] -= _h[_y];
       } else {
         value = grid->Interpolate(_orig);
-        setpixelhue(_screen, x, y, value, min, max);
+        setpixelhue(x, y, value, min, max);
         if (value > _max)
           _max = value;
         if (value < _min)
@@ -301,10 +341,13 @@ int Renderer::Render(const Grid *grid, const real_t &min, const real_t &max) {
       treshold[0] += _h[_x];
     }
   }
-  if (SDL_MUSTLOCK(_screen))
-    SDL_UnlockSurface(_screen);
-  SDL_UpdateWindowSurface(_window);
-  // SDL_Flip(_screen);
+
+  SDL_UpdateTexture(_texture, NULL, _pixelArray, _width * sizeof (Uint32));
+
+  SDL_RenderClear(_renderer);
+  SDL_RenderCopy(_renderer, _texture, NULL, NULL);
+  SDL_RenderPresent(_renderer);
+
   return _state;
 }
 //------------------------------------------------------------------------------

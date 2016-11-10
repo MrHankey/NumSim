@@ -60,6 +60,12 @@ public:
   /// Sets the visability of the grid cells
   void ShowGrid(bool grid);
 
+  void setpixelrgb(int x, int y, uint8_t r, uint8_t g,
+                 uint8_t b);
+
+  void setpixelhue(int x, int y, real_t value, real_t min,
+                 real_t max);
+
 private:
   index_t _x;
   index_t _y;
@@ -71,6 +77,8 @@ private:
   index_t _height;
   SDL_Window *_window;
   SDL_Surface *_screen;
+  SDL_Texture *_texture;
+  SDL_Renderer *_renderer;
   const multi_real_t &_length;
   const multi_real_t &_h;
   bool _grid;
@@ -79,6 +87,8 @@ private:
   int _idx;
 
   static uint32_t _count;
+
+  Uint32* _pixelArray;
 };
 //------------------------------------------------------------------------------
 /*! \class	Renderer
