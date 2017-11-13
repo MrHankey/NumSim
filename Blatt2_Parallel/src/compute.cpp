@@ -192,9 +192,6 @@ void Compute::TimeStep(bool printInfo) {
 	begin = clock();
 
 	while(total_res >_param->Eps() && i < _param->IterMax() ) {
-
-
-
 		total_res = _solver->Cycle(numBlockCycles);
 		i += numBlockCycles;
 	}
@@ -241,7 +238,6 @@ void Compute::TimeStep(bool printInfo) {
 			cout << "dt_time: \t" << timing_dt << " \nmeq: \t\t" << timing_meq << " \nrhs: \t\t" << timing_rhs << " \nsolver: \t" << _solver_time << " \nnv: \t\t" << timing_nv << " \nread: \t\t" << read_time << endl << endl;
 		}
 	}
-	_oclmanager->_queue.finish();
 	end = clock();
 	elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	read_time += elapsed_secs;

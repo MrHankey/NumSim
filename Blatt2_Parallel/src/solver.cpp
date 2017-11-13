@@ -324,9 +324,7 @@ real_t JacobiOCL::Cycle(Grid* grid, const Grid* rhs) {
 	for ( index_t i = 0; i < gridSize; i++)
 	{
 		// sum residual
-
 		res += localResiduals._data[i];
-
 	}
 
 	end = clock();
@@ -415,7 +413,6 @@ real_t SOROCL::Cycle(index_t iIterations)
 	end = clock();
 	double elapsed_secs_buf_read = double(end - begin) / CLOCKS_PER_SEC;
 	_time_buffer_read += elapsed_secs_buf_read;
-
 
 	begin = clock();
 
